@@ -48,6 +48,7 @@ for (const [name, { selector, accents }] of Object.entries(themes)) {
   const bg = token(selector, '--bg')
   const fg = token(selector, '--fg')
   const muted = token(selector, '--fg-muted')
+  const faint = token(selector, '--fg-faint')
 
   test(`${name}: body text meets AA`, () => {
     assert.ok(contrast(fg, bg) >= AA_TEXT, `--fg on --bg is ${contrast(fg, bg).toFixed(2)}:1`)
@@ -55,6 +56,12 @@ for (const [name, { selector, accents }] of Object.entries(themes)) {
 
   test(`${name}: muted text meets AA`, () => {
     assert.ok(contrast(muted, bg) >= AA_TEXT, `--fg-muted on --bg is ${contrast(muted, bg).toFixed(2)}:1`)
+  })
+
+  // --fg-faint is not decorative: it carries every form label and placeholder on the
+  // site. It sat at 3.81:1 (light) and 3.76:1 (dark) until this test was added.
+  test(`${name}: faint text meets AA`, () => {
+    assert.ok(contrast(faint, bg) >= AA_TEXT, `--fg-faint on --bg is ${contrast(faint, bg).toFixed(2)}:1`)
   })
 
   for (const accent of accents) {
@@ -80,5 +87,16 @@ test('--on-accent is legible on every accent fill', () => {
     const selector = `[data-accent='${accent}']`
     const c = contrast(token(selector, '--on-accent'), token(selector, '--accent'))
     assert.ok(c >= AA_TEXT, `--on-accent on ${accent} is ${c.toFixed(2)}:1, need ${AA_TEXT}`)
+  }
+})
+
+test('--on-accent survives the button hover colour shift', () => {
+  // .btn--primary swaps its fill to --accent-hover on hover while the label colour
+  // stays put. A shift that reads well on orange can bury the label on violet, so
+  // every accent is checked at its hover value too.
+  for (const accent of ['orange', 'lime', 'violet', 'silver']) {
+    const selector = `[data-accent='${accent}']`
+    const c = contrast(token(selector, '--on-accent'), token(selector, '--accent-hover'))
+    assert.ok(c >= AA_TEXT, `--on-accent on ${accent} hover is ${c.toFixed(2)}:1, need ${AA_TEXT}`)
   }
 })

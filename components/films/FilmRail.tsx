@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { motion, useTransform } from 'motion/react'
 import { KineticHeadline, PinnedStage } from '@/components/motion/Kinetic'
 import { Reveal } from '@/components/motion/Reveal'
+import { useScrollProgress } from '@/components/motion/scroll'
 import { Scene } from '@/components/three/Scene'
-import { sceneMotion } from '@/components/three/store'
 import { films } from '@/content/films'
 import type { Film } from '@/content/types'
 import VideoDialog from './VideoDialog'
@@ -30,32 +31,26 @@ export default function FilmRail() {
   const trackRef = useRef<HTMLUListElement>(null)
   const sectionRef = useRef<HTMLDivElement>(null)
 
+  /*
+   * The rail is driven by the pin window directly rather than by a per-frame rAF
+   * loop reading the scene store. Same travel, but the value passes through a spring,
+   * so the track keeps moving and settles when the wheel stops instead of halting
+   * with it — which is what made the old version feel stepped.
+   */
+  const [travel, setTravel] = useState(0)
+  const progress = useScrollProgress(sectionRef, ['start start', 'end end'])
+  const x = useTransform(progress, [0, 1], [0, -travel])
+
   useEffect(() => {
-    const track = trackRef.current
-    if (!track) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    let raf = 0
-    let visible = false
-
-    const tick = () => {
-      raf = 0
-      // Distance the track must travel to bring its last tile flush with the right edge.
-      const travel = Math.max(0, track.scrollWidth - window.innerWidth + 48)
-      track.style.transform = `translate3d(${-sceneMotion.progress * travel}px, 0, 0)`
-      if (visible) raf = requestAnimationFrame(tick)
+    // Distance the track must travel to bring its last tile flush with the right edge.
+    const measure = () => {
+      const track = trackRef.current
+      if (!track) return
+      setTravel(Math.max(0, track.scrollWidth - window.innerWidth + 48))
     }
-
-    const io = new IntersectionObserver(([e]) => {
-      visible = e.isIntersecting
-      if (visible && !raf) raf = requestAnimationFrame(tick)
-    })
-    if (sectionRef.current) io.observe(sectionRef.current)
-
-    return () => {
-      io.disconnect()
-      if (raf) cancelAnimationFrame(raf)
-    }
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
   }, [])
 
   /* Keyboard: bring the focused tile into view by moving the page, not the track. */
@@ -102,11 +97,11 @@ export default function FilmRail() {
               </Reveal>
             </div>
 
-            <ul
+            <motion.ul
               ref={trackRef}
               onFocus={onFocusIn}
               className="htrack mt-12 m-0 list-none p-0"
-              style={{ paddingInline: 'clamp(1.25rem, 5vw, 4rem)' }}
+              style={{ x, paddingInline: 'clamp(1.25rem, 5vw, 4rem)' }}
               aria-label="Selected films"
             >
               {films.map((film) => (
@@ -114,7 +109,7 @@ export default function FilmRail() {
                   <FilmTile film={film} onOpen={() => setOpen(film)} />
                 </li>
               ))}
-            </ul>
+            </motion.ul>
           </div>
         </PinnedStage>
       </div>
@@ -140,19 +135,30 @@ export function FilmTile({ film, onOpen }: { film: Film; onOpen: () => void }) {
         transitionTimingFunction: 'var(--ease-out-expo)',
       }}
     >
-      <span className="relative block aspect-video w-full overflow-hidden" style={{ background: 'var(--bg-sunken)' }}>
+      <span className="pic relative block aspect-video w-full overflow-hidden" style={{ background: 'var(--bg-sunken)' }}>
         {poster ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={poster}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            width={480}
-            height={360}
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
-            style={{ transitionTimingFunction: 'var(--ease-out-expo)' }}
-          />
+          <>
+            {/*
+              Pic reveal: the still sits blurred and desaturated, with a sharp band
+              cut through it. Hover — or keyboard focus, which matters more — opens
+              the band to the full frame. Two copies of one image, so the browser
+              decodes a single file and the reveal is a clip-path change.
+            */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={poster} alt="" loading="lazy" decoding="async" width={480} height={360} className="pic__base" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={poster}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              width={480}
+              height={360}
+              className="pic__sharp"
+            />
+            <span aria-hidden="true" className="pic__band" />
+          </>
         ) : (
           <span className="faint absolute inset-0 grid place-items-center text-xs">No preview published</span>
         )}

@@ -70,7 +70,8 @@ export default function ProcessSection({ heading = true }: { heading?: boolean }
           </div>
 
           <div className="col-span-4 md:col-span-6 md:col-start-7">
-            <div className="relative min-h-[24rem]">
+            {/* Grid stack — see the note in Principles.tsx; same overflow bug. */}
+            <div className="grid">
               {processSteps.map((step, i) => {
                 const on = i === active
                 return (
@@ -81,7 +82,7 @@ export default function ProcessSection({ heading = true }: { heading?: boolean }
                       // card inert and left a hidden one focusable. Emitting nothing at all
                       // for the active card is unambiguous.
                       inert={on ? undefined : true}
-                    className="panel absolute inset-0"
+                    className="panel col-start-1 row-start-1"
                     style={{
                       opacity: on ? 1 : 0,
                       transform: on ? 'none' : 'translateY(34px)',

@@ -149,19 +149,28 @@ export default function ContactForm() {
           <label htmlFor="budget" className="mb-2 block text-sm font-medium">
             Rough budget <span className="faint font-normal">Optional</span>
           </label>
-          <select
-            id="budget"
-            name="budget"
-            defaultValue={contact.budgets[0]}
-            className="w-full px-3 py-2.5 text-sm"
-            style={{ background: 'var(--bg)', border: '1px solid var(--rule-strong)', color: 'var(--fg)' }}
-          >
-            {contact.budgets.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
+          <div className="field">
+            <select id="budget" name="budget" defaultValue={contact.budgets[0]}>
+              {contact.budgets.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+            {/* appearance:none removes the native arrow, so it is drawn back. */}
+            <svg
+              className="field__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
         </div>
 
         <Field
@@ -220,11 +229,10 @@ function Field({
   const errorId = error ? `${name}-error` : undefined
   const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined
 
-  const style = {
-    background: 'var(--bg)',
-    border: `1px solid ${error ? 'var(--accent)' : 'var(--rule-strong)'}`,
-    color: 'var(--fg)',
-  }
+  // Shares the .field surface with the Work search bar. These were both painted in
+  // var(--bg) — the page colour — which left them with no fill to read as controls.
+  const wrap = `field ${multiline ? 'field--area' : ''}`
+  const style = error ? { borderColor: 'var(--accent)' } : undefined
 
   return (
     <div className={className}>
@@ -240,28 +248,28 @@ function Field({
       </label>
 
       {multiline ? (
-        <textarea
-          id={name}
-          name={name}
-          rows={5}
-          required={required}
-          aria-describedby={describedBy}
-          aria-invalid={error ? true : undefined}
-          className="w-full resize-y px-3 py-2.5 text-sm"
-          style={style}
-        />
+        <div className={wrap} style={style}>
+          <textarea
+            id={name}
+            name={name}
+            rows={5}
+            required={required}
+            aria-describedby={describedBy}
+            aria-invalid={error ? true : undefined}
+          />
+        </div>
       ) : (
-        <input
-          id={name}
-          name={name}
-          type={type}
-          required={required}
-          aria-describedby={describedBy}
-          aria-invalid={error ? true : undefined}
-          className="w-full px-3 py-2.5 text-sm"
-          style={style}
-          {...rest}
-        />
+        <div className={wrap} style={style}>
+          <input
+            id={name}
+            name={name}
+            type={type}
+            required={required}
+            aria-describedby={describedBy}
+            aria-invalid={error ? true : undefined}
+            {...rest}
+          />
+        </div>
       )}
 
       {hint && (

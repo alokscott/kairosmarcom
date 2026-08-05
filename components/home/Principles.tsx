@@ -61,7 +61,14 @@ export default function Principles() {
             </div>
 
             <div className="col-span-4 md:col-span-6 md:col-start-7">
-              <div className="relative min-h-[22rem]">
+              {/*
+                Grid stack, not absolute + min-height. Every card occupies the same
+                cell, so the container measures the TALLEST card and the panel can
+                never be shorter than its own text. With `absolute inset-0` the cards
+                were locked to the 22rem min-height and the longest one overflowed its
+                own background and border by ~40px.
+              */}
+              <div className="grid">
                 {principles.map((p, i) => {
                   const on = i === active
                   return (
@@ -72,7 +79,7 @@ export default function Principles() {
                       // card inert and left a hidden one focusable. Emitting nothing at all
                       // for the active card is unambiguous.
                       inert={on ? undefined : true}
-                      className="panel absolute inset-0"
+                      className="panel col-start-1 row-start-1"
                       style={{
                         opacity: on ? 1 : 0,
                         transform: on ? 'none' : 'translateY(34px)',

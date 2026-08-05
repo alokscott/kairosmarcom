@@ -40,9 +40,16 @@
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
   --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
   --dur-micro: 180ms;
+  /* Hover feedback on primary controls. */
+  --dur-hover: 250ms;
   --dur-component: 380ms;
   --dur-reveal: 720ms;
   --dur-page: 640ms;
+  /* Perimeter draw — long on purpose: it is decoration that follows the hover, not
+     the acknowledgement of it. The fill shift at 250ms is what confirms the hover. */
+  --dur-draw: 1000ms;
+  /* Sequential entrance step for card grids. */
+  --dur-stagger: 300ms;
 
   --radius-sm: 2px;
   --radius-md: 4px;
@@ -53,27 +60,17 @@
 
 /* ---------- Themes ---------- */
 
+/*
+ * Light is the default: `:root` carries the bone tokens and the OS preference is
+ * deliberately NOT consulted. The only thing that switches themes is the toggle,
+ * which writes `data-theme` — so what a visitor sees is what they chose, and a
+ * first-time visitor always lands on light.
+ *
+ * Both theme blocks stay written out in full rather than sharing a base. They are
+ * parsed as literal selector blocks by test/contrast.test.mjs, which is what stops
+ * a well-meaning de-duplication from silently dropping a colour below AA.
+ */
 :root,
-[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #080808;
-  --bg-raised: #101010;
-  --bg-sunken: #050505;
-  --fg: #f4f1e9;
-  --fg-muted: #a3a099;
-  --fg-faint: #6d6b66;
-  --rule: #26251f;
-  --rule-strong: #3d3b34;
-
-  --orange-text: #ff4b23;
-  --lime-text: #c8ff3d;
-  --violet-text: #a48cff;
-  --silver-text: #b7b8b5;
-
-  --grain-opacity: 0.055;
-  --scene-fog: #080808;
-}
-
 [data-theme='light'] {
   color-scheme: light;
   --bg: #f4f1e9;
@@ -81,7 +78,9 @@
   --bg-sunken: #e8e4d9;
   --fg: #080808;
   --fg-muted: #55534e;
-  --fg-faint: #7c7a74;
+  /* 4.59:1 on --bg. Was #7c7a74 (3.81:1), which failed AA for the form labels
+     and placeholder text that use it. */
+  --fg-faint: #6f6d66;
   --rule: #d9d4c6;
   --rule-strong: #bfb9a8;
 
@@ -94,52 +93,67 @@
   --scene-fog: #f4f1e9;
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    color-scheme: light;
-    --bg: #f4f1e9;
-    --bg-raised: #fffdf7;
-    --bg-sunken: #e8e4d9;
-    --fg: #080808;
-    --fg-muted: #55534e;
-    --fg-faint: #7c7a74;
-    --rule: #d9d4c6;
-    --rule-strong: #bfb9a8;
-    --orange-text: #c4340f;
-    --lime-text: #4a6300;
-    --violet-text: #5c3bff;
-    --silver-text: #5f615c;
-    --grain-opacity: 0.035;
-    --scene-fog: #f4f1e9;
-  }
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #080808;
+  --bg-raised: #101010;
+  --bg-sunken: #050505;
+  --fg: #f4f1e9;
+  --fg-muted: #a3a099;
+  /* 4.73:1 on --bg. Was #6d6b66 (3.76:1) — the same AA failure as light. */
+  --fg-faint: #7d7b75;
+  --rule: #26251f;
+  --rule-strong: #3d3b34;
+
+  --orange-text: #ff4b23;
+  --lime-text: #c8ff3d;
+  --violet-text: #a48cff;
+  --silver-text: #b7b8b5;
+
+  --grain-opacity: 0.055;
+  --scene-fog: #080808;
 }
 
 /* ---------- One accent per section (brief §2) ---------- */
 
 /* --on-accent is the only legible foreground when --accent is used as a fill.
    Violet is dark enough that ink fails AA on it (3.36:1); it takes bone instead. */
+/*
+ * --accent-hover is the fill the primary button shifts to on hover.
+ *
+ * It is a hand-picked value per accent, not a blanket filter, because the direction
+ * has to change with the foreground: orange, lime and silver carry ink, so they
+ * brighten; violet carries bone, so brightening it would collapse the text contrast
+ * and it darkens instead. test/contrast.test.mjs asserts --on-accent stays above AA
+ * on the hover fill as well as the resting one, in both themes.
+ */
 [data-accent='orange'] {
   --accent: #ff4b23;
+  --accent-hover: #ff6a45;
   --accent-text: var(--orange-text);
   --on-accent: #080808;
 }
 [data-accent='lime'] {
   --accent: #c8ff3d;
+  --accent-hover: #d8ff6e;
   --accent-text: var(--lime-text);
   --on-accent: #080808;
 }
 [data-accent='violet'] {
   --accent: #5c3bff;
+  --accent-hover: #4a2ce0;
   --accent-text: var(--violet-text);
   --on-accent: #f4f1e9;
 }
 [data-accent='silver'] {
   --accent: #b7b8b5;
+  --accent-hover: #c9cac7;
   --accent-text: var(--silver-text);
   --on-accent: #080808;
 }
 :root {
   --accent: #ff4b23;
+  --accent-hover: #ff6a45;
   --accent-text: var(--orange-text);
   --on-accent: #080808;
 }
@@ -218,25 +232,18 @@ summary {
 
 /* ---------- Brand mark: one file per theme, swapped in CSS ---------- */
 
+/* Light is the default, so the light mark is the default. */
 .brand-mark--dark {
-  display: block;
+  display: none;
 }
 .brand-mark--light {
-  display: none;
-}
-[data-theme='light'] .brand-mark--dark {
-  display: none;
-}
-[data-theme='light'] .brand-mark--light {
   display: block;
 }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) .brand-mark--dark {
-    display: none;
-  }
-  :root:not([data-theme]) .brand-mark--light {
-    display: block;
-  }
+[data-theme='dark'] .brand-mark--dark {
+  display: block;
+}
+[data-theme='dark'] .brand-mark--light {
+  display: none;
 }
 
 
@@ -280,6 +287,101 @@ summary {
   }
 }
 
+/* ---------- Hero video ---------- */
+
+/*
+ * Full-bleed looping background, sitting behind the aperture bars so the footage is
+ * revealed by the same widening window as the WebGL scene. Only rendered when
+ * `heroVideo.src` is set (content/site.ts); otherwise the scene shows through.
+ */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-video__el {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/*
+ * Painted in --bg, so it resolves to ink in dark mode and bone in light mode. That is
+ * what makes one hero work in both themes: the scrim always pushes the footage toward
+ * the current page colour, so --fg keeps winning over it and no second set of text
+ * colours is needed. Graded, so the type side is guarded hardest and the far edge
+ * stays close to the original footage.
+ */
+.hero-video__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--bg) 88%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 66%, transparent) 48%,
+    color-mix(in srgb, var(--bg) 38%, transparent) 100%
+  );
+}
+
+/* Playback under reduced motion is stopped in Hero.tsx, not here — CSS cannot pause
+   a video, and hiding the element would take the poster frame with it. */
+
+/* ---------- Hero aperture ---------- */
+
+/*
+ * The scene arrives framed and then opens to full bleed.
+ *
+ * This is four bars of page colour masking the edges of the fixed canvas, slid off
+ * the viewport as the pin runs — not a window being resized. Resizing a box would
+ * mean a layout pass and a full-viewport repaint on every frame; translating four
+ * bars is compositor-only, which is the difference between this holding 60fps on a
+ * throttled machine and not.
+ *
+ * At rest the bars leave a window of roughly 46vw × 44vh centred in the pin.
+ */
+.hero-aperture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-aperture__bar {
+  position: absolute;
+  display: block;
+  background: var(--bg);
+  will-change: transform;
+}
+
+.hero-aperture__bar--t {
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 28vh;
+}
+.hero-aperture__bar--b {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 28vh;
+}
+.hero-aperture__bar--l {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 27vw;
+}
+.hero-aperture__bar--r {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 27vw;
+}
+
 /* ---------- Kinetic headlines ---------- */
 
 .kinetic {
@@ -299,26 +401,20 @@ summary {
   display: block;
   transform-origin: 50% 100%;
   will-change: transform, opacity;
-  transition:
-    transform 1000ms var(--ease-out-expo),
-    opacity 700ms var(--ease-out-expo);
+  /* No transition here: KineticHeadline drives this element with a spring, and a CSS
+     transition on the same properties would fight it and blunt the settle. */
 }
 
-/* Archivo carries a width axis as well as weight; this is what scroll drives. */
+/* Archivo carries a width axis as well as weight. This is the resting value — the
+   scroll-linked sweep is written inline by KineticHeadline and overrides it. */
 .kinetic--axis {
-  --wdth: 100;
-  --wght: 800;
-  font-variation-settings: 'wdth' var(--wdth), 'wght' var(--wght);
+  font-variation-settings: 'wdth' 100, 'wght' 800;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .kinetic__line {
-    transition: none;
     transform: none !important;
     opacity: 1 !important;
-  }
-  .kinetic--axis {
-    font-variation-settings: 'wdth' 100, 'wght' 800;
   }
 }
 
@@ -382,26 +478,80 @@ summary {
   top: var(--stack-top, 7rem);
 }
 
+.deck {
+  position: relative;
+}
+
+/*
+ * Oversized out-of-focus word behind the deck.
+ *
+ * Sticky with a matching negative margin, so it holds in the viewport for the whole
+ * length of the deck while contributing nothing to layout. z-index 0 keeps it under
+ * every card, which start at 1.
+ */
+.deck__word {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  height: 100svh;
+  margin-bottom: -100svh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.deck__word span {
+  font-family: var(--font-display);
+  font-size: clamp(8rem, 26vw, 22rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  color: var(--fg);
+  opacity: 0.07;
+  filter: blur(7px);
+  will-change: transform;
+}
+
 /*
  * The panel underneath shrinks and dims as the next one covers it. Pure CSS
  * scroll-driven animation — no JavaScript, no scroll listener, and simply absent
  * in browsers without `animation-timeline`, where the plain sticky stack still reads.
  */
+/*
+ * The recede on the covered card is driven from SelectedWork.tsx, not from here.
+ * `animation-timeline: view()` cannot do it: these cards are `position: sticky`, and a
+ * stuck element's scrollport position stops changing, so the timeline freezes and an
+ * `exit` range never advances. The rule that used to live here was declared, reported
+ * as active by getComputedStyle, and produced an identity transform forever.
+ */
+.stack__inner {
+  transform-origin: 50% 0%;
+}
+
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .stack__inner {
-      animation: stack-recede linear both;
+    /* Entry is safe on the same timeline — the card travels normally up the
+       scrollport before it sticks, so the `entry` range does advance. It arrives
+       tilted and straightens as it takes the top of the deck. */
+    .stack__enter {
+      animation: stack-enter linear both;
       animation-timeline: view();
-      animation-range: exit -12% exit 92%;
-      transform-origin: 50% 0%;
+      animation-range: entry 4% entry 88%;
+      transform-origin: 50% 100%;
     }
   }
 }
 
-@keyframes stack-recede {
+@keyframes stack-enter {
+  from {
+    transform: translateY(2.5rem) rotate(1.15deg);
+    opacity: 0.4;
+  }
   to {
-    transform: scale(0.93) translateY(-0.75rem);
-    opacity: 0.45;
+    transform: none;
+    opacity: 1;
   }
 }
 
@@ -409,7 +559,8 @@ summary {
   .stack__item {
     position: static;
   }
-  .stack__inner {
+  .stack__inner,
+  .stack__enter {
     animation: none;
     transform: none;
     opacity: 1;
@@ -442,6 +593,71 @@ summary {
   display: flex;
   gap: clamp(1rem, 2vw, 1.75rem);
   will-change: transform;
+}
+
+/* ---------- Pic reveal ---------- */
+
+/*
+ * A still held out of focus with one sharp band cut through it, opening to the full
+ * frame on hover or keyboard focus.
+ *
+ * Both layers are the same file, so this costs one decode. The reveal animates
+ * `clip-path`, not width or position, so no layout runs while the band opens.
+ */
+.pic__base,
+.pic__sharp {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pic__base {
+  filter: grayscale(1) blur(3px) contrast(0.95);
+  /* Overscaled so the blur does not bleed a soft edge in from the frame border. */
+  transform: scale(1.07);
+}
+
+.pic__sharp {
+  clip-path: inset(38% 0 38% 0);
+  transition: clip-path 620ms var(--ease-out-expo);
+}
+
+.pic__band {
+  position: absolute;
+  inset: 0;
+  border-block: 1px solid rgb(255 255 255 / 0.5);
+  /* scaleY rather than inset, so the band edge moves on the compositor. 0.24 matches
+     the 38%/38% clip above. */
+  transform: scaleY(0.24);
+  transition:
+    transform 620ms var(--ease-out-expo),
+    opacity 380ms var(--ease-out-expo);
+  pointer-events: none;
+}
+
+.group:hover .pic__sharp,
+.group:focus-visible .pic__sharp {
+  clip-path: inset(0 0 0 0);
+}
+
+.group:hover .pic__band,
+.group:focus-visible .pic__band {
+  transform: scaleY(1);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No band, no blur — the still is simply the still. */
+  .pic__base {
+    filter: none;
+    transform: none;
+  }
+  .pic__sharp,
+  .pic__band {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -564,6 +780,7 @@ summary {
 /* ---------- Controls ---------- */
 
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
@@ -576,19 +793,114 @@ summary {
   border-radius: 999px;
   cursor: pointer;
   text-decoration: none;
+  /* 250ms: fast enough to feel like a direct response to the cursor, slow enough
+     that the colour shift is legible rather than a flicker. */
   transition:
-    background var(--dur-micro) var(--ease-out-expo),
-    color var(--dur-micro) var(--ease-out-expo),
-    border-color var(--dur-micro) var(--ease-out-expo),
-    transform var(--dur-micro) var(--ease-out-expo);
+    background var(--dur-hover) var(--ease-out-expo),
+    color var(--dur-hover) var(--ease-out-expo),
+    border-color var(--dur-hover) var(--ease-out-expo),
+    transform var(--dur-hover) var(--ease-out-expo);
 }
 
 .btn--primary {
   background: var(--accent);
   color: var(--on-accent);
 }
-.btn--primary:hover {
-  transform: translateY(-2px);
+
+/*
+ * Purpose: confirm the pointer is on the highest-priority action on the page.
+ * Trigger: hover, and :focus-visible so it is not mouse-only.
+ * Properties: scale to 1.05 + fill shift to --accent-hover, 250ms, ease-out-expo.
+ *
+ * `scale` rather than width/height, so the button grows without reflowing the row
+ * of controls it sits in. The label colour never changes — only the fill moves,
+ * and the fill it moves to is contrast-checked.
+ */
+.btn--primary:hover,
+.btn--primary:focus-visible {
+  background: var(--accent-hover);
+  transform: scale(1.05);
+}
+
+.btn--primary:active {
+  transform: scale(0.99);
+}
+
+/* ---------- Drawn perimeter ---------- */
+
+/*
+ * A line that travels around the button edge over 1s on hover.
+ *
+ * Registering the angle as a real custom property is what makes this animatable at
+ * all — an unregistered custom property is just a string and CSS cannot interpolate
+ * it, so the gradient would snap from 0 to 360 instead of sweeping.
+ */
+@property --draw-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/*
+ * CSS-only, so it applies to every primary CTA on the site automatically rather than
+ * needing a component dropped at each call site. `border-radius: inherit` means it
+ * tracks the pill exactly at any width, and the mask-composite pair hollows out the
+ * middle so only a border-width ring of the gradient survives.
+ */
+.btn--primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    var(--draw-line) var(--draw-angle),
+    transparent var(--draw-angle)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: --draw-angle var(--dur-draw) var(--ease-in-out-quart);
+}
+
+/*
+ * Primary only. A ghost button already answers the hover by changing its own
+ * border-colour, and drawing a second line along the identical path just reads as a
+ * doubled border. The drawn perimeter is reserved for the one control on the page
+ * that is meant to be the loudest.
+ *
+ * The line takes the label's colour, which is contrast-checked against both the
+ * resting and hover fills.
+ */
+.btn--primary {
+  --draw-line: var(--on-accent);
+}
+
+.btn--primary:hover::after,
+.btn--primary:focus-visible::after {
+  --draw-angle: 360deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The ring still confirms the hover, it just arrives rather than travels. */
+  .btn--primary::after {
+    transition: none;
+    background: transparent;
+    border: 1.5px solid var(--draw-line);
+    padding: 0;
+    opacity: 0;
+  }
+  .btn--primary:hover::after,
+  .btn--primary:focus-visible::after {
+    opacity: 1;
+  }
 }
 
 .btn--ghost {
@@ -598,6 +910,240 @@ summary {
 .btn--ghost:hover {
   border-color: var(--accent);
   color: var(--accent-text);
+}
+
+/* ---------- Nav sheen ---------- */
+
+/*
+ * The header's bottom edge, as a graded reflection rather than a flat rule: it picks
+ * up the section accent toward the shoulders and falls to nothing at the ends, so
+ * the bar reads as a lit surface instead of a box with a border. Replaces the plain
+ * 1px border that used to sit here.
+ */
+.nav-sheen::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-component) var(--ease-out-expo);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent) 50%, transparent) 20%,
+    color-mix(in srgb, var(--fg) 34%, transparent) 50%,
+    color-mix(in srgb, var(--accent) 50%, transparent) 80%,
+    transparent 100%
+  );
+}
+
+.nav-sheen[data-scrolled='true']::after {
+  opacity: 1;
+}
+
+/* ---------- Theme toggle ---------- */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* A 44px hit area wrapped around a 32px control, rather than a 32px hit area. */
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+.theme-toggle__track {
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 32px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--rule-strong);
+  transition:
+    border-color var(--dur-micro) var(--ease-out-expo),
+    box-shadow var(--dur-component) var(--ease-out-expo);
+}
+
+.theme-toggle:hover .theme-toggle__track {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* The button itself is an invisible 44px box, so the ring belongs on the pill. */
+.theme-toggle:focus-visible {
+  outline: none;
+}
+.theme-toggle:focus-visible .theme-toggle__track {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.theme-toggle__knob {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  /* Ink disc on bone, bone disc on ink — maximum contrast in both themes without
+     introducing a third colour that would need its own AA check. */
+  background: var(--fg);
+  color: var(--bg);
+  will-change: transform;
+}
+
+.theme-toggle__glyph {
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+}
+
+.theme-toggle__glyph svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- Text fields ---------- */
+
+/*
+ * The wrapper carries the surface, border and focus ring; the input inside is
+ * chromeless. That is what lets an icon and a clear button sit inside the same
+ * bordered box as the text without a second nested outline.
+ */
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  /*
+   * A raised surface, deliberately NOT var(--bg). An input painted in the page
+   * colour has no fill to distinguish it from the page, so it reads as a hairline
+   * rule rather than a control — which is why it never got clicked.
+   */
+  background: var(--bg-raised);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-lg);
+  padding-inline: 0.9rem;
+  transition:
+    border-color var(--dur-micro) var(--ease-out-expo),
+    box-shadow var(--dur-component) var(--ease-out-expo);
+}
+
+.field:hover {
+  border-color: var(--fg-faint);
+}
+
+/* The ring belongs on the wrapper — the input itself has no border to ring. */
+.field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.field--area {
+  align-items: stretch;
+}
+
+.field__icon {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--fg-faint);
+  transition: color var(--dur-micro) var(--ease-out-expo);
+}
+
+.field:focus-within .field__icon {
+  color: var(--accent-text);
+}
+
+.field input,
+.field textarea,
+.field select {
+  flex: 1;
+  min-width: 0;
+  /* 44px minimum touch target, met by the control itself rather than its wrapper. */
+  min-height: 2.75rem;
+  padding-block: 0.65rem;
+  background: none;
+  border: 0;
+  color: var(--fg);
+  font: inherit;
+  font-size: var(--text-small);
+  /*
+   * Safari paints input[type=search] with its own field chrome, which overrides the
+   * background and rounds the box independently of this border. Tailwind's preflight
+   * reset for this is @supports-gated in a way that excludes Safari, so it is set
+   * explicitly here.
+   */
+  appearance: none;
+}
+
+.field textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  outline: none;
+}
+
+/*
+ * Tailwind's preflight placeholder rule is also @supports-gated off in Safari, where
+ * the UA colour then wins and the hint text lands at a different contrast per engine.
+ * Setting it explicitly keeps it identical — and above AA — in both.
+ */
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--fg-faint);
+  opacity: 1;
+}
+
+/* WebKit's built-in clear affordance. There is a real, labelled one in the markup. */
+.field input::-webkit-search-decoration,
+.field input::-webkit-search-cancel-button {
+  appearance: none;
+  display: none;
+}
+
+.field__clear {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--fg-muted);
+  transition:
+    color var(--dur-micro) var(--ease-out-expo),
+    background var(--dur-micro) var(--ease-out-expo);
+}
+.field__clear:hover {
+  color: var(--fg);
+  background: var(--bg-sunken);
+}
+
+/* Keyboard affordance, hidden once the field is in use. */
+.field__kbd {
+  flex: none;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  color: var(--fg-faint);
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+.field:focus-within .field__kbd {
+  display: none;
 }
 
 /* Animated underline for inline links. */
@@ -689,25 +1235,27 @@ dialog::backdrop {
   animation-play-state: paused;
 }
 
-/* ---------- Scroll-driven reveal, CSS-only where supported ---------- */
+/* ---------- Route transitions ---------- */
 
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reveal-css {
-      animation: reveal-in linear both;
-      animation-timeline: view();
-      animation-range: entry 8% cover 26%;
-    }
+/*
+ * The client name morphs from a work card into the case-study headline. React's
+ * <ViewTransition> names the pair; this only sets the timing so it matches the rest
+ * of the site's motion rather than the browser's 250ms linear default.
+ *
+ * Browsers without the View Transitions API ignore all of this and navigate plainly.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*) {
+    animation-duration: var(--dur-page);
+    animation-timing-function: var(--ease-out-expo);
   }
 }
-@keyframes reveal-in {
-  from {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 
@@ -727,11 +1275,6 @@ dialog::backdrop {
   }
   .marquee {
     animation: none;
-    transform: none;
-  }
-  .reveal-css {
-    animation: none;
-    opacity: 1;
     transform: none;
   }
 }

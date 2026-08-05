@@ -39,12 +39,20 @@ export interface SceneConfig {
   focus: number
 }
 
+export type Theme = 'light' | 'dark'
+
 interface StoreState extends SceneConfig {
   /** False while off-screen, in a background tab, or when WebGL is unavailable. */
   active: boolean
+  /**
+   * Which theme the document is in. The canvas is transparent, so it composites
+   * over `--bg` — additive blending and a white key light read correctly on ink and
+   * wash out to nothing on bone. The scene has to know which one it is standing on.
+   */
+  theme: Theme
 }
 
-let state: StoreState = { preset: 'core', accent: 'orange', intensity: 1, focus: 0, active: true }
+let state: StoreState = { preset: 'core', accent: 'orange', intensity: 1, focus: 0, active: true, theme: 'light' }
 
 const listeners = new Set<() => void>()
 
@@ -57,7 +65,8 @@ export function setScene(patch: Partial<StoreState>) {
     next.accent === state.accent &&
     next.intensity === state.intensity &&
     next.focus === state.focus &&
-    next.active === state.active
+    next.active === state.active &&
+    next.theme === state.theme
   ) {
     return
   }
@@ -71,14 +80,24 @@ const subscribe = (l: () => void) => {
 }
 
 const getSnapshot = () => state
-/** Server snapshot is stable, so the canvas never renders during SSR. */
-const getServerSnapshot = (): StoreState => ({
+
+/**
+ * Server snapshot is stable, so the canvas never renders during SSR.
+ *
+ * Hoisted to a module constant rather than built in the getter: useSyncExternalStore
+ * compares snapshots by identity, and returning a fresh object literal on every call
+ * makes React warn about an infinite loop.
+ */
+const SERVER_SNAPSHOT: StoreState = {
   preset: 'core',
   accent: 'orange',
   intensity: 1,
   focus: 0,
   active: false,
-})
+  theme: 'light',
+}
+
+const getServerSnapshot = (): StoreState => SERVER_SNAPSHOT
 
 export const useSceneStore = () => useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 

@@ -1,10 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, ViewTransition } from 'react'
 import type { CaseStudy } from '@/content/types'
 import { track, trackOnce } from '@/lib/analytics'
+import { motion } from 'motion/react'
 import { Tilt } from '@/components/motion/Kinetic'
+import { EASE_OUT_EXPO, useStill } from '@/components/motion/scroll'
 
 /**
  * Editorial case panel.
@@ -25,6 +27,7 @@ export default function CaseCard({
   layout?: 'wide' | 'tall' | 'split'
 }) {
   const ref = useRef<HTMLElement>(null)
+  const still = useStill()
 
   useEffect(() => {
     const el = ref.current
@@ -46,19 +49,36 @@ export default function CaseCard({
   const span =
     layout === 'wide' ? 'md:col-span-12' : layout === 'split' ? 'md:col-span-7' : 'md:col-span-5'
 
+  /*
+   * Sequential entrance.
+   *
+   * Purpose: give the grid a reading order instead of nine cards appearing at once.
+   * Trigger: the card scrolling into view, once — re-animating on every pass turns a
+   *   flourish into a distraction on the way back up the page.
+   * Properties: fade 0→1 and rise 32px, 600ms ease-out-expo, 300ms between cards.
+   *
+   * The step is capped at four cards (1.2s). Uncapped, card nine would sit blank for
+   * 2.4s after it was already on screen, which reads as a page that failed to load
+   * rather than as a considered sequence.
+   */
+  const step = Math.min(index, 4) * 0.3
+
   return (
-    <article
+    <motion.article
       ref={ref}
       data-accent={study.accent}
       className={`group relative col-span-4 ${span}`}
       style={{ ['--panel-index' as string]: index }}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2, margin: '0px 0px -6% 0px' }}
+      transition={still ? { duration: 0 } : { duration: 0.6, delay: step, ease: EASE_OUT_EXPO }}
     >
       <Tilt max={6} lift={14} className="h-full">
       <Link
         href={`/work/${study.slug}`}
         onClick={() => track('case_open', { slug: study.slug, source: 'card' })}
         className="block h-full cursor-pointer no-underline"
-        style={{ viewTransitionName: `case-${study.slug}` }}
       >
         <div
           className="relative flex h-full flex-col justify-between overflow-hidden p-6 md:p-8"
@@ -87,7 +107,9 @@ export default function CaseCard({
                 layout === 'wide' ? 'text-[clamp(2rem,5vw,4rem)]' : 'text-[clamp(1.75rem,3vw,2.5rem)]'
               }`}
             >
-              {study.client}
+              <ViewTransition name={`case-${study.slug}`}>
+                <span>{study.client}</span>
+              </ViewTransition>
             </h3>
 
             <p className="muted mt-4 max-w-[46ch] text-[0.95rem] leading-relaxed">{study.summary}</p>
@@ -125,6 +147,6 @@ export default function CaseCard({
         </div>
       </Link>
       </Tilt>
-    </article>
+    </motion.article>
   )
 }

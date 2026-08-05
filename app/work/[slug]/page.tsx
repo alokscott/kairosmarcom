@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { ViewTransition } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { DepthTracker, Reveal } from '@/components/motion/Reveal'
@@ -100,12 +101,11 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
             <p className="eyebrow mb-5">
               {[study.industry, study.location].filter(Boolean).join(' · ') || study.projectTitle}
             </p>
-            <h1
-              className="max-w-[14ch] text-[length:var(--text-display)]"
-              style={{ viewTransitionName: `case-${study.slug}` }}
-            >
-              {study.client}
-            </h1>
+            {/* Destination of the card→hero morph. The shared element is the client
+                name in both places, so the name itself travels into the headline. */}
+            <ViewTransition name={`case-${study.slug}`}>
+              <h1 className="max-w-[14ch] text-[length:var(--text-display)]">{study.client}</h1>
+            </ViewTransition>
           </Reveal>
 
           <div className="mt-10 grid-editorial items-start">

@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
+import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from 'motion/react'
+import { EASE_OUT_EXPO, POINTER_SPRING, useScrollProgress, useStill } from './scroll'
 
 /**
  * Kinetic motion primitives.
@@ -11,9 +13,6 @@ import { useEffect, useRef, useState } from 'react'
  *  - Under reduced motion every one of these degrades to a static, correct layout —
  *    the pinned stages stop pinning, the type stops breathing, the tilt detaches.
  */
-
-const reduced = () =>
-  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /* ------------------------------------------------------------------ */
 /* Pinned scroll stage                                                 */
@@ -34,6 +33,7 @@ export function PinnedStage({
   className = '',
   id,
   accent,
+  ref,
 }: {
   /** Scroll distance the pin lasts, in viewport heights. */
   vh?: number
@@ -43,9 +43,12 @@ export function PinnedStage({
   className?: string
   id?: string
   accent?: string
+  /** The tall section, not the sticky panel — measure scroll against this. */
+  ref?: React.Ref<HTMLElement>
 }) {
   return (
     <section
+      ref={ref}
       id={id}
       data-accent={accent}
       className={`stage relative ${className}`}
@@ -74,87 +77,64 @@ export function KineticHeadline({
   delay = 0,
   /** Breathe the variable width axis as the section scrolls. */
   kinetic = false,
+  /** Which edge the lines arrive from. 'down' descends into place from above. */
+  enter = 'up',
+  /**
+   * 'view' waits until the headline is scrolled into view; 'load' runs immediately on
+   * mount. Use 'load' only above the fold — below it, the animation would finish
+   * unseen and the reveal would be wasted.
+   */
+  trigger = 'view',
 }: {
   lines: readonly string[]
   className?: string
   delay?: number
   kinetic?: boolean
+  enter?: 'up' | 'down'
+  trigger?: 'view' | 'load'
 }) {
   const ref = useRef<HTMLSpanElement>(null)
-  const [seen, setSeen] = useState(false)
-  const off = reduced()
+  const still = useStill()
+  const progress = useScrollProgress(ref)
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el || seen) return
-    if (off || typeof IntersectionObserver === 'undefined') {
-      setSeen(true)
-      return
-    }
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          setSeen(true)
-          io.disconnect()
-        }
-      },
-      { threshold: 0.05 }
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [seen, off])
+  // Deliberately narrow: 86 → 104. A wider sweep looks better in isolation but
+  // changes the advance widths enough to re-wrap the headline mid-scroll, which
+  // both breaks the authored line breaks and shifts everything below it.
+  const wdth = useTransform(progress, [0, 1], [86, 104])
+  const wght = useTransform(progress, [0, 1], [720, 880])
+  const axis = useMotionTemplate`'wdth' ${wdth}, 'wght' ${wght}`
 
-  // Width axis tracks the element's travel through the viewport. One rAF loop, one
-  // custom-property write per frame, and it stops the moment the element leaves.
-  useEffect(() => {
-    const el = ref.current
-    if (!el || !kinetic || off) return
-
-    let raf = 0
-    let visible = false
-    const io = new IntersectionObserver(([e]) => {
-      visible = e.isIntersecting
-      if (visible && !raf) raf = requestAnimationFrame(tick)
-    })
-
-    function tick() {
-      raf = 0
-      const node = ref.current
-      if (!node) return
-      const r = node.getBoundingClientRect()
-      const t = 1 - Math.min(1, Math.max(0, (r.top + r.height / 2) / window.innerHeight))
-      // Deliberately narrow: 86 → 104. A wider sweep looks better in isolation but
-      // changes the advance widths enough to re-wrap the headline mid-scroll, which
-      // both breaks the authored line breaks and shifts everything below it.
-      node.style.setProperty('--wdth', String(86 + t * 18))
-      node.style.setProperty('--wght', String(720 + t * 160))
-      if (visible) raf = requestAnimationFrame(tick)
-    }
-
-    io.observe(el)
-    return () => {
-      io.disconnect()
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [kinetic, off])
+  const live = kinetic && !still
 
   return (
-    <span ref={ref} className={`kinetic ${kinetic ? 'kinetic--axis' : ''} ${className}`}>
+    <motion.span
+      ref={ref}
+      className={`kinetic ${kinetic ? 'kinetic--axis' : ''} ${className}`}
+      style={live ? { fontVariationSettings: axis } : undefined}
+      initial="hidden"
+      {...(trigger === 'load'
+        ? { animate: 'shown' }
+        : { whileInView: 'shown', viewport: { once: true, amount: 0.05 } })}
+    >
       {lines.map((line, i) => (
         <span key={line} className="kinetic__mask">
-          <span
+          <motion.span
             className="kinetic__line"
-            style={{
-              transform: off || seen ? 'none' : 'translateY(88%) rotateX(-72deg)',
-              opacity: off || seen ? 1 : 0,
-              transitionDelay: off ? '0ms' : `${delay + i * 110}ms`,
+            variants={{
+              hidden: enter === 'down' ? { y: '-88%', rotateX: 72, opacity: 0 } : { y: '88%', rotateX: -72, opacity: 0 },
+              shown: { y: '0%', rotateX: 0, opacity: 1 },
             }}
+            /* Collapsed, not removed — see the note in Reveal. A headline that never
+               leaves its `hidden` variant is a headline nobody can read. */
+            transition={
+              still ? { duration: 0 } : { duration: 1, ease: EASE_OUT_EXPO, delay: delay / 1000 + i * 0.11 }
+            }
           >
             {line}
-          </span>
+          </motion.span>
         </span>
       ))}
-    </span>
+    </motion.span>
   )
 }
 
@@ -181,106 +161,35 @@ export function Tilt({
   className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el || reduced()) return
-    if (!window.matchMedia('(pointer: fine)').matches) return
-
-    let raf = 0
-    let tx = 0
-    let ty = 0
-    let cx = 0
-    let cy = 0
-
-    const loop = () => {
-      cx += (tx - cx) * 0.12
-      cy += (ty - cy) * 0.12
-      el.style.transform = `perspective(1000px) rotateX(${cy}deg) rotateY(${cx}deg) translateZ(${
-        Math.abs(cx) + Math.abs(cy) > 0.2 ? lift : 0
-      }px)`
-      if (Math.abs(tx - cx) > 0.01 || Math.abs(ty - cy) > 0.01) raf = requestAnimationFrame(loop)
-      else raf = 0
-    }
-
-    const start = () => {
-      if (!raf) raf = requestAnimationFrame(loop)
-    }
-
-    const onMove = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect()
-      tx = ((e.clientX - (r.left + r.width / 2)) / (r.width / 2)) * max
-      ty = -((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * max
-      start()
-    }
-    const onLeave = () => {
-      tx = 0
-      ty = 0
-      start()
-    }
-
-    el.addEventListener('pointermove', onMove)
-    el.addEventListener('pointerleave', onLeave)
-    return () => {
-      el.removeEventListener('pointermove', onMove)
-      el.removeEventListener('pointerleave', onLeave)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [max, lift])
+  const still = useStill()
+  const rotateX = useSpring(useMotionValue(0), POINTER_SPRING)
+  const rotateY = useSpring(useMotionValue(0), POINTER_SPRING)
+  const z = useSpring(useMotionValue(0), POINTER_SPRING)
 
   return (
-    <div ref={ref} className={`will-change-transform ${className}`} style={{ transformStyle: 'preserve-3d' }}>
+    <motion.div
+      ref={ref}
+      className={className}
+      style={{ transformPerspective: 1000, transformStyle: 'preserve-3d', rotateX, rotateY, z }}
+      onPointerMove={
+        still
+          ? undefined
+          : (e) => {
+              const el = ref.current
+              if (!el || !window.matchMedia('(pointer: fine)').matches) return
+              const r = el.getBoundingClientRect()
+              rotateY.set(((e.clientX - (r.left + r.width / 2)) / (r.width / 2)) * max)
+              rotateX.set(-((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * max)
+              z.set(lift)
+            }
+      }
+      onPointerLeave={() => {
+        rotateX.set(0)
+        rotateY.set(0)
+        z.set(0)
+      }}
+    >
       {children}
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/* Scroll-scrubbed parallax                                            */
-/* ------------------------------------------------------------------ */
-
-/** Translates its child against the scroll direction. `speed` is px per viewport. */
-export function Parallax({
-  children,
-  speed = 60,
-  className = '',
-}: {
-  children: React.ReactNode
-  speed?: number
-  className?: string
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el || reduced()) return
-
-    let raf = 0
-    let visible = false
-
-    const tick = () => {
-      raf = 0
-      const r = el.getBoundingClientRect()
-      const t = (r.top + r.height / 2) / window.innerHeight - 0.5
-      el.style.transform = `translate3d(0, ${-t * speed}px, 0)`
-      if (visible) raf = requestAnimationFrame(tick)
-    }
-
-    const io = new IntersectionObserver(([e]) => {
-      visible = e.isIntersecting
-      if (visible && !raf) raf = requestAnimationFrame(tick)
-    })
-    io.observe(el)
-
-    return () => {
-      io.disconnect()
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [speed])
-
-  return (
-    <div ref={ref} className={className}>
-      {children}
-    </div>
+    </motion.div>
   )
 }

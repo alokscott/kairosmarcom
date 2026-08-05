@@ -39,6 +39,24 @@ export const nav = [
   { href: '/contact', label: 'Contact' },
 ] as const
 
+/**
+ * Optional full-bleed hero video.
+ *
+ * `src` is null because no video asset exists in this repo yet — `public/` holds
+ * logos, and the films are YouTube IDs rather than files we can loop silently behind
+ * type. While it is null the hero shows the WebGL scene through the aperture, exactly
+ * as it does today.
+ *
+ * To turn the video on: drop an H.264 MP4 in `public/` (a 1080p, 6–12s, silent loop
+ * around 2–4 MB is the target), add a matching poster frame, and fill both fields in.
+ * Everything else — the aperture, the load animation, the reduced-motion still, the
+ * legibility scrim — is already wired for it.
+ */
+export const heroVideo: { src: string | null; poster: string | null } = {
+  src: null,
+  poster: null,
+}
+
 export const hero = {
   eyebrow: 'Full-service branding & communications',
   headline: ['Welcome to the', 'Hub of', 'Creativity'],

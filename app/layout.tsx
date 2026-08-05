@@ -52,18 +52,25 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image' },
 }
 
+/**
+ * Light is the default theme, so this is the light background. It is not keyed to
+ * `prefers-color-scheme` any more: the OS no longer decides anything here, and a
+ * media-keyed value reported the wrong browser chrome to anyone who had chosen the
+ * theme the site does not follow. ThemeToggle rewrites this at runtime on switch.
+ */
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#080808' },
-    { media: '(prefers-color-scheme: light)', color: '#F4F1E9' },
-  ],
+  themeColor: '#F4F1E9',
 }
 
 /**
  * Applies the stored theme before first paint. Inline and synchronous by necessity —
  * anything deferred produces a flash of the wrong theme.
+ *
+ * Writes the attribute unconditionally so that `data-theme` is always present and
+ * always one of two values. Anything other than a stored 'dark' resolves to light,
+ * including a first visit, a cleared store, and localStorage throwing in private mode.
  */
-const themeScript = `(function(){try{var t=localStorage.getItem('kairos-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}}catch(e){}})()`
+const themeScript = `(function(){var t='light';try{if(localStorage.getItem('kairos-theme')==='dark')t='dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

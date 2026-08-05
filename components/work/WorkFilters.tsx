@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CaseStudy } from '@/content/types'
 import { serviceById } from '@/content/site'
 import { track } from '@/lib/analytics'
@@ -19,6 +19,23 @@ import CaseCard from './CaseCard'
 
 type Facet = 'service' | 'industry' | 'tag' | 'platform'
 
+function SearchIcon() {
+  return (
+    <svg className="field__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  )
+}
+
 export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
   const [active, setActive] = useState<Record<Facet, string | null>>({
     service: null,
@@ -28,6 +45,52 @@ export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
   })
   const [query, setQuery] = useState('')
   const [view, setView] = useState<'grid' | 'list'>('grid')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  /*
+   * Everything a visitor might plausibly type, flattened once per study.
+   *
+   * The previous version matched only client, projectTitle and summary, so obvious
+   * queries — an industry ("automotive"), a discipline ("public relations"), a tag —
+   * returned nothing at all. An empty result set is indistinguishable from a broken
+   * search, which is most of why this field read as non-functional.
+   */
+  const haystack = useMemo(
+    () =>
+      new Map(
+        studies.map((c) => [
+          c.slug,
+          [
+            c.client,
+            c.projectTitle,
+            c.summary,
+            c.industry ?? '',
+            c.location ?? '',
+            ...c.tags,
+            ...c.results,
+            ...c.services.map((s) => serviceById(s).name),
+            ...c.channels.map((ch) => ch.platform),
+          ]
+            .join(' ')
+            .toLowerCase(),
+        ])
+      ),
+    [studies]
+  )
+
+  // `/` focuses the field from anywhere on the page, the convention every search-led
+  // index uses. Ignored while another control already has the caret.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return
+      const el = document.activeElement
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) return
+      e.preventDefault()
+      inputRef.current?.focus()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const facets = useMemo(() => {
     const uniq = (xs: string[]) => [...new Set(xs)].sort()
@@ -46,10 +109,10 @@ export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
       if (active.industry && c.industry !== active.industry) return false
       if (active.tag && !c.tags.includes(active.tag)) return false
       if (active.platform && !c.channels.some((ch) => ch.platform === active.platform)) return false
-      if (q && !`${c.client} ${c.projectTitle} ${c.summary}`.toLowerCase().includes(q)) return false
+      if (q && !haystack.get(c.slug)?.includes(q)) return false
       return true
     })
-  }, [studies, active, query])
+  }, [studies, active, query, haystack])
 
   const toggle = (facet: Facet, value: string) => {
     setActive((prev) => {
@@ -72,18 +135,43 @@ export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
       <div className="flex flex-wrap items-end justify-between gap-6 border-b pb-6" style={{ borderColor: 'var(--rule)' }}>
         <div className="min-w-[16rem] flex-1">
           <label htmlFor="case-search" className="mb-2 block text-xs tracking-[0.14em] uppercase" style={{ color: 'var(--fg-faint)' }}>
-            Search by client
+            Search work
           </label>
-          <input
-            id="case-search"
-            type="search"
-            value={query}
-            placeholder="BMW, DJI, ThriveDx…"
-            onChange={(e) => setQuery(e.target.value)}
-            onBlur={(e) => e.target.value && track('case_search', { length: e.target.value.length })}
-            className="w-full px-3 py-2.5 text-sm"
-            style={{ background: 'var(--bg)', border: '1px solid var(--rule-strong)', color: 'var(--fg)' }}
-          />
+          <div className="field">
+            <SearchIcon />
+            <input
+              ref={inputRef}
+              id="case-search"
+              type="search"
+              value={query}
+              placeholder="BMW, automotive, public relations…"
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape' && query) {
+                  e.preventDefault()
+                  setQuery('')
+                }
+              }}
+              onBlur={(e) => e.target.value && track('case_search', { length: e.target.value.length })}
+            />
+            {query ? (
+              <button
+                type="button"
+                className="field__clear"
+                aria-label="Clear search"
+                onClick={() => {
+                  setQuery('')
+                  inputRef.current?.focus()
+                }}
+              >
+                <CloseIcon />
+              </button>
+            ) : (
+              <kbd className="field__kbd" aria-hidden="true">
+                /
+              </kbd>
+            )}
+          </div>
         </div>
 
         <fieldset className="m-0 border-0 p-0">

@@ -43,12 +43,12 @@ export default function Header() {
 
   return (
     <header
-      className="no-print fixed inset-x-0 top-0 z-50"
+      className="no-print nav-sheen fixed inset-x-0 top-0 z-50"
+      data-scrolled={scrolled}
       style={{
         backdropFilter: scrolled ? 'blur(14px)' : 'none',
         background: scrolled ? 'color-mix(in srgb, var(--bg) 86%, transparent)' : 'transparent',
-        borderBottom: `1px solid ${scrolled ? 'var(--rule)' : 'transparent'}`,
-        transition: 'background 380ms var(--ease-out-expo), border-color 380ms var(--ease-out-expo)',
+        transition: 'background 380ms var(--ease-out-expo)',
       }}
     >
       <div

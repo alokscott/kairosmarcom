@@ -171,28 +171,3 @@ export function Scene({
   )
 }
 
-/**
- * Marks one stage of a staged scene. Attach to the element whose arrival at the
- * middle of the viewport should advance the 3D transformation.
- */
-export function useStage(index: number) {
-  const sceneId = useContext(SceneIdContext)
-  const ref = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el || !sceneId) return
-    const entry = registry.get(sceneId)
-    if (!entry) return
-    const key = String(index)
-    entry.stages.set(key, el)
-    // Keep stages in index order regardless of effect ordering.
-    const sorted = [...entry.stages.entries()].sort((a, b) => Number(a[0]) - Number(b[0]))
-    entry.stages = new Map(sorted)
-    return () => {
-      registry.get(sceneId)?.stages.delete(key)
-    }
-  }, [sceneId, index])
-
-  return ref
-}

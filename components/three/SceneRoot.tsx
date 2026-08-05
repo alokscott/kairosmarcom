@@ -23,7 +23,7 @@ import { ACCENT_HEX, sceneMotion, setScene, useSceneStore } from './store'
  * start. Either route lands on the same static poster.
  */
 export default function SceneRoot() {
-  const { preset, accent, intensity, focus, active } = useSceneStore()
+  const { preset, accent, intensity, focus, active, theme } = useSceneStore()
   const [tier, setTier] = useState<Tier | null>(null)
   const [failed, setFailed] = useState(false)
 
@@ -85,6 +85,17 @@ export default function SceneRoot() {
   const quality = useMemo(() => settingsFor(tier ?? 'low'), [tier])
   const color = ACCENT_HEX[accent]
   const effectiveIntensity = reduced ? 0 : intensity
+  const dark = theme === 'dark'
+
+  /*
+   * Reads --scene-fog rather than hardcoding a second copy of the background colour.
+   * The token was declared in all three theme blocks and read by nothing until now;
+   * keeping the fog on the token means the scene can never drift away from --bg.
+   */
+  const fog = useMemo(() => {
+    if (typeof window === 'undefined') return '#f4f1e9'
+    return getComputedStyle(document.documentElement).getPropertyValue('--scene-fog').trim() || '#f4f1e9'
+  }, [theme])
 
   /**
    * Static fallback: a soft accent bloom in the section's colour. Shown before the
@@ -112,7 +123,10 @@ export default function SceneRoot() {
           dpr={[1, quality.maxDpr]}
           gl={{ antialias: quality.tier !== 'low', alpha: true, powerPreference: 'high-performance' }}
           camera={{ position: [0, 0, 9.6], fov: 42 }}
-          style={{ position: 'absolute', inset: 0 }}
+          // r3f sets `pointer-events: auto` on its container, overriding the class on
+          // the wrapper. Harmless here because this canvas is behind the document, but
+          // it is the same footgun that made the foreground layer eat every click.
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
           onCreated={({ gl }) => {
             // A context can be lost after a successful start — a GPU reset, a laptop
             // switching graphics, or the tab being backgrounded too long.
@@ -123,8 +137,21 @@ export default function SceneRoot() {
         >
           <Governor tier={quality.tier} onDemote={setTier} />
           <Camera intensity={effectiveIntensity} />
-          <ambientLight intensity={0.45} />
-          <directionalLight position={[4, 6, 5]} intensity={quality.richLighting ? 1.3 : 0.8} color="#ffffff" />
+          {/* Distant geometry dissolves into the page instead of ending at a hard
+              silhouette — the cue that sells depth on bone, where there is no
+              darkness for far shapes to recede into. */}
+          <fog attach="fog" args={[fog, 10, 26]} />
+          {/*
+            Light theme runs a dimmer ambient on purpose. Bright fill on a bright
+            background flattens every form to a single value; pulling ambient down is
+            what gives the shards a shaded side and keeps them legible against bone.
+          */}
+          <ambientLight intensity={dark ? 0.45 : 0.28} />
+          <directionalLight
+            position={[4, 6, 5]}
+            intensity={quality.richLighting ? (dark ? 1.3 : 1.05) : dark ? 0.8 : 0.65}
+            color={dark ? '#ffffff' : '#fff6ec'}
+          />
           {quality.richLighting && <directionalLight position={[-5, -2, -4]} intensity={0.6} color={color} />}
           <Preset preset={preset} color={color} quality={quality} intensity={effectiveIntensity} focus={focus} />
         </Canvas>

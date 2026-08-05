@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import CanvasBoundary from './CanvasBoundary'
 import { canCreateWebGL, mulberry32, prefersReducedMotion } from './quality'
-import { ACCENT_HEX, sceneMotion, useSceneStore } from './store'
+import { ACCENT_HEX, sceneMotion, useSceneStore, type Theme } from './store'
 
 /**
  * The foreground depth layer.
@@ -23,7 +23,7 @@ import { ACCENT_HEX, sceneMotion, useSceneStore } from './store'
  * geometry, one additive material, no lights, no shadows, no raycasting.
  */
 export default function Foreground() {
-  const { accent, active } = useSceneStore()
+  const { accent, active, theme } = useSceneStore()
   const [enabled, setEnabled] = useState(false)
 
   useEffect(() => {
@@ -53,8 +53,16 @@ export default function Foreground() {
         dpr={[1, 1.5]}
         gl={{ antialias: false, alpha: true, powerPreference: 'low-power' }}
         camera={{ position: [0, 0, 5], fov: 55 }}
+        /*
+         * Required, not belt-and-braces. This layer sits at z-30, ABOVE every link,
+         * button and input on the page, and react-three-fiber gives its own
+         * container `pointer-events: auto` inline — which beats the
+         * `pointer-events-none` class on the wrapper above. Without this the decorative
+         * mote canvas silently swallows every click on the document beneath it.
+         */
+        style={{ pointerEvents: 'none' }}
       >
-        <Motes color={ACCENT_HEX[accent]} />
+        <Motes color={ACCENT_HEX[accent]} theme={theme} />
       </Canvas>
       </CanvasBoundary>
     </div>
@@ -64,10 +72,24 @@ export default function Foreground() {
 /**
  * Near-field motes. Large, soft and few — this layer is depth cueing, not confetti.
  * Opacity stays low enough that nothing behind it drops below AA contrast.
+ *
+ * Theme changes the compositing outright rather than just the colour. Additive
+ * blending adds light to what is behind it, so on bone it adds to a surface that is
+ * already near-white and the whole layer disappears. On light the motes switch to
+ * normal blending and darken toward ink, which is the only way a mote reads as a
+ * mark on a pale background. Lime is the proof case: #C8FF3D sits at 1.03:1 on bone,
+ * so an un-darkened accent would be invisible no matter which blend mode was used.
  */
-function Motes({ color, count = 70 }: { color: string; count?: number }) {
+function Motes({ color, theme, count = 70 }: { color: string; theme: Theme; count?: number }) {
   const points = useRef<THREE.Points>(null)
   const material = useRef<THREE.PointsMaterial>(null)
+  const dark = theme === 'dark'
+
+  const tint = useMemo(() => {
+    const c = new THREE.Color(color)
+    if (!dark) c.lerp(new THREE.Color('#080808'), 0.45)
+    return c
+  }, [color, dark])
 
   const { positions, drift } = useMemo(() => {
     const rand = mulberry32(97)
@@ -104,7 +126,7 @@ function Motes({ color, count = 70 }: { color: string; count?: number }) {
     p.position.y = sceneMotion.pointerY * 0.55
     p.position.z = sceneMotion.progress * 1.2
 
-    if (material.current) material.current.color.set(color)
+    if (material.current) material.current.color.copy(tint)
   })
 
   return (
@@ -114,13 +136,15 @@ function Motes({ color, count = 70 }: { color: string; count?: number }) {
       </bufferGeometry>
       <pointsMaterial
         ref={material}
-        color={color}
+        color={tint}
         size={0.075}
         sizeAttenuation
         transparent
-        opacity={0.5}
+        // Normal blending lands harder than additive, so light runs quieter to hold
+        // the same "barely there" weight the dark theme has.
+        opacity={dark ? 0.5 : 0.34}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={dark ? THREE.AdditiveBlending : THREE.NormalBlending}
         toneMapped={false}
       />
     </points>
