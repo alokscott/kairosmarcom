@@ -1,0 +1,23 @@
+old_url,new_url,type,content_owner,migration_status,asset_status,redirect_status,open_items
+https://kairosmarcom.com/new/case.php?s=ageless-digital,/work/ageless-digital,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),7 open
+https://kairosmarcom.com/new/case.php?s=bmw-bavaria-motors,/work/bmw-bavaria-motors,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),4 open
+https://kairosmarcom.com/new/case.php?s=dji-india,/work/dji-india,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),4 open
+https://kairosmarcom.com/new/case.php?s=insta360-india,/work/insta360-india,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),4 open
+https://kairosmarcom.com/new/case.php?s=global-opportunities,/work/global-opportunities,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),4 open
+https://kairosmarcom.com/new/case.php?s=audi-gurugram,/work/audi-gurugram,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),4 open
+https://kairosmarcom.com/new/case.php?s=byd-kristan-auto,/work/byd-kristan-auto,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),4 open
+https://kairosmarcom.com/new/case.php?s=thinkcyber-india,/work/thinkcyber-india,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),4 open
+https://kairosmarcom.com/new/case.php?s=thrivedx,/work/thrivedx,case study,Account lead,Migrated — text verbatim,Missing — no imagery on source,308 single hop (proxy.ts),6 open
+https://kairosmarcom.com/new/,/,home,Kairos,Migrated — text verbatim,Logo + OG cover migrated,308 single hop,
+https://kairosmarcom.com/new/#work,/work,work index,Kairos,Restructured from homepage section,Missing,n/a — new route,
+https://kairosmarcom.com/new/#services,/services,services,Kairos,Expanded from homepage section,n/a,n/a — new route,
+https://kairosmarcom.com/new/#process,/process,process,Kairos,Expanded from homepage section,n/a,n/a — new route,
+https://kairosmarcom.com/new/#about,/about,about,Kairos,Assembled from homepage copy,Team photography missing,n/a — new route,
+https://kairosmarcom.com/new/#films,/films,films,Kairos,Migrated — 21 films,YouTube posters only,n/a — new route,
+https://kairosmarcom.com/new/#contact,/contact,contact,Kairos,Migrated verbatim,n/a,n/a — new route,
+https://kairosmarcom.com/privacy (404),/privacy,legal,Legal counsel,TEMPLATE — needs legal sign-off,n/a,n/a — was broken,
+https://kairosmarcom.com/terms (404),/terms,legal,Legal counsel,TEMPLATE — needs legal sign-off,n/a,n/a — was broken,
+https://kairosmarcom.com/index.html,/,legacy 2021 site,Kairos,Superseded,n/a,308 single hop,
+https://kairosmarcom.com/about.html,/about,legacy 2021 site,Kairos,Superseded,n/a,308 single hop,
+https://kairosmarcom.com/services.html,/services,legacy 2021 site,Kairos,Superseded,n/a,308 single hop,
+https://kairosmarcom.com/contact.html,/contact,legacy 2021 site,Kairos,Superseded,n/a,308 single hop,

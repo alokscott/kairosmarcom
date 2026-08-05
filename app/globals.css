@@ -1,0 +1,750 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   KAIROS DESIGN TOKENS
+   Palette is fixed by the brief. Everything else derives from it.
+
+   Two token families per accent:
+     --accent       graphic colour — shapes, rules, 3D lighting, display type ≥ 32px/700
+     --accent-text  contrast-safe for body-size text in the CURRENT theme (WCAG 2.2 AA)
+   They differ because #C8FF3D on bone is 1.03:1 and #5C3BFF on near-black is 3.28:1.
+   Contrast ratios are asserted in test/contrast.test.mjs.
+   ========================================================================== */
+
+@theme {
+  /* Brand palette — exact values from the brief */
+  --color-ink: #080808;
+  --color-bone: #f4f1e9;
+  --color-orange: #ff4b23;
+  --color-lime: #c8ff3d;
+  --color-violet: #5c3bff;
+  --color-silver: #b7b8b5;
+
+  --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
+  --font-sans: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), 'Instrument Serif', Georgia, serif;
+
+  /* Fluid editorial scale. Display sizes are intentionally oversized. */
+  --text-mega: clamp(3.25rem, 11vw, 10rem);
+  --text-display: clamp(2.5rem, 6.4vw, 5.5rem);
+  --text-h1: clamp(2.25rem, 5.5vw, 4.75rem);
+  --text-h2: clamp(1.75rem, 3.6vw, 3rem);
+  --text-h3: clamp(1.25rem, 2vw, 1.75rem);
+  --text-lead: clamp(1.0625rem, 1.5vw, 1.375rem);
+  --text-body: clamp(1rem, 1.05vw, 1.0625rem);
+  --text-small: 0.875rem;
+  --text-micro: 0.75rem;
+
+  /* Motion — durations from the brief's timing table */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-micro: 180ms;
+  --dur-component: 380ms;
+  --dur-reveal: 720ms;
+  --dur-page: 640ms;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+
+  --container-editorial: 78rem;
+}
+
+/* ---------- Themes ---------- */
+
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #080808;
+  --bg-raised: #101010;
+  --bg-sunken: #050505;
+  --fg: #f4f1e9;
+  --fg-muted: #a3a099;
+  --fg-faint: #6d6b66;
+  --rule: #26251f;
+  --rule-strong: #3d3b34;
+
+  --orange-text: #ff4b23;
+  --lime-text: #c8ff3d;
+  --violet-text: #a48cff;
+  --silver-text: #b7b8b5;
+
+  --grain-opacity: 0.055;
+  --scene-fog: #080808;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f1e9;
+  --bg-raised: #fffdf7;
+  --bg-sunken: #e8e4d9;
+  --fg: #080808;
+  --fg-muted: #55534e;
+  --fg-faint: #7c7a74;
+  --rule: #d9d4c6;
+  --rule-strong: #bfb9a8;
+
+  --orange-text: #c4340f;
+  --lime-text: #4a6300;
+  --violet-text: #5c3bff;
+  --silver-text: #5f615c;
+
+  --grain-opacity: 0.035;
+  --scene-fog: #f4f1e9;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --bg: #f4f1e9;
+    --bg-raised: #fffdf7;
+    --bg-sunken: #e8e4d9;
+    --fg: #080808;
+    --fg-muted: #55534e;
+    --fg-faint: #7c7a74;
+    --rule: #d9d4c6;
+    --rule-strong: #bfb9a8;
+    --orange-text: #c4340f;
+    --lime-text: #4a6300;
+    --violet-text: #5c3bff;
+    --silver-text: #5f615c;
+    --grain-opacity: 0.035;
+    --scene-fog: #f4f1e9;
+  }
+}
+
+/* ---------- One accent per section (brief §2) ---------- */
+
+/* --on-accent is the only legible foreground when --accent is used as a fill.
+   Violet is dark enough that ink fails AA on it (3.36:1); it takes bone instead. */
+[data-accent='orange'] {
+  --accent: #ff4b23;
+  --accent-text: var(--orange-text);
+  --on-accent: #080808;
+}
+[data-accent='lime'] {
+  --accent: #c8ff3d;
+  --accent-text: var(--lime-text);
+  --on-accent: #080808;
+}
+[data-accent='violet'] {
+  --accent: #5c3bff;
+  --accent-text: var(--violet-text);
+  --on-accent: #f4f1e9;
+}
+[data-accent='silver'] {
+  --accent: #b7b8b5;
+  --accent-text: var(--silver-text);
+  --on-accent: #080808;
+}
+:root {
+  --accent: #ff4b23;
+  --accent-text: var(--orange-text);
+  --on-accent: #080808;
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  margin: 0;
+}
+
+p {
+  text-wrap: pretty;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+/* Tailwind's reset leaves buttons on the default arrow; every one here is clickable. */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+summary {
+  cursor: pointer;
+}
+
+/* Visible focus everywhere — never removed. */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* ---------- Brand mark: one file per theme, swapped in CSS ---------- */
+
+.brand-mark--dark {
+  display: block;
+}
+.brand-mark--light {
+  display: none;
+}
+[data-theme='light'] .brand-mark--dark {
+  display: none;
+}
+[data-theme='light'] .brand-mark--light {
+  display: block;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .brand-mark--dark {
+    display: none;
+  }
+  :root:not([data-theme]) .brand-mark--light {
+    display: block;
+  }
+}
+
+
+/* ---------- Pinned scroll stages ---------- */
+
+/*
+ * A tall section with a sticky inner panel. Native scroll speed is untouched —
+ * this pins, it does not hijack. Degrades to ordinary stacked content under
+ * reduced motion and on short viewports, where a 260vh pin is just a long wait.
+ */
+.stage {
+  height: var(--stage-vh, 260vh);
+}
+
+.stage__pin {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  /*
+   * The header is fixed, so a panel centred in the full viewport puts its first
+   * line underneath it. Reserving the header's height here keeps pinned content
+   * inside the visible band rather than behind the nav.
+   */
+  padding-block: 6rem 2.5rem;
+}
+
+@media (prefers-reduced-motion: reduce), (max-height: 34rem) {
+  .stage {
+    height: auto;
+  }
+  .stage__pin {
+    position: static;
+    height: auto;
+    display: block;
+    overflow: visible;
+    padding-block: clamp(4rem, 10vh, 7rem);
+  }
+}
+
+/* ---------- Kinetic headlines ---------- */
+
+.kinetic {
+  display: block;
+  perspective: 900px;
+}
+
+.kinetic__mask {
+  display: block;
+  overflow: hidden;
+  /* Rotating lines need room for the descender arc, or glyphs clip mid-reveal. */
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+
+.kinetic__line {
+  display: block;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+  transition:
+    transform 1000ms var(--ease-out-expo),
+    opacity 700ms var(--ease-out-expo);
+}
+
+/* Archivo carries a width axis as well as weight; this is what scroll drives. */
+.kinetic--axis {
+  --wdth: 100;
+  --wght: 800;
+  font-variation-settings: 'wdth' var(--wdth), 'wght' var(--wght);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kinetic__line {
+    transition: none;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .kinetic--axis {
+    font-variation-settings: 'wdth' 100, 'wght' 800;
+  }
+}
+
+/* ---------- Depth: content sits inside the scene ---------- */
+
+/*
+ * Sections opt into transparency so the canvas behind them is genuinely visible
+ * rather than a strip at the top of the page. The scrim keeps body copy above AA
+ * without flattening the scene to a solid panel.
+ */
+.in-scene {
+  background: transparent;
+}
+
+.scrim {
+  position: relative;
+}
+.scrim::before {
+  content: '';
+  position: absolute;
+  inset: -10% -14%;
+  z-index: -1;
+  pointer-events: none;
+  /*
+   * Body copy sits over a moving scene, so contrast has to be defended rather than
+   * assumed. This holds the measured ratio at the AA figures in the token tests even
+   * when a bright fragment passes directly behind a line of text.
+   */
+  background: radial-gradient(
+    68% 64% at 50% 50%,
+    color-mix(in srgb, var(--bg) 94%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 78%, transparent) 55%,
+    transparent 78%
+  );
+}
+
+/*
+ * Contrast guard for body copy over the scene.
+ *
+ * The radial scrim above is enough behind oversized display type, but body copy
+ * needs a floor: at 88% background the effective surface measures ~11:1 against
+ * bone even when the fully lit core is directly behind it. Without this, a passage
+ * over the core sits at 2.95:1 and fails AA outright.
+ */
+.panel {
+  /*
+   * Deliberately sets no `position`. An earlier version declared `relative`, which
+   * beat Tailwind's `absolute` utility (this rule sits outside the utility layer)
+   * and silently un-stacked every cross-fading stage card into a vertical column.
+   */
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  margin-left: clamp(-1.25rem, -2vw, -1.75rem);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(7px);
+  border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
+}
+
+/* Stacked scroll cards: each panel sticks under the previous one. */
+.stack__item {
+  position: sticky;
+  top: var(--stack-top, 7rem);
+}
+
+/*
+ * The panel underneath shrinks and dims as the next one covers it. Pure CSS
+ * scroll-driven animation — no JavaScript, no scroll listener, and simply absent
+ * in browsers without `animation-timeline`, where the plain sticky stack still reads.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stack__inner {
+      animation: stack-recede linear both;
+      animation-timeline: view();
+      animation-range: exit -12% exit 92%;
+      transform-origin: 50% 0%;
+    }
+  }
+}
+
+@keyframes stack-recede {
+  to {
+    transform: scale(0.93) translateY(-0.75rem);
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack__item {
+    position: static;
+  }
+  .stack__inner {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* Hero scroll cue. */
+.scroll-hint {
+  animation: scroll-hint 2.2s var(--ease-in-out-quart) infinite;
+}
+
+@keyframes scroll-hint {
+  0% {
+    transform: translateY(-100%);
+  }
+  60%,
+  100% {
+    transform: translateY(320%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint {
+    animation: none;
+  }
+}
+
+/* Pinned horizontal track. */
+.htrack {
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .htrack {
+    transform: none !important;
+    overflow-x: auto;
+  }
+}
+
+/* ---------- Grain: procedural, no image request ---------- */
+
+.grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Layout primitives ---------- */
+
+.shell {
+  width: 100%;
+  max-width: var(--container-editorial);
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 4rem);
+}
+
+.shell-wide {
+  width: 100%;
+  max-width: 110rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 4rem);
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+
+/* Editorial 12-column grid, collapsing to 4 on small screens. */
+.grid-editorial {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+@media (min-width: 48rem) {
+  .grid-editorial {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+.section {
+  padding-block: clamp(4.5rem, 11vh, 9rem);
+  position: relative;
+}
+
+/* ---------- Type utilities ---------- */
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-micro);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.statement {
+  font-family: var(--font-serif);
+  font-size: clamp(1.375rem, 2.8vw, 2.25rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-style: italic;
+}
+
+.muted {
+  color: var(--fg-muted);
+}
+.faint {
+  color: var(--fg-faint);
+}
+
+.mono-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Screen-reader-only, still focusable when it needs to be. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 200;
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+  transition: top var(--dur-micro) var(--ease-out-expo);
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* ---------- Controls ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.9rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background var(--dur-micro) var(--ease-out-expo),
+    color var(--dur-micro) var(--ease-out-expo),
+    border-color var(--dur-micro) var(--ease-out-expo),
+    transform var(--dur-micro) var(--ease-out-expo);
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.btn--primary:hover {
+  transform: translateY(-2px);
+}
+
+.btn--ghost {
+  border-color: var(--rule-strong);
+  color: var(--fg);
+}
+.btn--ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Animated underline for inline links. */
+.link-underline {
+  position: relative;
+  text-decoration: none;
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  transition: background-size var(--dur-component) var(--ease-out-expo);
+}
+.link-underline:hover,
+.link-underline:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* Directional arrow that slides on hover. */
+.arrow {
+  display: inline-block;
+  transition: transform var(--dur-micro) var(--ease-out-expo);
+}
+a:hover .arrow,
+button:hover .arrow {
+  transform: translateX(4px);
+}
+
+/* ---------- Native accordion (details/summary) ---------- */
+
+.accordion summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1.35rem;
+}
+.accordion summary::-webkit-details-marker {
+  display: none;
+}
+.accordion summary::after {
+  content: '+';
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--accent-text);
+  transition: transform var(--dur-component) var(--ease-out-expo);
+  flex: none;
+}
+.accordion details[open] summary::after {
+  transform: rotate(45deg);
+}
+.accordion details {
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ---------- Native dialog (video / lightbox) ---------- */
+
+dialog {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--fg);
+  max-width: min(96vw, 84rem);
+  max-height: 92vh;
+}
+dialog::backdrop {
+  background: rgb(4 4 4 / 0.88);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- Marquee ---------- */
+
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 42s linear infinite;
+}
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+.marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ---------- Scroll-driven reveal, CSS-only where supported ---------- */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-css {
+      animation: reveal-in linear both;
+      animation-timeline: view();
+      animation-range: entry 8% cover 26%;
+    }
+  }
+}
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Reduced motion: strip ambient + scroll-linked movement ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .marquee {
+    animation: none;
+    transform: none;
+  }
+  .reveal-css {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Print: content survives without any of the above ---------- */
+
+@media print {
+  .no-print,
+  canvas {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+}
