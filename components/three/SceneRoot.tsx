@@ -4,6 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as THREE from 'three'
 import CanvasBoundary from './CanvasBoundary'
+import { LightningField } from './LightningField'
 import { Camera, Preset } from './presets'
 import { canCreateWebGL, createGovernor, detectTier, prefersReducedMotion, settingsFor, type Tier } from './quality'
 import { ACCENT_HEX, sceneMotion, setScene, useSceneStore } from './store'
@@ -50,6 +51,28 @@ export default function SceneRoot() {
       window.clearTimeout(idle as number)
     }
   }, [onFailure])
+
+  /*
+   * ---- keep the scene's theme locked to the document's ----
+   *
+   * The store used to learn the theme from ThemeToggle alone, which made the 3D layer
+   * depend on one particular component being the only thing that ever writes
+   * `data-theme`. Anything else that set it — the pre-paint script racing hydration,
+   * devtools, a future component — left the scene rendering the OTHER theme's palette
+   * underneath the real one. In practice that means bone-luminance backdrop under bone
+   * text: a page that looks blank.
+   *
+   * Observing the attribute makes the document the single source of truth, so the
+   * scene cannot disagree with the CSS about which theme it is in.
+   */
+  useEffect(() => {
+    const read = () =>
+      setScene({ theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light' })
+    read()
+    const mo = new MutationObserver(read)
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => mo.disconnect()
+  }, [])
 
   /* ---- pause in background tabs ---- */
   useEffect(() => {
@@ -137,6 +160,9 @@ export default function SceneRoot() {
         >
           <Governor tier={quality.tier} onDemote={setTier} />
           <Camera intensity={effectiveIntensity} />
+          {/* Behind everything, on every page. Its luminance is clamped to a band
+              around --bg so body copy over it keeps a bounded contrast ratio. */}
+          <LightningField color={color} theme={theme} lightweight={quality.tier === 'low'} />
           {/* Distant geometry dissolves into the page instead of ending at a hard
               silhouette — the cue that sells depth on bone, where there is no
               darkness for far shapes to recede into. */}

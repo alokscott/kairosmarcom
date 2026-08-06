@@ -99,6 +99,49 @@ test('graphic accents remain distinguishable against both backgrounds', () => {
   }
 })
 
+/**
+ * The Lightning backdrop is a shader, not a CSS colour, so no amount of DOM auditing
+ * can see what text actually sits on. What CAN be checked is the contract it operates
+ * under: LUMA_BAND caps how far its luminance may stray from --bg in each direction.
+ *
+ * Reading those numbers straight out of the component and asserting every foreground
+ * token against the worst backdrop they permit is what keeps the shader and the
+ * palette honest with each other — widen a band without re-checking the tokens and
+ * this fails.
+ */
+const field = readFileSync(new URL('../components/three/LightningField.tsx', import.meta.url), 'utf8')
+
+function band(theme) {
+  const m = field.match(new RegExp(`${theme}:\\s*\\{\\s*down:\\s*([\\d.]+),\\s*up:\\s*([\\d.]+)`))
+  assert.ok(m, `LUMA_BAND.${theme} not found — did the export move?`)
+  return { down: Number(m[1]), up: Number(m[2]) }
+}
+
+/** Relative luminance of a hex colour, reusing the channel maths above. */
+function lumOf(hex) {
+  return luminance(hex)
+}
+
+for (const [name, { selector }] of Object.entries(themes)) {
+  const bg = token(selector, '--bg')
+  const { down, up } = band(name)
+  const lb = lumOf(bg)
+  // On bone the worst case is the backdrop darkening toward the type; on ink it is
+  // the backdrop lightening toward it.
+  const worst = name === 'light' ? Math.max(0, lb - down) : Math.min(1, lb + up)
+  const ratio = (fg) => {
+    const [x, y] = [lumOf(fg), worst].sort((p, q) => q - p)
+    return (x + 0.05) / (y + 0.05)
+  }
+
+  for (const tok of ['--fg', '--fg-muted', '--fg-faint']) {
+    test(`${name}: ${tok} meets AA over the Lightning backdrop`, () => {
+      const c = ratio(token(selector, tok))
+      assert.ok(c >= AA_TEXT, `${tok} over worst-case backdrop is ${c.toFixed(2)}:1, need ${AA_TEXT}`)
+    })
+  }
+}
+
 test('--on-accent is legible on every accent fill', () => {
   // .btn--primary, .skip-link and ::selection all paint --on-accent on --accent.
   for (const accent of ['orange', 'lime', 'violet', 'silver']) {

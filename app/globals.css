@@ -78,9 +78,10 @@
   --bg-sunken: #e8e4d9;
   --fg: #080808;
   --fg-muted: #55534e;
-  /* 4.59:1 on --bg. Was #7c7a74 (3.81:1), which failed AA for the form labels
-     and placeholder text that use it. */
-  --fg-faint: #6f6d66;
+  /* 4.87:1 on --bg, and 4.82:1 against the darkest backdrop the Lightning field is
+     allowed to produce. Was #7c7a74 (3.81:1) and then #6f6d66, which cleared --bg but
+     left no margin once an animated backdrop sat behind it. */
+  --fg-faint: #6b6960;
   --rule: #d9d4c6;
   --rule-strong: #bfb9a8;
 
@@ -101,12 +102,13 @@
   --fg: #f4f1e9;
   --fg-muted: #a3a099;
   /*
-   * 4.87:1 on --bg and 4.62:1 on --bg-raised. Was #6d6b66 (3.76:1), then #7d7b75 —
-   * which cleared --bg at 4.73:1 but landed at 4.496:1 on the lighter --bg-raised
-   * that the contact form panel and the work cards are painted in. Raised surfaces
-   * are the harder background, so both are asserted now.
+   * 5.65:1 on --bg, 5.36:1 on --bg-raised, 4.59:1 against the brightest backdrop the
+   * Lightning field may produce. Walked up from #6d6b66 (3.76:1 — failed outright),
+   * to #7d7b75 (cleared --bg but 4.496:1 on the lighter --bg-raised that panels use),
+   * to here once an animated backdrop had to be cleared as well. All three surfaces
+   * are asserted in test/contrast.test.mjs.
    */
-  --fg-faint: #7f7d77;
+  --fg-faint: #8a8880;
   --rule: #26251f;
   --rule-strong: #3d3b34;
 
