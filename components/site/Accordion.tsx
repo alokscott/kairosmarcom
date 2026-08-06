@@ -25,7 +25,11 @@ export default function Accordion({
               {item.q}
             </span>
           </summary>
-          <p className="muted max-w-[68ch] pb-6 leading-relaxed">{item.a}</p>
+{/* 58ch, not 68ch. The CSS `ch` unit is the width of the "0" glyph, which in
+            Space Grotesk is 10.25px against an average character of 7.91px — so a
+            68ch column actually renders ~88 characters per line, well past the 65–75
+            the eye tracks comfortably. 58ch measures ~75. */}
+          <p className="muted max-w-[58ch] pb-6 leading-relaxed">{item.a}</p>
         </details>
       ))}
     </div>

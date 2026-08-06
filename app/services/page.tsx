@@ -125,7 +125,7 @@ export default function ServicesPage() {
                               className="inline-block px-3 py-1.5 text-xs no-underline"
                               style={{ border: '1px solid var(--rule)', color: 'var(--fg-muted)' }}
                             >
-                              {c!.client} <span className="arrow">→</span>
+                              {c!.client} <span aria-hidden="true" className="arrow">→</span>
                             </Link>
                           </li>
                         ))}
@@ -161,7 +161,7 @@ export default function ServicesPage() {
           </ol>
 
           <Link href="/process" className="btn btn--ghost mt-10">
-            The process in full <span className="arrow">→</span>
+            The process in full <span aria-hidden="true" className="arrow">→</span>
           </Link>
         </div>
       </section>

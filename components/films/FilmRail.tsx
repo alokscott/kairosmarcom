@@ -92,7 +92,7 @@ export default function FilmRail() {
                     <KineticHeadline lines={['Twenty-one films.', 'Produced in-house.']} />
                   </h2>
                   <Link href="/films" className="btn btn--ghost">
-                    The full archive <span className="arrow">→</span>
+                    The full archive <span aria-hidden="true" className="arrow">→</span>
                   </Link>
                 </div>
               </Reveal>
@@ -128,7 +128,7 @@ export function FilmTile({ film, onOpen }: { film: Film; onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="group block w-full cursor-pointer text-left transition-transform duration-500 hover:-translate-y-1.5"
+      className="group block w-full cursor-pointer text-left transition-transform duration-300 hover:-translate-y-1.5"
       style={{
         border: '1px solid var(--rule)',
         background: 'color-mix(in srgb, var(--bg-raised) 85%, transparent)',

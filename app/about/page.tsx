@@ -149,7 +149,7 @@ export default function AboutPage() {
           </p>
 
           <Link href="/work" className="btn btn--ghost mt-8">
-            See what we did for them <span className="arrow">→</span>
+            See what we did for them <span aria-hidden="true" className="arrow">→</span>
           </Link>
         </div>
       </section>

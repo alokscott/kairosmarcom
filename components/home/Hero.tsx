@@ -145,7 +145,7 @@ export default function Hero() {
                   className="btn btn--ghost"
                   onClick={() => track('hero_cta_secondary')}
                 >
-                  {hero.secondaryCta.label} <span className="arrow">→</span>
+                  {hero.secondaryCta.label} <span aria-hidden="true" className="arrow">→</span>
                 </Link>
               </div>
             </Reveal>

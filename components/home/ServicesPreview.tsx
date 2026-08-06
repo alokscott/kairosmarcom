@@ -96,7 +96,7 @@ export default function ServicesPreview() {
             </div>
 
             <Link href="/services" className="btn btn--ghost mt-8">
-              All six disciplines in full <span className="arrow">→</span>
+              All six disciplines in full <span aria-hidden="true" className="arrow">→</span>
             </Link>
           </div>
         </div>

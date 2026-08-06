@@ -36,7 +36,7 @@ export default function SelectedWork() {
               <KineticHeadline lines={['Brands we helped', 'find their moment']} />
             </h2>
             <Link href="/work" className="btn btn--ghost">
-              All case studies <span className="arrow">→</span>
+              All case studies <span aria-hidden="true" className="arrow">→</span>
             </Link>
           </div>
           <p className="muted mt-6 max-w-[62ch] text-[length:var(--text-lead)]">
@@ -231,7 +231,7 @@ function StackPanel({
                   className="inline-flex items-center gap-2 text-sm font-semibold"
                   style={{ color: 'var(--accent-text)' }}
                 >
-                  View case study <span className="arrow">→</span>
+                  View case study <span aria-hidden="true" className="arrow">→</span>
                 </span>
               </div>
             </div>

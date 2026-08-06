@@ -80,12 +80,12 @@ export default function LegalPage({
               >
                 <h2 className="text-[length:var(--text-h3)]">{s.heading}</h2>
                 {s.body.map((paragraph) => (
-                  <p key={paragraph} className="muted mt-4 max-w-[68ch] leading-relaxed">
+                  <p key={paragraph} className="muted mt-4 max-w-[58ch] leading-relaxed">
                     {paragraph}
                   </p>
                 ))}
                 {showFlags && s.review && (
-                  <p className="mt-4 max-w-[68ch] text-sm" style={{ color: 'var(--accent-text)' }}>
+                  <p className="mt-4 max-w-[58ch] text-sm" style={{ color: 'var(--accent-text)' }}>
                     Review needed: {s.review}
                   </p>
                 )}

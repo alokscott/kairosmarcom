@@ -194,7 +194,9 @@ export default function ContactForm() {
         <button type="submit" className="btn btn--primary" disabled={status === 'sending'}>
           {status === 'sending' ? 'Sending…' : 'Request my call'}
         </button>
-        <p className="faint max-w-[38ch] text-xs">{contact.privacyNote}</p>
+        {/* Consent copy is content, not a micro-label — it stays at text-sm so it is
+            legible on a phone. Eyebrows and captions keep text-xs. */}
+        <p className="faint max-w-[42ch] text-sm">{contact.privacyNote}</p>
       </div>
 
       {/* Single live region for submission status, so nothing is announced twice. */}

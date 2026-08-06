@@ -60,7 +60,7 @@ export default function WorkIndexPage() {
                 <h2 className="text-[length:var(--text-h3)]">{FEATURED.client}</h2>
                 <p className="muted mt-3 text-sm leading-relaxed">{FEATURED.summary}</p>
                 <Link href={`/work/${FEATURED.slug}`} className="btn btn--primary mt-5">
-                  Read the case study <span className="arrow">→</span>
+                  Read the case study <span aria-hidden="true" className="arrow">→</span>
                 </Link>
               </div>
             </Reveal>

@@ -141,7 +141,7 @@ export default function CaseCard({
             </ul>
 
             <span className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--accent-text)' }}>
-              View case study <span className="arrow">→</span>
+              View case study <span aria-hidden="true" className="arrow">→</span>
             </span>
           </div>
         </div>

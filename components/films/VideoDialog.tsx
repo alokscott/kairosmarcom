@@ -106,7 +106,7 @@ export default function VideoDialog({ film, onClose }: { film: Film | null; onCl
           <div className="flex flex-wrap items-center justify-between gap-3 border-t p-4 text-sm" style={{ borderColor: 'var(--rule)' }}>
             <p className="faint text-xs">Hosted externally. Opens in a new tab.</p>
             <a href={watchUrl} target="_blank" rel="noopener noreferrer" className="link-underline">
-              Watch on {film?.externalUrl ? 'Facebook' : 'YouTube'} <span className="arrow">↗</span>
+              Watch on {film?.externalUrl ? 'Facebook' : 'YouTube'} <span aria-hidden="true" className="arrow">↗</span>
             </a>
           </div>
         )}
