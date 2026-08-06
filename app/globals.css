@@ -525,10 +525,28 @@ summary {
    * and silently un-stacked every cross-fading stage card into a vertical column.
    */
   padding: clamp(1.25rem, 2vw, 1.75rem);
-  margin-left: clamp(-1.25rem, -2vw, -1.75rem);
   background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(7px);
   border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
+}
+
+/*
+ * The negative pull belongs to the multi-column layout only.
+ *
+ * It exists so the panel's own padding bleeds back into the grid gutter and its text
+ * aligns with the column edge. In a single-column phone layout there is no gutter to
+ * bleed into, so all it did was drag the panel flush against the left edge while
+ * leaving its full 20px gutter stranded on the right — the asymmetric "space on the
+ * right" that made every page look off-centre on a phone.
+ *
+ * The old value was also `clamp(-1.25rem, -2vw, -1.75rem)`, whose minimum (-1.25rem)
+ * is larger than its maximum (-1.75rem). An inverted clamp returns the minimum, so
+ * the preferred and maximum values had never applied at any viewport.
+ */
+@media (min-width: 48rem) {
+  .panel {
+    margin-left: -1.75rem;
+  }
 }
 
 /* Stacked scroll cards: each panel sticks under the previous one. */
@@ -1002,6 +1020,32 @@ summary {
  * the bar reads as a lit surface instead of a box with a border. Replaces the plain
  * 1px border that used to sit here.
  */
+.nav-sheen {
+  background: transparent;
+  transition: background var(--dur-component) var(--ease-out-expo);
+}
+
+.nav-sheen[data-scrolled='true'] {
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+/*
+ * On a phone the bar stays opaque at every scroll position.
+ *
+ * The transparent-at-rest header is a desktop device: there, the scene sits well
+ * below and behind the bar. On a narrow screen the hero starts immediately under it,
+ * so shards and motes crossed straight through the logo and the Menu button and both
+ * became hard to pick out against moving geometry.
+ */
+@media (max-width: 48rem) {
+  .nav-sheen,
+  .nav-sheen[data-scrolled='false'] {
+    background: color-mix(in srgb, var(--bg) 93%, transparent);
+    backdrop-filter: blur(12px);
+  }
+}
+
 .nav-sheen::after {
   content: '';
   position: absolute;
@@ -1290,6 +1334,20 @@ dialog {
   padding: 0;
   background: transparent;
   color: var(--fg);
+}
+
+/*
+ * Sizing belongs to the lightbox, not to every dialog.
+ *
+ * These caps were on the bare `dialog` selector, so the mobile navigation inherited
+ * them. It carries `w-screen max-w-none h-dvh max-h-none` and still came out at
+ * 96vw × 92vh — a dead strip down the right of the open menu and the CTA sliced off
+ * the bottom — because this rule sits OUTSIDE a cascade layer and Tailwind's
+ * utilities sit inside one. Unlayered CSS wins over layered CSS no matter how
+ * specific the layered selector is, so `.max-w-none` never stood a chance. The same
+ * trap is documented on `.panel` above.
+ */
+.lightbox {
   max-width: min(96vw, 84rem);
   max-height: 92vh;
 }

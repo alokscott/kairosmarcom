@@ -44,12 +44,10 @@ export default function Header() {
   return (
     <header
       className="no-print nav-sheen fixed inset-x-0 top-0 z-50"
+      // Surface lives in CSS keyed off this attribute, not in an inline style: inline
+      // styles cannot be overridden by a media query, and phones need the bar opaque
+      // at every scroll position.
       data-scrolled={scrolled}
-      style={{
-        backdropFilter: scrolled ? 'blur(14px)' : 'none',
-        background: scrolled ? 'color-mix(in srgb, var(--bg) 86%, transparent)' : 'transparent',
-        transition: 'background 380ms var(--ease-out-expo)',
-      }}
     >
       <div
         className="shell-wide flex items-center justify-between gap-6"

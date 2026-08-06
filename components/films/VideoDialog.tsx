@@ -44,7 +44,7 @@ export default function VideoDialog({ film, onClose }: { film: Film | null; onCl
   const watchUrl = film ? filmWatchUrl(film) : null
 
   return (
-    <dialog ref={ref} onClose={handleClose} aria-label={film ? `${film.title} — video` : 'Video'}>
+    <dialog ref={ref} className="lightbox" onClose={handleClose} aria-label={film ? `${film.title} — video` : 'Video'}>
       <div className="w-[min(96vw,72rem)]" style={{ background: 'var(--bg-raised)', border: '1px solid var(--rule)' }}>
         <div className="flex items-start justify-between gap-4 border-b p-4" style={{ borderColor: 'var(--rule)' }}>
           <div>
