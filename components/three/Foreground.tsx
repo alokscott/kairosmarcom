@@ -70,6 +70,36 @@ export default function Foreground() {
 }
 
 /**
+ * Rounds the point sprite.
+ *
+ * A GL point is a square, and `PointsMaterial` paints the whole of it — so without
+ * this the motes render as literal squares. The usual fix is to hand the material a
+ * circular texture, but that means generating, uploading and disposing an image just
+ * to describe a disc. Patching two lines into the stock points shader does the same
+ * job with no texture and no extra memory.
+ *
+ * `gl_PointCoord` runs 0→1 across the sprite; remapping to -1→1 makes the squared
+ * distance from centre `r2`, so `r2 > 1.0` is everything outside the inscribed
+ * circle. The alpha ramp after it softens the rim, because a hard discard alone
+ * leaves a visibly stair-stepped edge on a sprite only a few pixels wide.
+ */
+const roundPoints: THREE.Material['onBeforeCompile'] = (shader) => {
+  shader.fragmentShader = shader.fragmentShader
+    .replace(
+      'void main() {',
+      `void main() {
+        vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+        float r2 = dot(cxy, cxy);
+        if (r2 > 1.0) discard;`
+    )
+    .replace(
+      '#include <opaque_fragment>',
+      `diffuseColor.a *= 1.0 - smoothstep(0.5, 1.0, r2);
+       #include <opaque_fragment>`
+    )
+}
+
+/**
  * Near-field motes. Large, soft and few — this layer is depth cueing, not confetti.
  * Opacity stays low enough that nothing behind it drops below AA contrast.
  *
@@ -137,7 +167,10 @@ function Motes({ color, theme, count = 70 }: { color: string; theme: Theme; coun
       <pointsMaterial
         ref={material}
         color={tint}
-        size={0.075}
+        // Nudged up from 0.075: a soft-edged disc reads smaller than a hard square of
+        // the same size, because the circle covers ~78% of the sprite and the rim
+        // fades. This holds the previous visual weight.
+        size={0.085}
         sizeAttenuation
         transparent
         // Normal blending lands harder than additive, so light runs quieter to hold
@@ -146,6 +179,7 @@ function Motes({ color, theme, count = 70 }: { color: string; theme: Theme; coun
         depthWrite={false}
         blending={dark ? THREE.AdditiveBlending : THREE.NormalBlending}
         toneMapped={false}
+        onBeforeCompile={roundPoints}
       />
     </points>
   )
