@@ -100,8 +100,13 @@
   --bg-sunken: #050505;
   --fg: #f4f1e9;
   --fg-muted: #a3a099;
-  /* 4.73:1 on --bg. Was #6d6b66 (3.76:1) — the same AA failure as light. */
-  --fg-faint: #7d7b75;
+  /*
+   * 4.87:1 on --bg and 4.62:1 on --bg-raised. Was #6d6b66 (3.76:1), then #7d7b75 —
+   * which cleared --bg at 4.73:1 but landed at 4.496:1 on the lighter --bg-raised
+   * that the contact form panel and the work cards are painted in. Raised surfaces
+   * are the harder background, so both are asserted now.
+   */
+  --fg-faint: #7f7d77;
   --rule: #26251f;
   --rule-strong: #3d3b34;
 
@@ -168,7 +173,12 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
+  /*
+   * No `scroll-behavior: smooth` here. SmoothScroll (Lenis) owns the easing, and the
+   * two fight over the same scroll position on anchor jumps — the CSS one wins and
+   * drags Lenis back mid-ease, which reads as a stutter. Under reduced motion Lenis
+   * does not run and the browser's own instant jump is the correct behaviour anyway.
+   */
 }
 
 body {

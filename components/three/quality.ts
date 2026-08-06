@@ -22,12 +22,18 @@ export interface QualitySettings {
   transmission: boolean
   /** Soft shadows / extra lights. */
   richLighting: boolean
+  /**
+   * Particle count for the GPU field. All motion happens in the vertex shader, so
+   * this scales with fill rate rather than CPU — which is why it can be an order of
+   * magnitude above the instanced shard count on the same device.
+   */
+  particles: number
 }
 
 const TIERS: Record<Tier, QualitySettings> = {
-  low: { tier: 'low', maxDpr: 1, shards: 90, coreDetail: 1, transmission: false, richLighting: false },
-  medium: { tier: 'medium', maxDpr: 1.5, shards: 220, coreDetail: 2, transmission: false, richLighting: true },
-  high: { tier: 'high', maxDpr: 2, shards: 420, coreDetail: 4, transmission: true, richLighting: true },
+  low: { tier: 'low', maxDpr: 1, shards: 90, coreDetail: 1, transmission: false, richLighting: false, particles: 3500 },
+  medium: { tier: 'medium', maxDpr: 1.5, shards: 220, coreDetail: 2, transmission: false, richLighting: true, particles: 11000 },
+  high: { tier: 'high', maxDpr: 2, shards: 420, coreDetail: 4, transmission: true, richLighting: true, particles: 24000 },
 }
 
 export const settingsFor = (tier: Tier) => TIERS[tier]

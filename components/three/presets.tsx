@@ -5,8 +5,9 @@ import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import type { ScenePreset } from '@/content/types'
 import { Core, FrameStack, Lattice, NodeCluster, Ripple, ShardField, Streams, Threads, type NodeSpec } from './primitives'
+import { ParticleField } from './particles'
 import type { QualitySettings } from './quality'
-import { sceneMotion } from './store'
+import { sceneMotion, type Theme } from './store'
 
 /**
  * Scene presets (brief §17). Each is a composition of the shared primitives, chosen
@@ -23,6 +24,11 @@ interface PresetProps {
   intensity: number
   /** Discrete stage/service index, supplied by the store. */
   focus: number
+  /**
+   * The particle fields composite in opposite directions per theme — additive on
+   * ink, subtractive on bone — so they need this, not just a different colour.
+   */
+  theme: Theme
 }
 
 const ring = (count: number, radius: number, y = 0): NodeSpec[] =>
@@ -39,11 +45,23 @@ const scrolled = (gain = 1) => () => THREE.MathUtils.clamp(sceneMotion.progress 
 /* ------------------------------------------------------------------ */
 
 /** Kairos Core — dispersed fragments align into the decisive moment. */
-function CoreScene({ color, quality, intensity }: PresetProps) {
+function CoreScene({ color, quality, intensity, theme }: PresetProps) {
   return (
     <>
-      <ShardField count={quality.shards} convergence={scrolled(1.35)} color={color} radius={2.3} spread={11} seed={11} />
-      <Core color={color} quality={quality} scale={() => 0.35 + scrolled(1.35)() * 0.5} intensity={intensity} />
+      {/* The spiral is the hero object; the shards and core sit inside it as the
+          bright nucleus rather than being the whole composition. */}
+      <ParticleField
+        variant="cosmos"
+        color={color}
+        theme={theme}
+        count={quality.particles}
+        intensity={intensity}
+        size={2.6}
+      />
+      <ShardField count={Math.round(quality.shards * 0.4)} convergence={scrolled(1.35)} color={color} radius={2.3} spread={11} seed={11} />
+      {/* Reduced from 0.35→0.85: the core is now the galaxy's nucleus, and at the old
+          scale it read as a large solid ball sitting in front of the spiral. */}
+      <Core color={color} quality={quality} scale={() => 0.16 + scrolled(1.35)() * 0.26} intensity={intensity} />
     </>
   )
 }
@@ -87,10 +105,18 @@ function PrincipleScene({ color, quality, intensity, focus }: PresetProps) {
 }
 
 /** Service constellation — six disciplines orbiting one senior team. */
-function ConstellationScene({ color, quality, intensity, focus }: PresetProps) {
+function ConstellationScene({ color, quality, intensity, focus, theme }: PresetProps) {
   const nodes = useMemo(() => ring(6, 2.6), [])
   return (
     <>
+      <ParticleField
+        variant="flow"
+        color={color}
+        theme={theme}
+        count={Math.round(quality.particles * 0.7)}
+        intensity={intensity * 0.8}
+        size={2.1}
+      />
       <Core color={color} quality={quality} scale={0.62} intensity={intensity} />
       <NodeCluster nodes={nodes} color={color} focus={focus} intensity={intensity} />
       <Threads nodes={nodes} color={color} />
@@ -185,9 +211,17 @@ function MetricsScene({ color, quality, intensity }: PresetProps) {
 }
 
 /** Film gallery — a volumetric timeline of frames. */
-function FilmScene({ color, intensity }: PresetProps) {
+function FilmScene({ color, intensity, quality, theme }: PresetProps) {
   return (
     <>
+      <ParticleField
+        variant="flow"
+        color={color}
+        theme={theme}
+        count={Math.round(quality.particles * 0.6)}
+        intensity={intensity * 0.7}
+        size={1.9}
+      />
       <FrameStack count={12} color={color} spacing={0.42} intensity={intensity} progress={scrolled()} />
       <Streams color={color} count={8} intensity={intensity} converge={0} seed={17} />
     </>
@@ -226,10 +260,19 @@ function ProcessScene({ color, quality, intensity, focus }: PresetProps) {
 }
 
 /** Contact convergence — everything the site separated aligns into one object. */
-function ContactScene({ color, quality, intensity }: PresetProps) {
+function ContactScene({ color, quality, intensity, theme }: PresetProps) {
   return (
     <>
-      <ShardField count={quality.shards} convergence={scrolled(1.6)} color={color} radius={1.9} spread={13} seed={41} />
+      {/* Embers: the one place a rising column reads as intent rather than decoration. */}
+      <ParticleField
+        variant="embers"
+        color={color}
+        theme={theme}
+        count={Math.round(quality.particles * 0.55)}
+        intensity={intensity}
+        size={2.8}
+      />
+      <ShardField count={Math.round(quality.shards * 0.6)} convergence={scrolled(1.6)} color={color} radius={1.9} spread={13} seed={41} />
       <Core color={color} quality={quality} scale={() => 0.2 + scrolled(1.6)() * 0.85} intensity={intensity} />
     </>
   )

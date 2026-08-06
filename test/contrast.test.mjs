@@ -64,6 +64,24 @@ for (const [name, { selector, accents }] of Object.entries(themes)) {
     assert.ok(contrast(faint, bg) >= AA_TEXT, `--fg-faint on --bg is ${contrast(faint, bg).toFixed(2)}:1`)
   })
 
+  /*
+   * Cards, panels and the contact form are painted on --bg-raised, not --bg. In dark
+   * mode that surface is LIGHTER than the page, so it is the harder background of the
+   * two — --fg-faint cleared --bg at 4.73:1 while sitting at 4.496:1 on --bg-raised,
+   * which a --bg-only check could never catch.
+   */
+  const raised = token(selector, '--bg-raised')
+
+  test(`${name}: muted text meets AA on raised surfaces`, () => {
+    const c = contrast(muted, raised)
+    assert.ok(c >= AA_TEXT, `--fg-muted on --bg-raised is ${c.toFixed(2)}:1`)
+  })
+
+  test(`${name}: faint text meets AA on raised surfaces`, () => {
+    const c = contrast(faint, raised)
+    assert.ok(c >= AA_TEXT, `--fg-faint on --bg-raised is ${c.toFixed(2)}:1`)
+  })
+
   for (const accent of accents) {
     test(`${name}: --${accent}-text meets AA on --bg`, () => {
       const c = contrast(token(selector, `--${accent}-text`), bg)

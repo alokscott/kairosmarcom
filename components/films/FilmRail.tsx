@@ -6,6 +6,7 @@ import { motion, useTransform } from 'motion/react'
 import { KineticHeadline, PinnedStage } from '@/components/motion/Kinetic'
 import { Reveal } from '@/components/motion/Reveal'
 import { useScrollProgress } from '@/components/motion/scroll'
+import { smoothScrollTo } from '@/components/motion/SmoothScroll'
 import { Scene } from '@/components/three/Scene'
 import { films } from '@/content/films'
 import type { Film } from '@/content/types'
@@ -69,7 +70,7 @@ export default function FilmRail() {
     const rect = section.getBoundingClientRect()
     const top = window.scrollY + rect.top
     const pinRange = section.offsetHeight - window.innerHeight
-    window.scrollTo({ top: top + wanted * pinRange, behavior: 'smooth' })
+    smoothScrollTo(top + wanted * pinRange)
   }
 
   return (

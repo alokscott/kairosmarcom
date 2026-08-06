@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/site/Header'
 import Footer from '@/components/site/Footer'
 import { MotionPreferenceProbe } from '@/components/motion/Reveal'
+import SmoothScroll from '@/components/motion/SmoothScroll'
 import SceneMount from '@/components/three/SceneMount'
 import { site } from '@/content/site'
 import { graph, organizationLd, OG_FALLBACK } from '@/lib/seo'
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
         <SceneMount />
+        <SmoothScroll />
         <MotionPreferenceProbe />
         <Header />
         <main id="main">{children}</main>

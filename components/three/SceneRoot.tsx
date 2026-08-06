@@ -153,7 +153,7 @@ export default function SceneRoot() {
             color={dark ? '#ffffff' : '#fff6ec'}
           />
           {quality.richLighting && <directionalLight position={[-5, -2, -4]} intensity={0.6} color={color} />}
-          <Preset preset={preset} color={color} quality={quality} intensity={effectiveIntensity} focus={focus} />
+          <Preset preset={preset} color={color} quality={quality} intensity={effectiveIntensity} focus={focus} theme={theme} />
         </Canvas>
       </CanvasBoundary>
     </div>
