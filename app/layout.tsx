@@ -54,13 +54,13 @@ export const metadata: Metadata = {
 }
 
 /**
- * Light is the default theme, so this is the light background. It is not keyed to
+ * Dark is the default theme, so this is the ink background. It is not keyed to
  * `prefers-color-scheme` any more: the OS no longer decides anything here, and a
  * media-keyed value reported the wrong browser chrome to anyone who had chosen the
  * theme the site does not follow. ThemeToggle rewrites this at runtime on switch.
  */
 export const viewport: Viewport = {
-  themeColor: '#F4F1E9',
+  themeColor: '#080808',
 }
 
 /**
@@ -68,10 +68,10 @@ export const viewport: Viewport = {
  * anything deferred produces a flash of the wrong theme.
  *
  * Writes the attribute unconditionally so that `data-theme` is always present and
- * always one of two values. Anything other than a stored 'dark' resolves to light,
+ * always one of two values. Anything other than a stored 'light' resolves to dark,
  * including a first visit, a cleared store, and localStorage throwing in private mode.
  */
-const themeScript = `(function(){var t='light';try{if(localStorage.getItem('kairos-theme')==='dark')t='dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()`
+const themeScript = `(function(){var t='dark';try{if(localStorage.getItem('kairos-theme')==='light')t='light'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

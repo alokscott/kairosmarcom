@@ -61,39 +61,23 @@
 /* ---------- Themes ---------- */
 
 /*
- * Light is the default: `:root` carries the bone tokens and the OS preference is
+ * Dark is the default: `:root` carries the ink tokens and the OS preference is
  * deliberately NOT consulted. The only thing that switches themes is the toggle,
  * which writes `data-theme` — so what a visitor sees is what they chose, and a
- * first-time visitor always lands on light.
+ * first-time visitor always lands on dark.
  *
  * Both theme blocks stay written out in full rather than sharing a base. They are
  * parsed as literal selector blocks by test/contrast.test.mjs, which is what stops
  * a well-meaning de-duplication from silently dropping a colour below AA.
  */
+/*
+ * ORDER MATTERS HERE. `:root` and `[data-theme='light']` have identical specificity
+ * (0,1,0), so on a light document BOTH match and the one written last wins. With the
+ * light block above, `:root`'s ink tokens overrode it and the toggle silently did
+ * nothing — the attribute flipped and the page stayed dark. The default theme must be
+ * declared FIRST and the override SECOND.
+ */
 :root,
-[data-theme='light'] {
-  color-scheme: light;
-  --bg: #f4f1e9;
-  --bg-raised: #fffdf7;
-  --bg-sunken: #e8e4d9;
-  --fg: #080808;
-  --fg-muted: #55534e;
-  /* 4.87:1 on --bg, and 4.82:1 against the darkest backdrop the Lightning field is
-     allowed to produce. Was #7c7a74 (3.81:1) and then #6f6d66, which cleared --bg but
-     left no margin once an animated backdrop sat behind it. */
-  --fg-faint: #6b6960;
-  --rule: #d9d4c6;
-  --rule-strong: #bfb9a8;
-
-  --orange-text: #c4340f;
-  --lime-text: #4a6300;
-  --violet-text: #5c3bff;
-  --silver-text: #5f615c;
-
-  --grain-opacity: 0.035;
-  --scene-fog: #f4f1e9;
-}
-
 [data-theme='dark'] {
   color-scheme: dark;
   --bg: #080808;
@@ -119,6 +103,29 @@
 
   --grain-opacity: 0.055;
   --scene-fog: #080808;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f1e9;
+  --bg-raised: #fffdf7;
+  --bg-sunken: #e8e4d9;
+  --fg: #080808;
+  --fg-muted: #55534e;
+  /* 4.87:1 on --bg, and 4.82:1 against the darkest backdrop the Lightning field is
+     allowed to produce. Was #7c7a74 (3.81:1) and then #6f6d66, which cleared --bg but
+     left no margin once an animated backdrop sat behind it. */
+  --fg-faint: #6b6960;
+  --rule: #d9d4c6;
+  --rule-strong: #bfb9a8;
+
+  --orange-text: #c4340f;
+  --lime-text: #4a6300;
+  --violet-text: #5c3bff;
+  --silver-text: #5f615c;
+
+  --grain-opacity: 0.035;
+  --scene-fog: #f4f1e9;
 }
 
 /* ---------- One accent per section (brief §2) ---------- */
@@ -244,18 +251,18 @@ summary {
 
 /* ---------- Brand mark: one file per theme, swapped in CSS ---------- */
 
-/* Light is the default, so the light mark is the default. */
+/* Dark is the default, so the dark-theme mark is the default. */
 .brand-mark--dark {
-  display: none;
+  display: block;
 }
 .brand-mark--light {
-  display: block;
-}
-[data-theme='dark'] .brand-mark--dark {
-  display: block;
-}
-[data-theme='dark'] .brand-mark--light {
   display: none;
+}
+[data-theme='light'] .brand-mark--dark {
+  display: none;
+}
+[data-theme='light'] .brand-mark--light {
+  display: block;
 }
 
 
@@ -415,6 +422,15 @@ summary {
   will-change: transform, opacity;
   /* No transition here: KineticHeadline drives this element with a spring, and a CSS
      transition on the same properties would fight it and blunt the settle. */
+  /*
+   * These lines are authored one per array entry, so a line that wraps is always a
+   * bug — never a layout decision. It has to be forbidden rather than avoided,
+   * because the scroll-driven `wdth` axis changes glyph advance widths continuously:
+   * "Welcome to the" sat within a pixel of its column's wrap point, so a sub-unit
+   * change in the axis flipped the headline between three and four lines over and
+   * over while scrolling, shunting the whole hero up and down by 81px.
+   */
+  white-space: nowrap;
 }
 
 /* Archivo carries a width axis as well as weight. This is the resting value — the

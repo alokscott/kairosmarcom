@@ -1,15 +1,18 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from 'motion/react'
-import { EASE_OUT_EXPO, POINTER_SPRING, useScrollProgress, useStill } from './scroll'
+import { motion, useMotionValue, useSpring } from 'motion/react'
+import { EASE_OUT_EXPO, POINTER_SPRING, useStill } from './scroll'
 
 /**
  * Kinetic motion primitives.
  *
  * Three rules hold across all of them:
  *  - Content is in the DOM and readable before anything animates.
- *  - Only `transform`, `opacity` and `font-variation-settings` are animated.
+ *  - Only `transform` and `opacity` are animated. `font-variation-settings` used to
+ *    be on that list and is not any more: it is the one property here that forces a
+ *    text re-shape and a relayout, and it re-wrapped the hero headline on every
+ *    scroll. See KineticHeadline.
  *  - Under reduced motion every one of these degrades to a static, correct layout —
  *    the pinned stages stop pinning, the type stops breathing, the tilt detaches.
  */
@@ -65,17 +68,33 @@ export function PinnedStage({
 /* ------------------------------------------------------------------ */
 
 /**
- * Line-by-line headline reveal that rotates in from the horizon, plus optional
- * scroll-linked width on Archivo's variable `wdth` axis.
+ * Line-by-line headline reveal that rotates in from the horizon.
  *
  * Lines are authored as an array rather than split from a string: a per-character
  * split would fragment the accessible name and be read out letter by letter.
+ *
+ * The `wdth` axis is NO LONGER scroll-driven, for two independent reasons found by
+ * measuring it:
+ *
+ *  1. It did not work. `useScroll` measured this element, which lives inside a
+ *     sticky pin — a stuck element's rect stops changing, so progress froze and the
+ *     axis reported one constant value (98.47) at every scroll position on the page.
+ *  2. It was actively harmful. `font-variation-settings` is the one layout-affecting
+ *     property in this file: changing it re-shapes the text and relayouts the heading
+ *     every frame. "Welcome to the" sat within a pixel of its column's wrap point, so
+ *     sub-unit jitter in the axis flipped the hero between three and four lines
+ *     continuously while scrolling.
+ *
+ * `kinetic` now selects a static optical width instead. Restoring the sweep would
+ * mean measuring the stage rather than this element AND accepting a per-frame text
+ * relayout — the `white-space: nowrap` on `.kinetic__line` is what would keep it
+ * from ever re-wrapping again.
  */
 export function KineticHeadline({
   lines,
   className = '',
   delay = 0,
-  /** Breathe the variable width axis as the section scrolls. */
+  /** Select the wider optical setting on Archivo's `wdth` axis. Static, not scrolled. */
   kinetic = false,
   /** Which edge the lines arrive from. 'down' descends into place from above. */
   enter = 'up',
@@ -95,22 +114,11 @@ export function KineticHeadline({
 }) {
   const ref = useRef<HTMLSpanElement>(null)
   const still = useStill()
-  const progress = useScrollProgress(ref)
-
-  // Deliberately narrow: 86 → 104. A wider sweep looks better in isolation but
-  // changes the advance widths enough to re-wrap the headline mid-scroll, which
-  // both breaks the authored line breaks and shifts everything below it.
-  const wdth = useTransform(progress, [0, 1], [86, 104])
-  const wght = useTransform(progress, [0, 1], [720, 880])
-  const axis = useMotionTemplate`'wdth' ${wdth}, 'wght' ${wght}`
-
-  const live = kinetic && !still
 
   return (
     <motion.span
       ref={ref}
       className={`kinetic ${kinetic ? 'kinetic--axis' : ''} ${className}`}
-      style={live ? { fontVariationSettings: axis } : undefined}
       initial="hidden"
       {...(trigger === 'load'
         ? { animate: 'shown' }

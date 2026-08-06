@@ -52,7 +52,7 @@ interface StoreState extends SceneConfig {
   theme: Theme
 }
 
-let state: StoreState = { preset: 'core', accent: 'orange', intensity: 1, focus: 0, active: true, theme: 'light' }
+let state: StoreState = { preset: 'core', accent: 'orange', intensity: 1, focus: 0, active: true, theme: 'dark' }
 
 const listeners = new Set<() => void>()
 
@@ -94,7 +94,7 @@ const SERVER_SNAPSHOT: StoreState = {
   intensity: 1,
   focus: 0,
   active: false,
-  theme: 'light',
+  theme: 'dark',
 }
 
 const getServerSnapshot = (): StoreState => SERVER_SNAPSHOT
