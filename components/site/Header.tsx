@@ -59,7 +59,12 @@ export default function Header() {
         }}
       >
         {/* Both marks ship; CSS picks one, so the logo is correct before hydration. */}
-        <Link href="/" className="no-underline" aria-label={`${site.name} — home`}>
+        {/* The mark is 28px tall; the link needs a 44px target around it. */}
+        <Link
+          href="/"
+          className="flex min-h-11 items-center no-underline"
+          aria-label={`${site.name} — home`}
+        >
           <Image
             src="/logo-wr.png"
             alt=""
@@ -103,15 +108,25 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Magnetic className="hidden sm:inline-block">
-            <Link
-              href="/contact"
-              className="btn btn--primary"
-              onClick={() => track('nav_route_select', { to: '/contact', source: 'header-cta' })}
-            >
-              Book a clarity call
-            </Link>
-          </Magnetic>
+          {/*
+            The responsive visibility lives on this wrapper, NOT on Magnetic.
+            Magnetic prepends its own `inline-block`, and `hidden` is the same display
+            utility at the same specificity — so which one wins is decided by Tailwind's
+            stylesheet order, and `inline-block` did. The CTA stayed visible on phones,
+            wrapped to three lines, and `border-radius: 999px` turned it into a circle
+            that covered the logo and pushed the header down over the hero headline.
+          */}
+          <span className="hidden sm:block">
+            <Magnetic>
+              <Link
+                href="/contact"
+                className="btn btn--primary whitespace-nowrap"
+                onClick={() => track('nav_route_select', { to: '/contact', source: 'header-cta' })}
+              >
+                Book a clarity call
+              </Link>
+            </Magnetic>
+          </span>
           <button
             type="button"
             onClick={openMenu}

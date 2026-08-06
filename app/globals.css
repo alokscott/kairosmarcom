@@ -61,10 +61,10 @@
 /* ---------- Themes ---------- */
 
 /*
- * Dark is the default: `:root` carries the ink tokens and the OS preference is
+ * Light is the default: `:root` carries the bone tokens and the OS preference is
  * deliberately NOT consulted. The only thing that switches themes is the toggle,
  * which writes `data-theme` — so what a visitor sees is what they chose, and a
- * first-time visitor always lands on dark.
+ * first-time visitor always lands on light.
  *
  * Both theme blocks stay written out in full rather than sharing a base. They are
  * parsed as literal selector blocks by test/contrast.test.mjs, which is what stops
@@ -78,6 +78,29 @@
  * declared FIRST and the override SECOND.
  */
 :root,
+[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f1e9;
+  --bg-raised: #fffdf7;
+  --bg-sunken: #e8e4d9;
+  --fg: #080808;
+  --fg-muted: #55534e;
+  /* 4.87:1 on --bg, and 4.82:1 against the darkest backdrop the Lightning field is
+     allowed to produce. Was #7c7a74 (3.81:1) and then #6f6d66, which cleared --bg but
+     left no margin once an animated backdrop sat behind it. */
+  --fg-faint: #6b6960;
+  --rule: #d9d4c6;
+  --rule-strong: #bfb9a8;
+
+  --orange-text: #c4340f;
+  --lime-text: #4a6300;
+  --violet-text: #5c3bff;
+  --silver-text: #5f615c;
+
+  --grain-opacity: 0.035;
+  --scene-fog: #f4f1e9;
+}
+
 [data-theme='dark'] {
   color-scheme: dark;
   --bg: #080808;
@@ -103,29 +126,6 @@
 
   --grain-opacity: 0.055;
   --scene-fog: #080808;
-}
-
-[data-theme='light'] {
-  color-scheme: light;
-  --bg: #f4f1e9;
-  --bg-raised: #fffdf7;
-  --bg-sunken: #e8e4d9;
-  --fg: #080808;
-  --fg-muted: #55534e;
-  /* 4.87:1 on --bg, and 4.82:1 against the darkest backdrop the Lightning field is
-     allowed to produce. Was #7c7a74 (3.81:1) and then #6f6d66, which cleared --bg but
-     left no margin once an animated backdrop sat behind it. */
-  --fg-faint: #6b6960;
-  --rule: #d9d4c6;
-  --rule-strong: #bfb9a8;
-
-  --orange-text: #c4340f;
-  --lime-text: #4a6300;
-  --violet-text: #5c3bff;
-  --silver-text: #5f615c;
-
-  --grain-opacity: 0.035;
-  --scene-fog: #f4f1e9;
 }
 
 /* ---------- One accent per section (brief §2) ---------- */
@@ -251,18 +251,18 @@ summary {
 
 /* ---------- Brand mark: one file per theme, swapped in CSS ---------- */
 
-/* Dark is the default, so the dark-theme mark is the default. */
+/* Light is the default, so the light mark is the default. */
 .brand-mark--dark {
-  display: block;
+  display: none;
 }
 .brand-mark--light {
-  display: none;
-}
-[data-theme='light'] .brand-mark--dark {
-  display: none;
-}
-[data-theme='light'] .brand-mark--light {
   display: block;
+}
+[data-theme='dark'] .brand-mark--dark {
+  display: block;
+}
+[data-theme='dark'] .brand-mark--light {
+  display: none;
 }
 
 
@@ -281,7 +281,15 @@ summary {
   position: sticky;
   top: 0;
   display: flex;
-  align-items: center;
+  /*
+   * `safe` is doing real work here. Plain `center` distributes overflow to BOTH sides,
+   * so on a short viewport (a 1280×800 laptop) the top of the headline was pushed above
+   * the panel and clipped by the `overflow: hidden` below. `safe` falls back to
+   * start-alignment the moment the content stops fitting, which is exactly the
+   * data-loss case this guards against — centred when it fits, never clipped when it
+   * does not.
+   */
+  align-items: safe center;
   width: 100%;
   height: 100svh;
   overflow: hidden;
@@ -293,7 +301,20 @@ summary {
   padding-block: 6rem 2.5rem;
 }
 
-@media (prefers-reduced-motion: reduce), (max-height: 34rem) {
+/*
+ * Un-pin where pinning cannot work.
+ *
+ * A pinned stage is a 100svh box that centres its content and clips the overflow. That
+ * is fine when the content fits. Below the `md` breakpoint the editorial grid collapses
+ * to a single column and the hero becomes headline + panel + proof stats stacked — far
+ * taller than one viewport — so centring pushed the overflow off BOTH ends and
+ * `overflow: hidden` ate the top of the headline. "Welcome to the" was simply gone on
+ * every phone.
+ *
+ * The width condition is therefore not cosmetic; it is the same class of guard as the
+ * existing height one. Top padding clears the fixed header (90px) with margin to spare.
+ */
+@media (prefers-reduced-motion: reduce), (max-height: 34rem), (max-width: 48rem) {
   .stage {
     height: auto;
   }
@@ -302,7 +323,13 @@ summary {
     height: auto;
     display: block;
     overflow: visible;
-    padding-block: clamp(4rem, 10vh, 7rem);
+    padding-block: clamp(7rem, 14vh, 9rem) clamp(3rem, 8vh, 5rem);
+  }
+
+  /* The aperture is sized in vw/vh against a viewport-height panel; on a stacked,
+     auto-height section it just masks arbitrary parts of the page. */
+  .hero-aperture {
+    display: none;
   }
 }
 
@@ -423,14 +450,18 @@ summary {
   /* No transition here: KineticHeadline drives this element with a spring, and a CSS
      transition on the same properties would fight it and blunt the settle. */
   /*
-   * These lines are authored one per array entry, so a line that wraps is always a
-   * bug — never a layout decision. It has to be forbidden rather than avoided,
-   * because the scroll-driven `wdth` axis changes glyph advance widths continuously:
-   * "Welcome to the" sat within a pixel of its column's wrap point, so a sub-unit
-   * change in the axis flipped the headline between three and four lines over and
-   * over while scrolling, shunting the whole hero up and down by 81px.
+   * Deliberately NOT `white-space: nowrap`.
+   *
+   * Forbidding the wrap was the first attempt at the scroll-jitter bug, and it traded
+   * one fault for a worse one: `.kinetic__mask` clips, so any line too long for its
+   * column was silently cut off instead of wrapping — "Welcome to the" lost its tail
+   * at 320px, "work must earn" at 768px.
+   *
+   * The jitter is fixed at its source instead: the `wdth` axis no longer animates on
+   * scroll (see KineticHeadline), so advance widths are constant and a line cannot
+   * re-wrap mid-scroll. Wrapping on a genuinely narrow viewport is correct behaviour;
+   * cutting the words off is not.
    */
-  white-space: nowrap;
 }
 
 /* Archivo carries a width axis as well as weight. This is the resting value — the
@@ -938,6 +969,29 @@ summary {
 .btn--ghost:hover {
   border-color: var(--accent);
   color: var(--accent-text);
+}
+
+/* ---------- Touch targets ---------- */
+
+/*
+ * WCAG 2.5.8 wants 44px on standalone controls. Inline links inside a sentence are
+ * explicitly exempt, and are deliberately left alone — padding those out would wreck
+ * the line rhythm of body copy for no accessibility gain.
+ *
+ * `a:only-child` of a list item or a `<dd>` is the discriminator: a link that is the
+ * whole content of a list entry is a navigation target (footer nav, contact details,
+ * social row), while a link inside a paragraph is prose. That distinction is
+ * structural, so it keeps working as pages are added.
+ *
+ * Scoped to coarse pointers, so the desktop footer keeps its tighter vertical rhythm.
+ */
+@media (pointer: coarse) {
+  li > a:only-child,
+  dd > a:only-child {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
 }
 
 /* ---------- Nav sheen ---------- */

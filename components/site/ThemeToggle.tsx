@@ -8,7 +8,7 @@ import { track } from '@/lib/analytics'
 /**
  * Two states, never three.
  *
- * There is no "system" option any more: the site defaults to dark and the OS
+ * There is no "system" option any more: the site defaults to light and the OS
  * preference is not consulted anywhere (see the `:root` block in globals.css). A
  * tri-state control whose third state looks identical to one of the other two is a
  * control nobody can predict.
@@ -28,15 +28,15 @@ const TRAVEL = TRACK - KNOB - PAD * 2
 
 /** Whatever the pre-paint script in app/layout.tsx already applied to <html>. */
 function currentTheme(): Theme {
-  if (typeof document === 'undefined') return 'dark'
-  return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
+  if (typeof document === 'undefined') return 'light'
+  return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
 }
 
 export default function ThemeToggle() {
   // Starts at the SSR value so hydration matches exactly, then syncs from the DOM
   // below. `ready` suppresses the spring for that first sync, so a returning
-  // light-mode visitor sees the knob already in place rather than sliding on load.
-  const [theme, setTheme] = useState<Theme>('dark')
+  // dark-mode visitor sees the knob already in place rather than sliding on load.
+  const [theme, setTheme] = useState<Theme>('light')
   const [ready, setReady] = useState(false)
   const still = useReducedMotion()
   const isDark = theme === 'dark'

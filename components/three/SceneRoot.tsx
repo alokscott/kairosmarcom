@@ -67,7 +67,7 @@ export default function SceneRoot() {
    */
   useEffect(() => {
     const read = () =>
-      setScene({ theme: document.documentElement.dataset.theme === 'light' ? 'light' : 'dark' })
+      setScene({ theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light' })
     read()
     const mo = new MutationObserver(read)
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
@@ -116,7 +116,7 @@ export default function SceneRoot() {
    * keeping the fog on the token means the scene can never drift away from --bg.
    */
   const fog = useMemo(() => {
-    if (typeof window === 'undefined') return '#080808'
+    if (typeof window === 'undefined') return '#f4f1e9'
     return getComputedStyle(document.documentElement).getPropertyValue('--scene-fog').trim() || '#080808'
   }, [theme])
 

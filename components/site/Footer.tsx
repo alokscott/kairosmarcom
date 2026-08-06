@@ -66,7 +66,10 @@ export default function Footer() {
               <li className="faint pt-2">{site.hours}</li>
             </ul>
 
-            <ul className="mt-6 flex list-none gap-4 p-0 text-sm">
+            {/* flex-wrap: three social links in a 4-of-12 column overflowed the
+                viewport by 18px at the 768px breakpoint, which put a horizontal
+                scrollbar on every page of the site. */}
+            <ul className="mt-6 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-sm">
               <li>
                 <a href={site.social.instagram} className="link-underline muted" rel="me noopener">
                   Instagram
@@ -90,14 +93,21 @@ export default function Footer() {
 
         <div className="flex flex-wrap items-center justify-between gap-4 text-xs" style={{ color: 'var(--fg-faint)' }}>
           <p>© {new Date().getFullYear()} Kairos Marcom. All rights reserved.</p>
-          <p className="flex gap-4">
-            <Link href="/privacy" className="link-underline">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="link-underline">
-              Terms
-            </Link>
-          </p>
+          {/* A list, not a paragraph: these are two navigation targets rather than a
+              sentence, and as list items they inherit the 44px touch height that
+              standalone links get on coarse pointers. */}
+          <ul className="m-0 flex list-none gap-4 p-0">
+            <li>
+              <Link href="/privacy" className="link-underline">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/terms" className="link-underline">
+                Terms
+              </Link>
+            </li>
+          </ul>
         </div>
       </div>
     </footer>

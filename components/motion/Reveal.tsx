@@ -97,6 +97,11 @@ export function Counter({
  * cursor slightly and settles back rather than snapping. Fine pointers only — on
  * touch it would fire on tap, and a button that slides away as you press it is
  * worse than one that does not move.
+ *
+ * Do NOT pass display utilities (`hidden`, `block`, …) through `className`: this
+ * component sets `inline-block`, which is the same utility at the same specificity,
+ * so the winner is decided by stylesheet order rather than by the caller. Put
+ * responsive visibility on a wrapper element instead.
  */
 export function Magnetic({
   children,

@@ -210,7 +210,9 @@ export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
                   type="button"
                   onClick={() => toggle(facet, value)}
                   aria-pressed={on}
-                  className="px-3 py-1.5 text-xs"
+                  // min-h-11 = 44px: these were 30px tall, under the WCAG 2.5.8 target
+                  // size, and they are the primary way of navigating this page on a phone.
+                  className="inline-flex min-h-11 items-center px-3 py-1.5 text-xs"
                   style={{
                     border: `1px solid ${on ? 'var(--accent)' : 'var(--rule)'}`,
                     background: on ? 'var(--accent)' : 'transparent',
