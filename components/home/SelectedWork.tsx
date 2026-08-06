@@ -5,7 +5,7 @@ import { useEffect, useRef, ViewTransition } from 'react'
 import { motion, useTransform, type MotionValue } from 'motion/react'
 import { KineticHeadline } from '@/components/motion/Kinetic'
 import { Reveal } from '@/components/motion/Reveal'
-import { useScrollProgress, useStill } from '@/components/motion/scroll'
+import { useMediaQuery, useScrollProgress, useStill } from '@/components/motion/scroll'
 import { Scene } from '@/components/three/Scene'
 import { cases } from '@/content/cases'
 import type { CaseStudy } from '@/content/types'
@@ -70,12 +70,27 @@ function Deck() {
   const still = useStill()
   const progress = useScrollProgress(ref, ['start start', 'end end'])
   const total = cases.length
+  /*
+   * The deck is a desktop device. Card offsets are 0.7rem apart, which on a wide
+   * screen leaves a readable sliver of each card behind the next. On a phone the
+   * cards are 320–410px tall, so nine of them collapse into a ~100px pile of dimmed
+   * edges with the live card below it — clutter, not depth. Below 48rem they run as
+   * an ordinary list and keep only their entrance animation.
+   */
+  const stacked = !useMediaQuery('(max-width: 48rem)')
 
   return (
     <div ref={ref} className="deck mt-16">
       <BackWord text="WORK" />
       {cases.map((study, i) => (
-        <StackPanel key={study.slug} study={study} index={i} total={total} progress={progress} still={!!still} />
+        <StackPanel
+          key={study.slug}
+          study={study}
+          index={i}
+          total={total}
+          progress={progress}
+          still={!!still || !stacked}
+        />
       ))}
     </div>
   )

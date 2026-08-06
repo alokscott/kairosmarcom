@@ -183,6 +183,13 @@
 html {
   -webkit-text-size-adjust: 100%;
   /*
+   * Deliberately no `overflow-x` here. Both `hidden` and `clip` on the root make the
+   * viewport stop being the containing block for `position: sticky`, and every pinned
+   * stage and the whole stacked deck are sticky — measured: the hero pin went from
+   * holding at top 0 to scrolling away at -1200. Horizontal overflow is contained at
+   * its source instead.
+   */
+  /*
    * No `scroll-behavior: smooth` here. SmoothScroll (Lenis) owns the easing, and the
    * two fight over the same scroll position on anchor jumps — the CSS one wins and
    * drags Lenis back mid-ease, which reads as a stutter. Under reduced motion Lenis
@@ -511,6 +518,23 @@ summary {
 }
 
 /*
+ * The horizontal bleed has to go on narrow screens.
+ *
+ * `-14%` lets the scrim fade out past the column edge rather than ending on a hard
+ * line, and on a wide layout the shell's gutters absorb it. On a phone the column is
+ * nearly the full viewport, so 14% of 350px put this pseudo-element 49px past a right
+ * edge of 370 — a document 419px wide inside a 390px viewport. That surplus is not
+ * visible as content, but it is reachable by rubber-banding on iOS, which is what
+ * showed up as dead space off the right side. The vertical bleed is kept; it costs
+ * nothing.
+ */
+@media (max-width: 48rem) {
+  .scrim::before {
+    inset: -10% 0;
+  }
+}
+
+/*
  * Contrast guard for body copy over the scene.
  *
  * The radial scrim above is enough behind oversized display type, but body copy
@@ -580,7 +604,13 @@ summary {
 
 .deck__word span {
   font-family: var(--font-display);
-  font-size: clamp(8rem, 26vw, 22rem);
+  /*
+   * 20vw, not 26vw. At 26vw the word measured 401px against a 390px viewport, so it
+   * was clipped hard at both edges — and because it is `nowrap` inside an
+   * `overflow: hidden` layer it also pushed the document's scroll width 31px past the
+   * viewport, which is where the phantom right-hand overflow was coming from.
+   */
+  font-size: clamp(3.5rem, 20vw, 22rem);
   font-weight: 800;
   line-height: 0.8;
   letter-spacing: -0.04em;
@@ -632,7 +662,8 @@ summary {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Phones read the deck as a plain list — see the note in SelectedWork's Deck. */
+@media (prefers-reduced-motion: reduce), (max-width: 48rem) {
   .stack__item {
     position: static;
   }

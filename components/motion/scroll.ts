@@ -42,6 +42,25 @@ export function useStill(): boolean {
   return mounted && !!reduced
 }
 
+/**
+ * A media query as React state, deferred one commit for the same reason as
+ * `useStill`: matchMedia cannot run during SSR, so reading it in render would make
+ * the server and the first client render disagree.
+ */
+export function useMediaQuery(query: string): boolean {
+  const [match, setMatch] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const sync = () => setMatch(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [query])
+
+  return match
+}
+
 type Offset = NonNullable<Parameters<typeof useScroll>[0]>['offset']
 
 /**
