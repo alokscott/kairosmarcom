@@ -3,17 +3,35 @@ import { cases } from '@/content/cases'
 import { nav, site } from '@/content/site'
 import ContactLink from './ContactLink'
 
+/*
+ * The footer paints its own opaque surface.
+ *
+ * It had no background, and the site's single WebGL canvas is `position: fixed`, so the
+ * scene carried on painting behind the footer nav and the contact details all the way
+ * down every page.
+ *
+ * `--bg-raised` rather than a literal #fff: it is the whitest surface in the token set
+ * (#fffdf7 on the light theme) and it still resolves to a sensible raised dark in the
+ * dark theme, where a hard white footer would read as a rendering fault.
+ */
 export default function Footer() {
   return (
-    <footer className="no-print relative border-t" style={{ borderColor: 'var(--rule)' }}>
-      <div className="shell py-16">
+    <footer
+      className="no-print relative border-t"
+      style={{ borderColor: 'var(--rule)', background: 'var(--bg-raised)' }}
+    >
+      {/* The bottom inset clears the iOS home indicator, which otherwise sits directly
+          over the copyright line once the page paints edge to edge. */}
+      <div className="shell pt-16" style={{ paddingBottom: 'calc(4rem + var(--safe-b))' }}>
         <div className="grid-editorial">
           <div className="col-span-4 md:col-span-4">
             <p className="statement max-w-[24ch]">{site.about}</p>
             <p className="eyebrow mt-6">{site.tagline}</p>
           </div>
 
-          <nav className="col-span-2 md:col-span-2 md:col-start-6" aria-label="Explore">
+          {/* Half-width from 416px up. Below that the two lists sat in ~140px columns
+              and every case-study client name wrapped to two or three lines. */}
+          <nav className="col-span-4 min-[26rem]:col-span-2 md:col-span-2 md:col-start-6" aria-label="Explore">
             <h2 className="mb-4 text-xs font-medium tracking-[0.18em] uppercase" style={{ color: 'var(--fg-faint)' }}>
               Explore
             </h2>
@@ -28,7 +46,7 @@ export default function Footer() {
             </ul>
           </nav>
 
-          <nav className="col-span-2 md:col-span-2" aria-label="Case studies">
+          <nav className="col-span-4 min-[26rem]:col-span-2 md:col-span-2" aria-label="Case studies">
             <h2 className="mb-4 text-xs font-medium tracking-[0.18em] uppercase" style={{ color: 'var(--fg-faint)' }}>
               Case studies
             </h2>

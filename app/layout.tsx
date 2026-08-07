@@ -51,6 +51,30 @@ export const metadata: Metadata = {
     images: [{ url: OG_FALLBACK, width: 1200, height: 630, alt: 'Kairos Marcom — full-service branding and communications' }],
   },
   twitter: { card: 'summary_large_image' },
+  /*
+   * iOS does not read the web app manifest. Everything Android takes from
+   * `app/manifest.ts` has to be restated here in Apple's own meta tags, or an
+   * added-to-home-screen launch opens in a plain Safari window with a screenshot of
+   * the page as its icon.
+   */
+  appleWebApp: {
+    capable: true,
+    title: site.name,
+    /*
+     * `default` — an opaque status bar in the page's own colour, which is the
+     * behaviour `themeColor` describes. `black-translucent` would put the page under
+     * the clock; the safe-area padding added in globals.css handles that case, but
+     * only a design that wants content up there should ask for it.
+     */
+    statusBarStyle: 'default',
+  },
+  /*
+   * No `icons` key. `app/icon.png` and `app/apple-icon.png` are file-convention
+   * metadata, which Next emits the <link> tags for automatically — and declaring
+   * `icons` here would override both with a hand-written list that has to be kept in
+   * step with the files by hand. The manifest's larger icons are declared where they
+   * belong, in app/manifest.ts.
+   */
 }
 
 /**
@@ -61,6 +85,22 @@ export const metadata: Metadata = {
  */
 export const viewport: Viewport = {
   themeColor: '#F4F1E9',
+  width: 'device-width',
+  initialScale: 1,
+  /*
+   * Paint into the notch and under the home indicator instead of letting the browser
+   * letterbox the page between them — the edge-to-edge look an installed app has. The
+   * `--safe-*` tokens in globals.css are the other half of this: `cover` hands the
+   * unsafe areas to the author, and every fixed or full-bleed surface on the site pads
+   * itself off them.
+   */
+  viewportFit: 'cover',
+  /*
+   * `maximumScale` and `userScalable` are deliberately not set. Locking zoom is the
+   * usual shortcut to stopping iOS's zoom-on-focus behaviour, and it works by removing
+   * pinch-to-zoom from everyone who needs it. The real cause is a sub-16px field, and
+   * that is fixed at source in globals.css instead.
+   */
 }
 
 /**

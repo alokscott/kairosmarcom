@@ -291,7 +291,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
                   const service = serviceById(id)
                   return (
                     <li key={id} className="p-5" style={{ border: '1px solid var(--rule)' }}>
-                      <Link href={`/services#${service.id}`} className="link-underline font-semibold">
+                      <Link href={`/services#${service.id}`} className="tap-44 link-underline font-semibold">
                         {service.name}
                       </Link>
                       <p className="muted mt-2 text-sm leading-relaxed">{service.blurb}</p>

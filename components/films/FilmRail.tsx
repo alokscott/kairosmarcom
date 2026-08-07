@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion, useTransform } from 'motion/react'
 import { KineticHeadline, PinnedStage } from '@/components/motion/Kinetic'
 import { Reveal } from '@/components/motion/Reveal'
-import { useScrollProgress } from '@/components/motion/scroll'
+import { useMediaQuery, useScrollProgress } from '@/components/motion/scroll'
 import { smoothScrollTo } from '@/components/motion/SmoothScroll'
 import { Scene } from '@/components/three/Scene'
 import { films } from '@/content/films'
@@ -42,8 +42,20 @@ export default function FilmRail() {
   const progress = useScrollProgress(sectionRef, ['start start', 'end end'])
   const x = useTransform(progress, [0, 1], [0, -travel])
 
+  /*
+   * The exact condition under which globals.css un-pins `.stage` and turns `.htrack`
+   * into a swipeable rail. The stylesheet is what actually makes the switch — it has
+   * to be, so the rail is correct before hydration — and this mirrors it so the
+   * JavaScript half stops driving a transform the CSS is overriding anyway.
+   */
+  const swiping = useMediaQuery('(prefers-reduced-motion: reduce), (max-width: 48rem), (max-height: 34rem)')
+
   useEffect(() => {
     // Distance the track must travel to bring its last tile flush with the right edge.
+    if (swiping) {
+      setTravel(0)
+      return
+    }
     const measure = () => {
       const track = trackRef.current
       if (!track) return
@@ -52,14 +64,20 @@ export default function FilmRail() {
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
-  }, [])
+  }, [swiping])
 
   /* Keyboard: bring the focused tile into view by moving the page, not the track. */
   const onFocusIn = (e: React.FocusEvent<HTMLUListElement>) => {
     const track = trackRef.current
     const section = sectionRef.current
     if (!track || !section) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    /*
+     * When the rail is a plain scroll container the browser already brings a focused
+     * tile into view by scrolling the rail itself. Moving the page as well would fight
+     * it, and the pin range this reads (`offsetHeight - innerHeight`) is meaningless
+     * on an auto-height section.
+     */
+    if (swiping) return
 
     const tile = (e.target as HTMLElement).closest('li')
     if (!tile) return
@@ -128,7 +146,7 @@ export function FilmTile({ film, onOpen }: { film: Film; onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="group block w-full cursor-pointer text-left transition-transform duration-300 hover:-translate-y-1.5"
+      className="press group block w-full cursor-pointer text-left transition-transform duration-300 hover:-translate-y-1.5"
       style={{
         border: '1px solid var(--rule)',
         background: 'color-mix(in srgb, var(--bg-raised) 85%, transparent)',

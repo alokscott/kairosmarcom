@@ -172,6 +172,37 @@
   --on-accent: #080808;
 }
 
+/* ---------- Device insets ---------- */
+
+/*
+ * `viewport-fit=cover` (set in layout.tsx's viewport export) is what lets the page
+ * paint edge to edge behind a notch and a home indicator — and it is also what makes
+ * those areas the author's problem rather than the browser's. These four tokens are
+ * the single place that is handled, so a component asks for `--safe-b` instead of
+ * repeating an `env()` chain with its own fallback.
+ *
+ * The `env()` fallback of 0px is not decoration: on every browser that does not
+ * implement the keyword, an unguarded `env()` makes the whole declaration invalid and
+ * the padding it was added to disappears entirely.
+ */
+:root {
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+
+  /*
+   * Height of the fixed bar at rest, published so pinned stages reserve it from one
+   * place instead of each carrying its own magic number. 1.15rem of padding either
+   * side of the tallest control in the row, plus the status-bar inset.
+   *
+   * At rest, not scrolled: the bar shrinks to roughly 4.4rem once `data-scrolled` is
+   * set, and a reservation sized to the smaller state would put the first line of a
+   * pinned panel under the bar for the whole of the first viewport.
+   */
+  --header-h: calc(5.5rem + var(--safe-t));
+}
+
 /* ---------- Base ---------- */
 
 *,
@@ -182,6 +213,27 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /*
+   * Touch chrome removal. The grey flash Android paints over every tapped element is
+   * the single loudest "this is a web page" tell — the press feedback below replaces
+   * it with something that matches the site's own motion.
+   */
+  -webkit-tap-highlight-color: transparent;
+  /*
+   * `contain`, not `none`. This stops a scroll that runs off the end of the page from
+   * chaining to the browser's own overscroll — which on iOS standalone is what exposed
+   * a band of UA background under the footer. `none` would additionally kill Android's
+   * pull-to-refresh, and on a site people arrive at from a link, silently removing a
+   * gesture they already have is worse than the gesture firing.
+   */
+  overscroll-behavior-y: contain;
+  /*
+   * Reserve the scrollbar's width whether or not it is currently drawn, so that
+   * locking the scroll behind the mobile sheet does not shift the whole page sideways
+   * as it opens. Resolves to zero on every platform with overlay scrollbars, which is
+   * all of the touch ones.
+   */
+  scrollbar-gutter: stable;
   /*
    * Deliberately no `overflow-x` here. Both `hidden` and `clip` on the root make the
    * viewport stop being the containing block for `position: sticky`, and every pinned
@@ -218,12 +270,55 @@ h4 {
   line-height: 0.92;
   letter-spacing: -0.03em;
   text-wrap: balance;
-  margin: 0;
+  /* The margin reset moved into `@layer base` below — see the note there. */
+  /*
+   * A last-resort break, not a hyphenation policy. The display sizes have a floor
+   * (`--text-h1` never goes below 36px) while the column does not, so on a 320px
+   * screen a single long word — "communications", a client name — is wider than the
+   * space it has and pushes the document past the viewport. `break-word` only ever
+   * fires when the word genuinely cannot fit; at every other width the wrapping is
+   * unchanged.
+   */
+  overflow-wrap: break-word;
 }
 
 p {
   text-wrap: pretty;
-  margin: 0;
+}
+
+/*
+ * The margin reset has to sit in a LAYER, and this is the same trap already documented
+ * on `.panel` and on `dialog` further down. It was costing the site its entire vertical
+ * rhythm.
+ *
+ * This file is unlayered; Tailwind's utilities live in `@layer utilities`. Unlayered
+ * CSS beats layered CSS outright, however specific the layered selector is — so
+ * `h1,h2,h3,h4 { margin: 0 }` and `p { margin: 0 }` written up there silently defeated
+ * EVERY margin utility on every heading and every paragraph on the site. Measured on
+ * /services and /about: `p.mt-8` computed to 0px, `p.mt-6` to 0px, `h3.mt-10` to 0px.
+ * `ul.mt-3` and `ol.mt-14` were unaffected and did apply, which is exactly what made
+ * the fault read as a design choice rather than a bug — lists breathed, prose did not.
+ *
+ * Visibly: a service blurb, its "What this solves" heading, that paragraph and the
+ * "Deliverables" heading all arrived as one unbroken block with nothing between them.
+ * Worst on a phone, where the columns stack and there is no gutter left to read as
+ * separation.
+ *
+ * Declared in `@layer base` AFTER `@import 'tailwindcss'`, so it still beats
+ * Preflight's own reset and both elements still default to 0 — but a `mt-*` utility can
+ * now win, which is the only reason those classes are in the markup.
+ *
+ * Only the margin moved. The typography above stays unlayered exactly as it was, so
+ * nothing about the type design changes.
+ */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  p {
+    margin: 0;
+  }
 }
 
 a {
@@ -304,8 +399,12 @@ summary {
    * The header is fixed, so a panel centred in the full viewport puts its first
    * line underneath it. Reserving the header's height here keeps pinned content
    * inside the visible band rather than behind the nav.
+   *
+   * Driven off `--header-h` rather than a literal 6rem, so the reservation grows by
+   * the status-bar inset on a notched phone instead of the first line sliding back
+   * under the bar there.
    */
-  padding-block: 6rem 2.5rem;
+  padding-block: calc(var(--header-h) + 1.5rem) 2.5rem;
 }
 
 /*
@@ -330,7 +429,7 @@ summary {
     height: auto;
     display: block;
     overflow: visible;
-    padding-block: clamp(7rem, 14vh, 9rem) clamp(3rem, 8vh, 5rem);
+    padding-block: calc(clamp(6rem, 13vh, 8rem) + var(--safe-t)) clamp(3rem, 8vh, 5rem);
   }
 
   /* The aperture is sized in vw/vh against a viewport-height panel; on a stacked,
@@ -518,17 +617,25 @@ summary {
 }
 
 /*
- * The horizontal bleed has to go on narrow screens.
+ * The horizontal bleed has to go wherever nothing is clipping it.
  *
  * `-14%` lets the scrim fade out past the column edge rather than ending on a hard
- * line, and on a wide layout the shell's gutters absorb it. On a phone the column is
- * nearly the full viewport, so 14% of 350px put this pseudo-element 49px past a right
- * edge of 370 — a document 419px wide inside a 390px viewport. That surplus is not
- * visible as content, but it is reachable by rubber-banding on iOS, which is what
- * showed up as dead space off the right side. The vertical bleed is kept; it costs
- * nothing.
+ * line. On a phone the column is nearly the full viewport, so 14% of 350px put this
+ * pseudo-element 49px past a right edge of 370 — a document 419px wide inside a 390px
+ * viewport, not visible as content but reachable by rubber-banding on iOS.
+ *
+ * The width test alone was not enough. What actually contains the bleed on a wide
+ * layout is not the shell's gutter but `.stage__pin`'s `overflow: hidden`, so the
+ * moment a stage un-pins the bleed escapes — and un-pinning happens on SHORT viewports
+ * as well as narrow ones. A phone in landscape is 844px wide, sails past the 48rem
+ * test, and pushed the document to 908px. Measured on the film rail's headline, whose
+ * scrim spans the shell rather than one grid column.
+ *
+ * So this is the same three-part condition as the un-pin rule above, and has to stay
+ * in step with it: wherever the pin stops clipping, the bleed has to stop bleeding.
+ * The vertical bleed is kept throughout; it costs nothing.
  */
-@media (max-width: 48rem) {
+@media (prefers-reduced-motion: reduce), (max-height: 34rem), (max-width: 48rem) {
   .scrim::before {
     inset: -10% 0;
   }
@@ -703,6 +810,48 @@ summary {
   will-change: transform;
 }
 
+/*
+ * Where the pin does not run, the rail must be swipeable — otherwise it is not a rail,
+ * it is one and a bit tiles and nineteen that cannot be reached.
+ *
+ * This is the same condition that un-pins `.stage` above, and it has to be, because
+ * the two are the same mechanism: the track is moved by the pin's scroll progress, so
+ * the moment the pin becomes `position: static` the progress stops advancing and the
+ * transform sits at 0 forever. `body` clips horizontal overflow, so the remaining
+ * tiles were not merely off-screen, they were unreachable by any input.
+ *
+ * Deliberately solved in CSS rather than by branching the component on a media query:
+ * this is correct on the first paint, before hydration, which is exactly when a phone
+ * visitor is looking at it.
+ *
+ * `!important` because the transform is written inline by motion's `x` value, and an
+ * inline style is otherwise unbeatable from a stylesheet.
+ */
+@media (prefers-reduced-motion: reduce), (max-width: 48rem), (max-height: 34rem) {
+  .htrack {
+    transform: none !important;
+    will-change: auto;
+    overflow-x: auto;
+    /* A swipe that runs off the end of the rail is a swipe on the rail, not a
+       browser back-gesture. */
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    /* Matches the rail's own inline start padding, so the first tile snaps to the
+       text column rather than to the very edge of the screen. */
+    scroll-padding-inline-start: clamp(1.25rem, 5vw, 4rem);
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .htrack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .htrack > * {
+    scroll-snap-align: start;
+  }
+}
+
 /* ---------- Pic reveal ---------- */
 
 /*
@@ -768,12 +917,8 @@ summary {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .htrack {
-    transform: none !important;
-    overflow-x: auto;
-  }
-}
+/* The reduced-motion case for `.htrack` is handled with the un-pinned one above —
+   they are the same failure and were drifting apart as two rules. */
 
 /* ---------- Grain: procedural, no image request ---------- */
 
@@ -789,18 +934,26 @@ summary {
 
 /* ---------- Layout primitives ---------- */
 
+/*
+ * The gutter is a `max()` against the device inset rather than a plain clamp, so a
+ * phone held in landscape keeps its text clear of the notch and the rounded corner
+ * without every page in portrait paying for padding it does not need. On any device
+ * with no inset the insets resolve to 0px and this is exactly the old clamp.
+ */
 .shell {
   width: 100%;
   max-width: var(--container-editorial);
   margin-inline: auto;
-  padding-inline: clamp(1.25rem, 5vw, 4rem);
+  padding-left: max(clamp(1.25rem, 5vw, 4rem), var(--safe-l));
+  padding-right: max(clamp(1.25rem, 5vw, 4rem), var(--safe-r));
 }
 
 .shell-wide {
   width: 100%;
   max-width: 110rem;
   margin-inline: auto;
-  padding-inline: clamp(1.25rem, 5vw, 4rem);
+  padding-left: max(clamp(1.25rem, 5vw, 4rem), var(--safe-l));
+  padding-right: max(clamp(1.25rem, 5vw, 4rem), var(--safe-r));
 }
 
 .rule {
@@ -813,17 +966,54 @@ summary {
 .grid-editorial {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(1rem, 2.5vw, 2rem);
+  column-gap: clamp(1rem, 2.5vw, 2rem);
+  /*
+   * Row gap is NOT the same value as the column gap, and that is the point.
+   *
+   * `gap` set both axes at once, which is correct while the columns are side by side:
+   * 16px is a gutter, and a gutter is all that is needed to tell two columns apart
+   * when they are already separated by being in different columns.
+   *
+   * Below the breakpoint they stop being different columns. Every one of these grids
+   * collapses to a single stack, and that 16px gutter became the entire vertical
+   * separation between two unrelated blocks of copy — measured at 16px on a 390px
+   * phone between a service blurb and the "What this solves" panel that follows it,
+   * between all three footer navigation columns, between each principle on /about, and
+   * between the contact details and the enquiry form. At that distance the blocks read
+   * as one continuous run of text: nothing signals where one idea ends and the next
+   * begins, which is what makes the stacked layout feel like an unformatted dump
+   * rather than a page.
+   *
+   * ~36px is enough to separate them without opening a hole. Restored to the gutter
+   * value at `md`, where the columns are columns again and the old behaviour is right.
+   */
+  row-gap: clamp(2.25rem, 7vw, 3rem);
 }
 @media (min-width: 48rem) {
   .grid-editorial {
     grid-template-columns: repeat(12, minmax(0, 1fr));
+    row-gap: clamp(1rem, 2.5vw, 2rem);
   }
 }
 
 .section {
   padding-block: clamp(4.5rem, 11vh, 9rem);
   position: relative;
+}
+
+/*
+ * Landscape phone: height is the scarce axis, not width.
+ *
+ * `11vh` of a 390px-tall viewport is 43px, so the clamp floor of 4.5rem was winning
+ * and every section paid 72px top and bottom out of a screen that has 390px in total —
+ * roughly a third of the visible page spent on gutters. The `(pointer: coarse)` guard
+ * keeps a short desktop window out of it; a 500px browser window on a laptop is not
+ * the same situation.
+ */
+@media (max-height: 34rem) and (orientation: landscape) and (pointer: coarse) {
+  .section {
+    padding-block: 3rem;
+  }
 }
 
 /* ---------- Type utilities ---------- */
@@ -1043,6 +1233,161 @@ summary {
   }
 }
 
+/* ---------- Touch behaviour ---------- */
+
+/*
+ * Everything below exists to close the gap between "a web page that resizes" and
+ * "something that behaves like an app in the hand". None of it changes the desktop
+ * rendering: each rule is gated on the pointer or hover capability that actually
+ * distinguishes the two.
+ */
+
+/*
+ * `manipulation` opts out of double-tap-to-zoom on controls, which is what the ~300ms
+ * delay between finger-up and the click firing is actually spent waiting for. The page
+ * itself keeps pinch-zoom — that is an accessibility feature and is not touched here,
+ * which is also why the viewport export does not set `maximum-scale`.
+ */
+a,
+button,
+summary,
+label,
+[role='button'],
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/*
+ * Chrome, not content. A long press on a nav item or a button should feel like a
+ * press-and-hold, not like the start of a text selection — on iOS the default also
+ * pops the copy/share callout over the control being held. Body copy, headings and
+ * anything inside `<main>` prose is deliberately left selectable.
+ */
+button,
+summary,
+[role='button'],
+.btn,
+.eyebrow,
+.theme-toggle,
+nav a {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/*
+ * Press feedback.
+ *
+ * On a touch device there is no hover to acknowledge the finger, so without this the
+ * only feedback between tap and navigation is the page changing — which on a slow
+ * connection is several hundred milliseconds of nothing. The scale is deliberately
+ * small and the release is longer than the press, which is the asymmetry that reads
+ * as a physical button rather than a flicker.
+ */
+@media (hover: none) {
+  .btn,
+  .press {
+    transition:
+      transform 260ms var(--ease-out-expo),
+      background var(--dur-hover) var(--ease-out-expo),
+      color var(--dur-hover) var(--ease-out-expo),
+      border-color var(--dur-hover) var(--ease-out-expo);
+  }
+
+  .btn:active,
+  .press:active {
+    transform: scale(0.965);
+    transition-duration: 90ms;
+  }
+
+  /*
+   * Sticky hover, removed.
+   *
+   * A tap on a touch device leaves the element in `:hover` until something else is
+   * tapped, so `.btn--primary` stayed scaled at 1.05 and the film tiles stayed lifted
+   * long after the finger was gone. Tailwind v4 already gates its own `hover:`
+   * utilities behind `(hover: hover)`; these are the hand-written ones it cannot see.
+   */
+  .btn--primary:hover {
+    background: var(--accent);
+    transform: none;
+  }
+
+  .btn--primary:hover::after {
+    --draw-angle: 0deg;
+  }
+
+  .btn--ghost:hover {
+    border-color: var(--rule-strong);
+    color: var(--fg);
+  }
+
+  .marquee:hover {
+    animation-play-state: running;
+  }
+
+  /*
+   * The pic reveal is hover-driven, and on a phone the hover never arrives — so every
+   * film poster sat permanently blurred and desaturated with one sharp band across the
+   * middle, which reads as a broken image rather than as an effect. Touch devices get
+   * the frame itself.
+   */
+  .pic__base {
+    display: none;
+  }
+  .pic__sharp {
+    clip-path: none;
+    transition: none;
+  }
+  .pic__band {
+    display: none;
+  }
+}
+
+/*
+ * Standalone controls that are not `a:only-child` of a list item, and so are not
+ * caught by the structural rule above: filter chips, the primary nav, a card title
+ * that sits over its own description. Opt-in, because whether a control is a
+ * navigation target or a word inside a sentence is not something a selector can tell
+ * from the outside.
+ *
+ * Coarse pointers only — on a mouse these are correctly sized already, and growing
+ * them would open gaps in rows that are currently tight on purpose.
+ */
+@media (pointer: coarse) {
+  .tap-44 {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+/*
+ * Horizontal rails as a native carousel.
+ *
+ * Applied by the rail components on touch, where the scroll-linked pin does not run.
+ * Snapping to the tile start is what makes a swipe land on a card instead of halfway
+ * between two, and `overscroll-behavior-x: contain` stops a swipe that reaches the end
+ * of the rail from being handed to the browser as a back-navigation gesture.
+ */
+.swipe-rail {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.swipe-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.swipe-rail > * {
+  scroll-snap-align: start;
+}
+
 /* ---------- Nav sheen ---------- */
 
 /*
@@ -1054,6 +1399,13 @@ summary {
 .nav-sheen {
   background: transparent;
   transition: background var(--dur-component) var(--ease-out-expo);
+  /*
+   * The bar is fixed at top 0 and the page paints under the status bar once
+   * `viewport-fit=cover` is on, so the inset is padding on the bar rather than an
+   * offset — the tinted surface still reaches the top of the screen, and only the
+   * logo and controls move down out from under the clock.
+   */
+  padding-top: var(--safe-t);
 }
 
 .nav-sheen[data-scrolled='true'] {
@@ -1245,6 +1597,28 @@ summary {
   line-height: 1.6;
 }
 
+/*
+ * iOS Safari zooms the whole page in when a focused field's text is under 16px, and it
+ * does not zoom back out afterwards — so tapping the contact form left the visitor in a
+ * zoomed, horizontally scrolling layout for the rest of the session. `--text-small` is
+ * 14px, and 16px is the threshold exactly.
+ *
+ * This has to sit AFTER the `.field input` rule above, not with the rest of the touch
+ * layer earlier in the file. Both selectors are (0,1,1) and both are unlayered, so the
+ * later one wins and an earlier copy of this rule was overridden and did nothing —
+ * which is how a fix that reads correctly can still ship broken.
+ */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea,
+  .field input,
+  .field textarea,
+  .field select {
+    font-size: 1rem;
+  }
+}
+
 .field input:focus,
 .field textarea:focus,
 .field select:focus {
@@ -1385,6 +1759,118 @@ dialog {
 dialog::backdrop {
   background: rgb(4 4 4 / 0.88);
   backdrop-filter: blur(6px);
+}
+
+/* ---------- Mobile navigation sheet ---------- */
+
+/*
+ * Sizing lives here rather than on Tailwind utilities for the reason documented on
+ * `.lightbox` above: this file is unlayered and Tailwind's utilities are not, so an
+ * unlayered rule wins regardless of specificity. Writing the sizing where it is going
+ * to win anyway is less surprising than writing it where it will be overridden.
+ */
+.sheet {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  /*
+   * Landscape is the case this exists for. Six display-size nav items, a header row
+   * and a CTA block do not fit in the 390px of height a phone has on its side, and
+   * without this the CTA and the contact line were simply cut off with no way to
+   * reach them.
+   */
+  overflow-y: auto;
+  /* A scroll that reaches the end of the sheet stays in the sheet. */
+  overscroll-behavior: contain;
+}
+
+.sheet__inner {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2rem;
+  /* Clears the status bar at the top and the home indicator at the bottom; the side
+     insets only bite in landscape, where they clear the notch. */
+  padding-top: calc(1.15rem + var(--safe-t));
+  padding-bottom: calc(1.5rem + var(--safe-b));
+  padding-left: max(1.5rem, var(--safe-l));
+  padding-right: max(1.5rem, var(--safe-r));
+}
+
+/*
+ * Landscape sizes the nav off the width, which is the wrong axis when the phone is on
+ * its side: 10vw of 844px hits the 3.5rem ceiling, and six items at that size made the
+ * sheet three screens tall for a menu with six entries in it. Fixed size, so the whole
+ * list is visible at once and the scroll is a fallback rather than the way it is used.
+ */
+@media (max-height: 34rem) and (orientation: landscape) {
+  .sheet__inner {
+    gap: 1rem;
+  }
+
+  .sheet__item a {
+    font-size: 1.75rem;
+    padding-block: 0.25rem;
+  }
+}
+
+/*
+ * Rises from the bottom edge rather than appearing in place. A sheet that slides is
+ * the difference between a navigation overlay and a page that swapped: the movement
+ * is what says the previous page is still there, underneath.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet[open] {
+    animation: sheet-in 420ms var(--ease-out-expo) both;
+  }
+
+  .sheet[open]::backdrop {
+    animation: sheet-backdrop-in 420ms var(--ease-out-expo) both;
+  }
+
+  /*
+   * Items arrive after the sheet, one behind the next. The delay is carried on a
+   * custom property written per item in Header.tsx, so adding a nav entry does not
+   * mean adding an nth-child rule here.
+   */
+  .sheet__item {
+    animation: sheet-item-in 460ms var(--ease-out-expo) both;
+    animation-delay: calc(140ms + var(--i, 0) * 45ms);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes sheet-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-item-in {
+  from {
+    transform: translateY(0.9rem);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
 }
 
 /* ---------- Marquee ---------- */

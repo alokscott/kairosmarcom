@@ -108,7 +108,7 @@ function FilterRow({
             type="button"
             aria-pressed={on}
             onClick={() => onChange(on ? null : value)}
-            className="px-3 py-1.5 text-xs"
+            className="tap-44 px-3 py-1.5 text-xs"
             style={{
               border: `1px solid ${on ? 'var(--accent)' : 'var(--rule)'}`,
               background: on ? 'var(--accent)' : 'transparent',
