@@ -1,4 +1,5 @@
 import { Reveal } from '@/components/motion/Reveal'
+import LineIcon from '@/components/site/LineIcon'
 import { brandRoster, brandsIntro } from '@/content/site'
 
 /**
@@ -93,15 +94,11 @@ const SECTOR_ICONS: Record<string, React.ReactNode> = {
  *
  * One definition list per sector rather than a single flat grid, so a screen reader
  * hears which sector each set of names belongs to instead of forty-odd loose items.
- */
-/*
- * The band carries no `data-accent="silver"` any more.
  *
- * Silver is the palette's neutral, kept for bands that should recede — and on a silver
- * section `--accent` resolves to grey, which meant the hover state drew a grey rule and
- * turned the icon grey-on-grey. The feedback was firing correctly and was invisible.
- * The quiet in this band now comes from the card surfaces, not from draining the colour
- * out of the one thing that has to be seen to work.
+ * The band carries no `data-accent="silver"`. Silver is the palette's neutral, kept for
+ * bands that should recede — and on a silver section `--accent` resolves to grey, which
+ * meant the hover state drew a grey rule and turned the icon grey-on-grey: firing
+ * correctly and invisible. The quiet here comes from the card surfaces instead.
  */
 export default function BrandRoster() {
   return (
@@ -145,19 +142,9 @@ export default function BrandRoster() {
                     `justify-between`. Across the card the two read as two unrelated
                     marks; together they read as one label with a symbol. */}
                 <div className="mb-6 flex items-center gap-4">
-                  <svg
-                    className="tile__icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
+                  <LineIcon className="tile__icon">
                     {SECTOR_ICONS[row.sector]}
-                  </svg>
+                  </LineIcon>
                   <dt className="tile__title eyebrow">{row.sector}</dt>
                 </div>
 

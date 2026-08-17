@@ -1949,6 +1949,194 @@ dialog::backdrop {
   }
 }
 
+/* ---------- Services picker ---------- */
+
+/*
+ * The name steps to the right as the pointer reaches its row, so the list reads as
+ * responding rather than as six labels that happen to change a panel. Only the NAME
+ * moves — the icon and the numeral hold their columns, which is what keeps the list
+ * looking like a list while one row is being touched.
+ */
+.service-row__name {
+  transition: transform var(--dur-hover) var(--ease-out-expo);
+}
+.service-row:hover .service-row__name,
+.service-row[aria-checked='true'] .service-row__name {
+  transform: translateX(0.5rem);
+}
+
+.service-row__icon {
+  transition:
+    color var(--dur-hover) var(--ease-out-expo),
+    transform var(--dur-component) var(--ease-out-expo);
+}
+.service-row[aria-checked='true'] .service-row__icon {
+  transform: scale(1.12);
+}
+
+/*
+ * The panel arrives rather than swapping its text in place. React replaces the block
+ * on every change (it is keyed on the service id), so this runs once per selection.
+ */
+.service-panel {
+  animation: service-panel-in var(--dur-component) var(--ease-out-expo) both;
+}
+
+@keyframes service-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-row__name,
+  .service-row__icon {
+    transition: none;
+  }
+  .service-row:hover .service-row__name,
+  .service-row[aria-checked='true'] .service-row__name {
+    transform: none;
+  }
+  /*
+   * The panel still fades — it is replaced wholesale, so with no animation at all the
+   * new text appears with no acknowledgement that anything happened. Opacity without
+   * travel is the part that is not motion.
+   */
+  .service-panel {
+    animation: service-panel-fade var(--dur-micro) linear both;
+  }
+  @keyframes service-panel-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* ---------- Tagline ---------- */
+
+/*
+ * Four beats, and the emphasis walks through them.
+ *
+ * The arithmetic is the point, so it is written down: four phrases x a 1.4s stagger =
+ * a 5.6s cycle, and one stagger step is 25% of it. The lit window below runs 4%->22%,
+ * which is 18% — inside one step — so a phrase has released before the next one lights
+ * and no two are ever lit together.
+ *
+ * 0% and 100% are both the RESTING state, not the lit one. That is what makes the loop
+ * seamless: a lit endpoint ramps back up over the last few percent of the cycle and
+ * collides with the following phrase, which is exactly what it did at first — measured,
+ * two beats lit at once.
+ *
+ * Change the stagger in Tagline.tsx and these numbers have to move with it.
+ */
+.tagline {
+  font-family: var(--font-sans);
+  /* --text-small, not --text-micro. At 12px the colour change was there and easy to
+     miss; this line is the company's tagline, not a caption. */
+  font-size: var(--text-small);
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin: 0;
+  /* The rule under each beat needs somewhere to sit without changing the line box. */
+  line-height: 2;
+}
+
+/* Always accent. The stops are what make four phrases read as four beats before a
+   single word has been read. */
+.tagline__stop {
+  color: var(--accent-text);
+}
+
+.tagline__beat {
+  position: relative;
+  animation: tagline-beat 5.6s var(--ease-in-out-quart) infinite;
+  animation-delay: var(--beat-delay, 0s);
+}
+
+/*
+ * The visible half of the effect.
+ *
+ * Colour alone was not enough to read as an animation — the whole point is that the
+ * line says itself, and a grey-to-red shift at small size is a thing you notice only
+ * if you are already looking. A rule that draws in under the phrase and retracts is
+ * unmistakable, and because it is a `transform` on a pseudo-element it costs no layout.
+ *
+ * `right: 0.35em` stops short of the space after the stop, so the rule underlines the
+ * phrase rather than the gap to the next one.
+ */
+.tagline__beat::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0.35em;
+  bottom: -0.15em;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: tagline-rule 5.6s var(--ease-in-out-quart) infinite;
+  animation-delay: var(--beat-delay, 0s);
+}
+
+@keyframes tagline-beat {
+  0%,
+  100% {
+    color: inherit;
+  }
+  /* Held between 4% and 14% rather than eased straight back out, so a phrase reads as
+     lit and then released instead of pulsing. */
+  4%,
+  14% {
+    color: var(--accent-text);
+  }
+  22% {
+    color: inherit;
+  }
+}
+
+@keyframes tagline-rule {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  4%,
+  14% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  /* Retracts to the RIGHT. Drawing in from the left and leaving from the left would
+     read as a bounce; releasing the way the reading goes reads as the beat passing on. */
+  22%,
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+}
+
+/*
+ * Reduced motion keeps the shape and drops the movement: red stops, no walking
+ * emphasis, no drawing rule.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .tagline__beat,
+  .tagline__beat::after {
+    animation: none;
+  }
+  .tagline__beat::after {
+    display: none;
+  }
+}
+
 /* ---------- Hoverable tiles (craft rows, brand sectors) ---------- */
 
 /*

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { cases } from '@/content/cases'
 import { footerNav, site } from '@/content/site'
 import ContactLink from './ContactLink'
+import Tagline from './Tagline'
 
 /*
  * The footer paints its own opaque surface.
@@ -26,7 +27,7 @@ export default function Footer() {
         <div className="grid-editorial">
           <div className="col-span-4 md:col-span-4">
             <p className="statement max-w-[24ch]">{site.about}</p>
-            <p className="eyebrow mt-6">{site.tagline}</p>
+            <Tagline className="mt-6" />
           </div>
 
           {/* Half-width from 416px up. Below that the two lists sat in ~140px columns

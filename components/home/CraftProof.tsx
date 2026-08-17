@@ -1,4 +1,5 @@
 import { Reveal } from '@/components/motion/Reveal'
+import LineIcon from '@/components/site/LineIcon'
 import { craftIntro, craftProof } from '@/content/site'
 
 /**
@@ -117,19 +118,9 @@ export default function CraftProof() {
 
               <div className="grid-editorial items-start gap-y-4 py-8">
                 <div className="col-span-4 flex items-center gap-5 md:col-span-2">
-                  <svg
-                    className="tile__icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                    focusable="false"
-                  >
+                  <LineIcon className="tile__icon">
                     {ICONS[item.title]}
-                  </svg>
+                  </LineIcon>
                   <p className="mono-num text-xs" style={{ color: 'var(--accent-text)' }}>
                     {String(i + 1).padStart(2, '0')}
                   </p>

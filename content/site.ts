@@ -90,7 +90,6 @@ export const hero = {
   body: 'A place where expressions are strategized, thoughts are innovative and stories are delivered. We are Truthfully Expressing, Thoughtfully Innovating, and Mindfully Delivering a coherent and effective strategy with our experience and expertise. Whether it is strategy, naming, design, digital experience, activation, or brand governance, we know what it takes to build brands for success.',
   primaryCta: { label: 'Let’s Work', href: '/contact' },
   secondaryCta: { label: 'See our work', href: '/work' },
-  assurance: 'Truthful. Mindful. Thoughtful. Ideas plentiful.',
   proof: [
     { value: 60, suffix: '+', label: 'happy clients' },
     { value: 6, suffix: '', label: 'disciplines under one roof' },

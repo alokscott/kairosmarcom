@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Counter, Magnetic, Reveal } from '@/components/motion/Reveal'
 import { KineticHeadline } from '@/components/motion/Kinetic'
 import { useStill } from '@/components/motion/scroll'
+import Tagline from '@/components/site/Tagline'
 import { hero, heroVideo } from '@/content/site'
 import { track } from '@/lib/analytics'
 
@@ -126,7 +127,16 @@ export default function Hero() {
             </Reveal>
 
             <Reveal delay={400}>
-              <p className="faint mt-[clamp(0.75rem,2svh,1rem)] text-sm">{hero.assurance}</p>
+              {/*
+                The tagline, not a line of small print. It was `hero.assurance` — the
+                same string as `site.tagline`, duplicated in content and set at 13px
+                under the buttons. One source, one treatment, in all three places.
+
+                Separated from the CTA row by a rule as well as a margin. Margin alone
+                left it reading as a caption hanging off the buttons; the rule makes it
+                a line of its own, which is what a tagline is.
+              */}
+              <Tagline className="mt-[clamp(1.25rem,3svh,1.75rem)] border-t pt-[clamp(0.75rem,2svh,1.125rem)]" />
             </Reveal>
           </div>
 

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DnaHeading } from '@/components/home/Principles'
 import { Reveal } from '@/components/motion/Reveal'
+import Tagline from '@/components/site/Tagline'
 import { Scene } from '@/components/three/Scene'
 import { clients, dna, principles, principlesIntro, site } from '@/content/site'
 import { breadcrumbLd, graph, organizationLd, pageMeta } from '@/lib/seo'
@@ -58,7 +59,7 @@ export default function AboutPage() {
                 is strategy, naming, design, digital experience, activation or brand governance, we know what it takes
                 to build brands for success.
               </p>
-              <p className="eyebrow mt-8">{site.tagline}</p>
+              <Tagline className="mt-8" />
             </div>
           </div>
         </div>
