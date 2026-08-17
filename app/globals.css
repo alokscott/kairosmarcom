@@ -152,10 +152,21 @@
 /* ---------- One accent per section (brief §2) ---------- */
 
 /*
- * --on-accent is the only legible foreground when --accent is used as a fill. Ink,
- * not bone: bone on the brand red is 3.51:1 and fails AA, so a red button carries
- * black type. --accent-hover brightens, which keeps that ink label clearing AA on the
- * hover fill too (asserted in test/contrast.test.mjs, both themes).
+ * Three tokens, because a colour used as a SHAPE and a colour used as a SURFACE THAT
+ * CARRIES TEXT have different jobs and different contrast bars.
+ *
+ *   --accent       the mark, rules, icons. The logo red, exactly. Graphics need 3:1.
+ *   --accent-text  the same red as body-size type. Needs 4.5:1 on the page colour.
+ *   --accent-fill  buttons, chips, the skip link. Needs 4.5:1 against its own label.
+ *
+ * `--accent-fill` is a shade deeper than `--accent` and that is not a stylistic
+ * choice. The button label is 14px semibold, so it is normal text by WCAG and takes
+ * the 4.5:1 bar — and white on the exact logo red measures 3.96:1. #dd2a2d is the
+ * closest red to the mark that carries white at 4.73:1. Anything lighter and the
+ * label fails; the mark itself keeps the true colour because nothing is set on it.
+ *
+ * --accent-fill-hover DARKENS. With an ink label the fill used to brighten on hover;
+ * with a white one, brightening is the direction that eats the contrast.
  *
  * Three of the four slots are the same red on purpose — see the palette note at the
  * top of this file. A section still declares an accent; it just cannot invent a hue.
@@ -167,13 +178,18 @@
   --accent: #ee3a3c;
   --accent-hover: #f45c5e;
   --accent-text: var(--orange-text);
-  --on-accent: #080808;
+  --accent-fill: #dd2a2d;
+  --accent-fill-hover: #c41f22;
+  --on-accent: #ffffff;
 }
 /* Graphite — the one neutral, for bands that should recede (client wall, DNA). */
 [data-accent='silver'] {
   --accent: #b7b8b5;
   --accent-hover: #c9cac7;
   --accent-text: var(--silver-text);
+  /* Light enough that white would vanish on it, so this one keeps an ink label. */
+  --accent-fill: #b7b8b5;
+  --accent-fill-hover: #c9cac7;
   --on-accent: #080808;
 }
 
@@ -352,7 +368,7 @@ summary {
 }
 
 ::selection {
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--on-accent);
 }
 
@@ -1087,7 +1103,7 @@ summary {
   left: 1rem;
   top: -4rem;
   z-index: 200;
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--on-accent);
   padding: 0.75rem 1.25rem;
   font-weight: 700;
@@ -1123,14 +1139,14 @@ summary {
 }
 
 .btn--primary {
-  background: var(--accent);
+  background: var(--accent-fill);
   color: var(--on-accent);
 }
 
 /*
  * Purpose: confirm the pointer is on the highest-priority action on the page.
  * Trigger: hover, and :focus-visible so it is not mouse-only.
- * Properties: scale to 1.05 + fill shift to --accent-hover, 250ms, ease-out-expo.
+ * Properties: scale to 1.05 + fill shift to --accent-fill-hover, 250ms, ease-out-expo.
  *
  * `scale` rather than width/height, so the button grows without reflowing the row
  * of controls it sits in. The label colour never changes — only the fill moves,
@@ -1138,7 +1154,7 @@ summary {
  */
 .btn--primary:hover,
 .btn--primary:focus-visible {
-  background: var(--accent-hover);
+  background: var(--accent-fill-hover);
   transform: scale(1.05);
 }
 

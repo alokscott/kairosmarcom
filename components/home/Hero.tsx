@@ -80,8 +80,18 @@ export default function Hero() {
        * Verified at 1280×720, 1536×800, 1440×900 and 1920×1080 — hero height equals
        * viewport height at all four.
        */
-      className="relative flex min-h-[100svh] items-center overflow-hidden pt-[clamp(5rem,10svh,8rem)] pb-[clamp(1.5rem,4svh,2.5rem)]"
-      style={{ background: 'var(--bg)' }}
+      className="relative flex min-h-[100svh] items-center overflow-hidden pb-[clamp(1.5rem,4svh,2.5rem)]"
+      style={{
+        background: 'var(--bg)',
+        /*
+         * Top padding is driven off `--header-h` rather than a viewport-height clamp.
+         * The header is fixed and about 5.5rem tall plus the status-bar inset, and the
+         * clamp bottomed out at 5rem on a 390x844 phone — so the eyebrow rendered
+         * underneath the bar with its top half cut off. A reservation for a fixed
+         * element has to be measured against that element, not against the viewport.
+         */
+        paddingTop: 'calc(var(--header-h) + clamp(0.5rem, 2svh, 2rem))',
+      }}
     >
       <div className="shell relative z-10 w-full">
         <div className="grid-editorial items-center gap-y-[clamp(1.5rem,4svh,2.5rem)]">

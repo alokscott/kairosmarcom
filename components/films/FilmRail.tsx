@@ -189,7 +189,7 @@ export function FilmTile({ film, onOpen }: { film: Film; onOpen: () => void }) {
           <span
             aria-hidden="true"
             className="absolute bottom-3 left-3 grid h-9 w-9 place-items-center rounded-full text-sm transition-transform duration-300 group-hover:scale-110"
-            style={{ background: 'var(--accent)', color: 'var(--on-accent)' }}
+            style={{ background: 'var(--accent-fill)', color: 'var(--on-accent)' }}
           >
             ▶
           </span>

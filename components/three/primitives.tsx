@@ -116,6 +116,13 @@ export function Starburst({
    * things being reconciled scale on different axes: world units map to pixels via the
    * viewport HEIGHT, and the shell is a function of its WIDTH. A fixed radius that
    * clears the columns at 1440×900 cuts through them at 1280×720.
+   *
+   * Measured against the LONGER axis, not the width. On a landscape desktop those are
+   * the same thing. On a phone they are not: the text column there is essentially the
+   * whole viewport, so a ring sized to sit just inside the width has nowhere to go and
+   * draws its arc straight across the copy — the exact fault this prop was added to
+   * fix, reappearing at 390px. Taking the longer axis pushes the ring off the short
+   * one, leaving the faint edge of an arc and a clean column of text.
    */
   fit,
 }: {
@@ -174,7 +181,7 @@ export function Starburst({
     g.position.x = sceneMotion.pointerX * 0.22 + sceneMotion.tiltX * 0.12
     g.position.y = -sceneMotion.pointerY * 0.14 + sceneMotion.tiltY * 0.12
 
-    const target = fit ? (viewport.width / 2) * fit : resolve(radius)
+    const target = fit ? (Math.max(viewport.width, viewport.height) / 2) * fit : resolve(radius)
     // Damped so a scroll-driven radius eases rather than snapping frame to frame.
     const r = current.current + (target - current.current) * Math.min(1, delta * 2.5)
     if (Math.abs(r - current.current) < 0.0005 && state.clock.elapsedTime > 0.5) return
@@ -246,7 +253,7 @@ export function Halo({
     const g = group.current
     if (!g) return
     g.rotation.z += delta * spin
-    const r = fit ? (viewport.width / 2) * fit : resolve(radius)
+    const r = fit ? (Math.max(viewport.width, viewport.height) / 2) * fit : resolve(radius)
     const s = g.scale.x + (r - g.scale.x) * Math.min(1, delta * 2.5)
     g.scale.set(s, s, 1)
     g.position.x = sceneMotion.pointerX * 0.22

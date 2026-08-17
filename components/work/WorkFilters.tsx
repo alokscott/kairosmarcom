@@ -215,7 +215,7 @@ export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
                   className="inline-flex min-h-11 items-center px-3 py-1.5 text-xs"
                   style={{
                     border: `1px solid ${on ? 'var(--accent)' : 'var(--rule)'}`,
-                    background: on ? 'var(--accent)' : 'transparent',
+                    background: on ? 'var(--accent-fill)' : 'transparent',
                     color: on ? 'var(--on-accent)' : 'var(--fg-muted)',
                     transition: 'all 180ms var(--ease-out-expo)',
                   }}

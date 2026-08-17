@@ -116,7 +116,17 @@ export default function CraftProof() {
                   one hover language across the page rather than two. */}
               <span aria-hidden="true" className="tile__rule" />
 
-              <div className="grid-editorial items-start gap-y-4 py-8">
+              {/*
+                A plain grid, NOT `.grid-editorial`.
+
+                That class sets its own `row-gap` and globals.css is unlayered, so it
+                beats any Tailwind `gap-y-*` utility regardless of specificity — the
+                same trap documented on `.panel` and `.lightbox`. The utility here was
+                being silently ignored and each row got the editorial gap meant for
+                separating unrelated blocks, which on a phone put ~50px between an icon
+                and the title it belongs to.
+              */}
+              <div className="grid grid-cols-4 items-start gap-x-[clamp(1rem,2.5vw,2rem)] gap-y-3 py-8 md:grid-cols-12">
                 <div className="col-span-4 flex items-center gap-5 md:col-span-2">
                   <LineIcon className="tile__icon">
                     {ICONS[item.title]}
