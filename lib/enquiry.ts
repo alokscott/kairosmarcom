@@ -7,7 +7,7 @@
  * diverge from whatever the caller actually rendered.
  */
 
-export const LIMITS = { name: 100, email: 200, company: 120, message: 2000 } as const
+export const LIMITS = { name: 100, email: 200, company: 120, phone: 40, message: 2000 } as const
 export const MIN_FILL_MS = 2500
 
 /** Strip control characters, collapse whitespace, clamp length. */
@@ -23,6 +23,8 @@ export interface EnquiryInput {
   name: unknown
   email: unknown
   company: unknown
+  /** Optional. Present since the copy deck added a phone field to the form. */
+  phone?: unknown
   message: unknown
   budget: unknown
   website: unknown
@@ -33,6 +35,7 @@ export interface CleanEnquiry {
   name: string
   email: string
   company: string | null
+  phone: string | null
   budget: string
   message: string
 }
@@ -57,6 +60,10 @@ export function validateEnquiry(input: EnquiryInput, allowedBudgets: readonly st
   const name = clean(input.name, LIMITS.name)
   const email = clean(input.email, LIMITS.email)
   const company = clean(input.company, LIMITS.company)
+  // Optional and unvalidated beyond cleaning: international dialling, extensions and
+  // spacing vary enough that a format check would reject more real numbers than fake
+  // ones, and nothing downstream parses it — a human reads it and calls back.
+  const phone = clean(input.phone, LIMITS.phone)
   const message = clean(input.message, LIMITS.message)
 
   // Never trust the select: a value outside the published list means a hand-crafted
@@ -71,5 +78,5 @@ export function validateEnquiry(input: EnquiryInput, allowedBudgets: readonly st
 
   if (Object.keys(fields).length) return { outcome: 'invalid', fields }
 
-  return { outcome: 'ok', enquiry: { name, email, company: company || null, budget, message } }
+  return { outcome: 'ok', enquiry: { name, email, company: company || null, phone: phone || null, budget, message } }
 }

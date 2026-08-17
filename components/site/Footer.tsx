@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { cases } from '@/content/cases'
-import { nav, site } from '@/content/site'
+import { footerNav, site } from '@/content/site'
 import ContactLink from './ContactLink'
 
 /*
@@ -36,7 +36,7 @@ export default function Footer() {
               Explore
             </h2>
             <ul className="m-0 list-none space-y-2 p-0 text-sm">
-              {nav.map((item) => (
+              {footerNav.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="link-underline muted">
                     {item.label}
@@ -76,6 +76,14 @@ export default function Footer() {
                   {site.phone}
                 </ContactLink>
               </li>
+              {/* The Dubai line is a plain anchor: ContactLink only knows the three
+                  primary channels, and adding a fourth to it for one number would put
+                  a second "phone" into the analytics channel dimension. */}
+              <li>
+                <a href={site.phoneDubaiHref} className="link-underline muted">
+                  {site.phoneDubai}
+                </a>
+              </li>
               <li>
                 <ContactLink channel="whatsapp" className="link-underline">
                   WhatsApp
@@ -103,6 +111,11 @@ export default function Footer() {
                   Behance
                 </a>
               </li>
+              <li>
+                <a href={site.social.facebook} className="link-underline muted" rel="me noopener">
+                  Facebook
+                </a>
+              </li>
             </ul>
           </div>
         </div>
@@ -122,7 +135,7 @@ export default function Footer() {
             </li>
             <li>
               <Link href="/terms" className="link-underline">
-                Terms
+                Terms of Use
               </Link>
             </li>
           </ul>

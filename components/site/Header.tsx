@@ -4,7 +4,15 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { nav, site } from '@/content/site'
+import { footerNav, nav, site } from '@/content/site'
+
+/**
+ * The mobile sheet carries the fuller list. The bar is capped at five items so it
+ * fits the viewport at 1024px, which leaves Film & motion and Brands reachable only
+ * from the footer otherwise. Contact is dropped from the sheet because the CTA
+ * directly below it goes to the same place.
+ */
+const sheetNav = footerNav.filter((item) => item.href !== '/contact')
 import { track } from '@/lib/analytics'
 import { Magnetic } from '@/components/motion/Reveal'
 import { setScrollLocked } from '@/components/motion/SmoothScroll'
@@ -130,7 +138,7 @@ export default function Header() {
                 className="btn btn--primary whitespace-nowrap"
                 onClick={() => track('nav_route_select', { to: '/contact', source: 'header-cta' })}
               >
-                Book a clarity call
+                Let’s Work
               </Link>
             </Magnetic>
           </span>
@@ -166,7 +174,7 @@ export default function Header() {
               forcing the CTA below the fold on a phone held in landscape. */}
           <nav aria-label="Site" className="min-h-0 py-6">
             <ul className="m-0 list-none space-y-1 p-0">
-              {nav.map((item, i) => (
+              {sheetNav.map((item, i) => (
                 // --i drives the staggered entrance; the delay maths is in globals.css.
                 <li key={item.href} className="sheet__item" style={{ ['--i' as string]: i }}>
                   <Link
@@ -194,7 +202,7 @@ export default function Header() {
 
           <div className="space-y-3 text-sm">
             <Link href="/contact" className="btn btn--primary w-full justify-center" onClick={closeMenu}>
-              Book a clarity call
+              Let’s Work
             </Link>
             <p className="muted">
               <a href={`mailto:${site.email}`} className="link-underline">

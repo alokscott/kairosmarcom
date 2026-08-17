@@ -58,6 +58,7 @@ export async function POST(request: Request) {
     name: form.get('name'),
     email: form.get('email'),
     company: form.get('company'),
+    phone: form.get('phone'),
     message: form.get('message'),
     budget: form.get('budget'),
     website: form.get('website'),
@@ -93,6 +94,7 @@ type Enquiry = {
   name: string
   email: string
   company: string | null
+  phone: string | null
   budget: string
   message: string
   receivedAt: string
@@ -112,6 +114,7 @@ async function deliver(enquiry: Enquiry): Promise<boolean> {
     `Name: ${enquiry.name}`,
     `Email: ${enquiry.email}`,
     `Company: ${enquiry.company ?? '—'}`,
+    `Phone: ${enquiry.phone ?? '—'}`,
     `Budget: ${enquiry.budget}`,
     '',
     'What is stuck:',

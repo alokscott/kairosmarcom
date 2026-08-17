@@ -7,9 +7,9 @@ import { processSteps, services, servicesIntro } from '@/content/site'
 import { breadcrumbLd, graph, pageMeta, serviceLd } from '@/lib/seo'
 
 export const metadata: Metadata = pageMeta({
-  title: 'Services — six disciplines, one senior team',
+  title: 'Services — distinct disciplines, integrated model',
   description:
-    'Creative design, branding, digital, public relations, media and video. One brief, one senior team, so the story does not drift between channels. Kairos Marcom, New Delhi.',
+    'Creative design, branding, digital, public relations, technology and video. You brief once and it all comes from the same room, so the story does not drift between channels.',
   path: '/services',
 })
 
@@ -23,13 +23,13 @@ export const metadata: Metadata = pageMeta({
 const ENGAGEMENTS = [
   {
     title: 'Positioning and messaging only',
-    body: 'Roughly a quarter of the cost of a full identity, and it is the part that moves numbers. Identity can follow next year if it still matters.',
-    shape: 'Three to four weeks',
+    body: 'A fraction of a full brand build, and it is often the part that shifts the numbers. Identity can follow next year if it still matters.',
+    shape: 'Scoped per project',
   },
   {
     title: 'Full brand build',
-    body: 'Identity, messaging, site and campaign assets made in parallel by the same senior team. Strategic direction in week three, first creative in week four, handover in week eight.',
-    shape: 'Eight weeks',
+    body: 'Identity, messaging, site and campaign assets made in parallel by the same senior team. Strategic direction comes before creative, and creative before build.',
+    shape: 'Scoped per project',
   },
   {
     title: 'Strategy with your team executing',
@@ -64,7 +64,7 @@ export default function ServicesPage() {
         <div className="shell relative">
           <Reveal>
             <p className="eyebrow mb-4">What we do</p>
-            <h1 className="max-w-[13ch] text-[length:var(--text-display)]">Six disciplines. One senior team.</h1>
+            <h1 className="max-w-[13ch] text-[length:var(--text-display)]">Distinct disciplines. Integrated model.</h1>
             <p className="muted mt-8 max-w-[58ch] text-[length:var(--text-lead)]">{servicesIntro}</p>
           </Reveal>
         </div>
@@ -143,8 +143,8 @@ export default function ServicesPage() {
         <div className="shell">
           <h2 className="max-w-[20ch] text-[length:var(--text-h1)]">How the six connect</h2>
           <p className="muted mt-6 max-w-[62ch] text-[length:var(--text-lead)]">
-            You brief once. The same senior team carries the position through identity, site, earned coverage, paid
-            media and film, which is why the story arrives the same way in each of them. The sequence is the same
+            You brief once. The same senior team carries the position through identity, site, earned coverage,
+            campaigns and film, which is why the story arrives the same way in each of them. The sequence is the same
             four steps whichever disciplines you engage.
           </p>
 
@@ -152,7 +152,7 @@ export default function ServicesPage() {
             {processSteps.map((step) => (
               <li key={step.title} className="p-6" style={{ background: 'var(--bg)' }}>
                 <p className="mono-num text-xs" style={{ color: 'var(--accent-text)' }}>
-                  {step.index} · {step.when}
+                  {step.index} · {step.stage}
                 </p>
                 <h3 className="mt-2 text-[length:var(--text-h3)]">{step.title}</h3>
                 <p className="muted mt-3 text-sm leading-relaxed">{step.body}</p>
@@ -180,12 +180,12 @@ export default function ServicesPage() {
           </ul>
 
           <p className="faint mt-6 max-w-[62ch] text-sm">
-            Every engagement is fixed-scope and fixed-fee, agreed before we start. You see the full number in writing
-            after the first call.
+            Scope and fee are agreed in writing before we start, and you see the full number before you commit to
+            anything. Nothing gets built on a brief you have not signed off.
           </p>
 
           <Link href="/contact" className="btn btn--primary mt-8">
-            Book a free 30-minute clarity call
+            Book your 30-minute call
           </Link>
         </div>
       </section>

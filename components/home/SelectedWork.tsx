@@ -40,8 +40,8 @@ export default function SelectedWork() {
             </Link>
           </div>
           <p className="muted mt-6 max-w-[62ch] text-[length:var(--text-lead)]">
-            Automotive, consumer technology, education and EV. Every engagement below is written up in full — the
-            objective, the challenge, what we did and what actually happened.
+            Automotive, consumer technology, education, EV and cybersecurity. Every engagement below is written up in
+            full. The objective, the challenge, what we did and what happened.
           </p>
         </Reveal>
 

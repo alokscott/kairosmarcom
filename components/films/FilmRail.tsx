@@ -105,14 +105,18 @@ export default function FilmRail() {
             <div className="shell">
               <Reveal>
                 <p className="eyebrow mb-4">Film &amp; motion</p>
-                <div className="scrim flex flex-wrap items-end justify-between gap-6">
+                <div className="flex flex-wrap items-end justify-between gap-6">
                   <h2 className="text-[length:var(--text-h1)]">
-                    <KineticHeadline lines={['Twenty-one films.', 'Produced in-house.']} />
+                    <KineticHeadline lines={['Twenty-one films,', 'in-house.']} />
                   </h2>
                   <Link href="/films" className="btn btn--ghost">
                     The full archive <span aria-hidden="true" className="arrow">→</span>
                   </Link>
                 </div>
+                <p className="muted mt-6 max-w-[62ch] text-[length:var(--text-lead)]">
+                  Event coverage, ad films, brand videos, memoirs, CSR and 3D motion, produced by the same team that
+                  writes the strategy.
+                </p>
               </Reveal>
             </div>
 
@@ -197,10 +201,17 @@ export function FilmTile({ film, onOpen }: { film: Film; onOpen: () => void }) {
         <span className="mt-2 block font-[family-name:var(--font-display)] text-lg font-bold tracking-tight">
           {film.title}
         </span>
-        <span className="faint mt-1 block text-xs">
-          {film.client ?? 'Kairos Marcom'}
-          {film.year ? ` · ${film.year}` : ''}
-        </span>
+        {/*
+          A null client means the credit is unconfirmed, not that the film is ours.
+          The fallback here printed "Kairos Marcom" in the client slot, which credited
+          the agency as the brand on Phantom Express and Stop Killing Yourself. The
+          line is omitted entirely until an attribution is supplied.
+        */}
+        {(film.client || film.year) && (
+          <span className="faint mt-1 block text-xs">
+            {[film.client, film.year].filter(Boolean).join(' · ')}
+          </span>
+        )}
       </span>
     </button>
   )

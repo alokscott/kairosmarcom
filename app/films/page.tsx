@@ -6,7 +6,7 @@ import { films } from '@/content/films'
 import { breadcrumbLd, graph, pageMeta, videoLd } from '@/lib/seo'
 
 export const metadata: Metadata = pageMeta({
-  title: 'Films — twenty-one films, produced in-house',
+  title: 'Films — twenty-one films, in-house',
   description:
     'Event coverage, ad films, brand videos, memoirs, CSR and public-interest films and 3D motion for BMW, Audi, DLF, CaratLane, Welspun, Skyways and more. Produced in-house by Kairos Marcom.',
   path: '/films',
@@ -33,10 +33,10 @@ export default function FilmsPage() {
         <div className="shell relative">
           <Reveal>
             <p className="eyebrow mb-4">Film &amp; motion</p>
-            <h1 className="max-w-[13ch] text-[length:var(--text-display)]">Twenty-one films. Produced in-house.</h1>
+            <h1 className="max-w-[13ch] text-[length:var(--text-display)]">Twenty-one films, in-house.</h1>
             <p className="muted mt-8 max-w-[58ch] text-[length:var(--text-lead)]">
-              Event coverage, ad films, brand videos, memoirs, CSR and public-interest work and 3D motion — produced by
-              the same team that writes the strategy.
+              Event coverage, ad films, brand videos, memoirs, CSR and 3D motion, produced by the same team that writes
+              the strategy.
             </p>
             <p className="faint mt-4 max-w-[58ch] text-sm">
               Films play from their original host. Nothing loads from YouTube until you press play, and captions appear

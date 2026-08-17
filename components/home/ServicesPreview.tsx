@@ -32,7 +32,7 @@ export default function ServicesPreview() {
       <div className="shell relative">
         <Reveal>
           <p className="eyebrow mb-4">What we do</p>
-          <h2 className="max-w-[14ch] text-[length:var(--text-h1)]">Six disciplines. One senior team.</h2>
+          <h2 className="max-w-[14ch] text-[length:var(--text-h1)]">Distinct disciplines. Integrated model.</h2>
           <p className="muted mt-6 max-w-[58ch] text-[length:var(--text-lead)]">{servicesIntro}</p>
         </Reveal>
 

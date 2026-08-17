@@ -29,7 +29,9 @@ export const films: Film[] = [
   { id: 'all-surface-cleaner', title: 'All Surface Cleaner', client: 'Exo Disinfectant', category: 'Ad film', youtubeId: 'PdZJyEKE2z8', externalUrl: null, year: null },
   { id: 'pril-tamarind', title: 'Pril Tamarind', client: 'Pril', category: 'Ad film', youtubeId: 'FQ3jswbRxOI', externalUrl: null, year: null },
   { id: 'irecomm-brand-video', title: 'iRecomm Brand Video', client: 'iRecomm', category: 'Brand video', youtubeId: 'isL_KDbseNA', externalUrl: null, year: null },
-  { id: 'phantom-express', title: 'Phantom Express', client: 'Skyways', category: 'Motion graphics', youtubeId: null, externalUrl: 'https://www.facebook.com/skywayslogisticsgroup/videos/505410466910701/', year: null },
+  // Client left null: the copy deck marks this one "[attribution to confirm]", and the
+  // hosting page alone is not enough to publish a brand credit against it.
+  { id: 'phantom-express', title: 'Phantom Express', client: null, category: 'Motion graphics', youtubeId: null, externalUrl: 'https://www.facebook.com/skywayslogisticsgroup/videos/505410466910701/', year: null },
   { id: 'inky-inkclick-mascot', title: 'Inky, the Inkclick mascot', client: 'Inkclick', category: '3D motion graphics', youtubeId: 'sVBWA0luE1c', externalUrl: null, year: null },
 ]
 

@@ -1,18 +1,36 @@
 'use client'
 
 import { useFrame, useThree } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import * as THREE from 'three'
 import type { ScenePreset } from '@/content/types'
-import { Core, FrameStack, Lattice, NodeCluster, Ripple, ShardField, Streams, Threads, type NodeSpec } from './primitives'
-import { ParticleField } from './particles'
+import { Halo, Starburst, StarMark } from './primitives'
 import type { QualitySettings } from './quality'
-import { sceneMotion, type Theme } from './store'
+import { sceneMotion } from './store'
 
 /**
- * Scene presets (brief §17). Each is a composition of the shared primitives, chosen
- * so the object on screen means the thing the copy beside it is saying. No preset
- * exists as decoration.
+ * Scene presets (brief §17).
+ *
+ * Every preset is the same three marks — the ray ring, the halo and the six-point
+ * star — at a different scale, count and speed. A section is distinguished by how the
+ * mark BEHAVES, not by swapping it for something else. The site used to run a
+ * different piece of geometry per section (a galaxy here, a wireframe stack there, a
+ * node graph somewhere else): thirteen unrelated visuals and nothing a visitor could
+ * recognise twice.
+ *
+ * ─── Where the mark sits ───
+ *
+ * The canvas is centred and full-bleed, and the page's text columns fill the shell.
+ * A ring of any middling radius therefore draws its arc straight through the copy —
+ * which is what it was doing, and why sections read as busy even at a low alpha.
+ *
+ * So the ring is pushed OUT: `fit` sizes it off the viewport's half-width, putting the
+ * rays in the page margins and leaving the ring's empty interior — most of its area —
+ * as the space the text occupies. The mark frames the section instead of sitting
+ * behind it. Nothing is dimmed or hidden to achieve that; it is moved.
+ *
+ * What stays at the centre is only ever small and thin: the star sits in the gutter
+ * between the two editorial columns, where there is nothing to obscure.
  *
  * Anything scroll-driven is passed as a getter, never a captured number — these
  * components render once per scene change, not once per frame.
@@ -25,255 +43,197 @@ interface PresetProps {
   /** Discrete stage/service index, supplied by the store. */
   focus: number
   /**
-   * The particle fields composite in opposite directions per theme — additive on
-   * ink, subtractive on bone — so they need this, not just a different colour.
+   * Retained because the store still tracks it and a future preset may want to
+   * compose differently on ink. The marks themselves are flat and unlit, so they
+   * read the same on both grounds and nothing here branches on it today.
    */
-  theme: Theme
+  theme: 'light' | 'dark'
 }
-
-const ring = (count: number, radius: number, y = 0): NodeSpec[] =>
-  Array.from({ length: count }, (_, i) => {
-    const a = (i / count) * Math.PI * 2
-    return {
-      position: [Math.cos(a) * radius, y + Math.sin(a * 2) * 0.35, Math.sin(a) * radius] as [number, number, number],
-    }
-  })
 
 /** Scroll progress, clamped and scaled. Returned as a getter for the frame loop. */
 const scrolled = (gain = 1) => () => THREE.MathUtils.clamp(sceneMotion.progress * gain, 0, 1)
 
+/** Ray count for a ring, scaled to the device tier but never below a readable mark. */
+const rays = (q: QualitySettings, factor = 1) => Math.max(12, Math.round(q.rays * 0.07 * factor))
+
+/**
+ * Fractions of the viewport half-width.
+ *
+ * `FRAME` clears the editorial shell at every aspect ratio the site is used at — the
+ * shell caps at 78rem and always sits inside the viewport, so a ring at 0.96 of the
+ * half-width has its arc outside the text on a 1280×720 laptop and a 1920×1080 desktop
+ * alike. `OUTER` is a second, wider ring for depth.
+ */
+const FRAME = 0.96
+const OUTER = 1.22
+
 /* ------------------------------------------------------------------ */
 
-/** Kairos Core — dispersed fragments align into the decisive moment. */
-function CoreScene({ color, quality, intensity, theme }: PresetProps) {
+/**
+ * Kairos Core — the mark at rest. Used wherever a section has no preset of its own.
+ *
+ * Deliberately the one preset with nothing scroll-driven in it: every radius here was
+ * a getter reading scroll progress, which meant the visual grew as the page was read.
+ * The mark turns slowly and does nothing else.
+ */
+function CoreScene({ color, quality, intensity }: PresetProps) {
   return (
     <>
-      {/* The spiral is the hero object; the shards and core sit inside it as the
-          bright nucleus rather than being the whole composition. */}
-      <ParticleField
-        variant="cosmos"
-        color={color}
-        theme={theme}
-        count={quality.particles}
-        intensity={intensity}
-        size={2.6}
-      />
-      <ShardField count={Math.round(quality.shards * 0.4)} convergence={scrolled(1.35)} color={color} radius={2.3} spread={11} seed={11} />
-      {/* Reduced from 0.35→0.85: the core is now the galaxy's nucleus, and at the old
-          scale it read as a large solid ball sitting in front of the spiral. */}
-      <Core color={color} quality={quality} scale={() => 0.16 + scrolled(1.35)() * 0.26} intensity={intensity} />
+      <Starburst rays={rays(quality)} fit={FRAME} color={color} spin={0.05 * intensity} />
+      <Halo fit={FRAME} color={color} opacity={0.5} />
+      <StarMark color={color} scale={0.62} spin={-0.04 * intensity} nested />
     </>
   )
 }
 
-/** Principle transformation — the same core behaves differently for each of the four tests. */
+/** Principle transformation — the same mark behaves differently for each of the four. */
 function PrincipleScene({ color, quality, intensity, focus }: PresetProps) {
-  const nodes = useMemo(() => ring(7, 2.3), [])
-
   switch (focus) {
-    case 1: // Logic — the loose field snaps onto an ordered axis.
+    case 1: // Logic — the ring locks into an ordered, tighter formation.
       return (
         <>
-          <Lattice color={color} intensity={intensity} divisions={9} opacity={0.4} />
-          <ShardField
-            count={Math.round(quality.shards * 0.45)}
-            convergence={1}
-            color={color}
-            form="lattice"
-            radius={1.6}
-            seed={5}
-          />
+          <Starburst rays={rays(quality, 1.8)} fit={FRAME} color={color} spin={0.012 * intensity} />
+          <Halo fit={FRAME} color={color} opacity={0.75} />
         </>
       )
-    case 2: // Magic — one element refracts and reveals a second reading.
-      return <Core color={color} quality={quality} scale={1.15} intensity={intensity * 1.4} />
-    case 3: // Cause — a single impulse ripples outward.
+    case 2: // Magic — the star doubles and reveals a second reading.
       return (
         <>
-          <Ripple color={color} rings={5} intensity={intensity} />
-          <Core color={color} quality={quality} scale={0.5} intensity={intensity} />
+          <Starburst rays={rays(quality)} fit={FRAME} color={color} spin={0.05 * intensity} opacity={0.7} />
+          <StarMark color={color} scale={0.9} spin={-0.09 * intensity} nested />
         </>
       )
-    default: // Connection — independent nodes find each other.
+    case 3: // Cause — a single impulse spreading outward.
       return (
         <>
-          <NodeCluster nodes={nodes} color={color} intensity={intensity} />
-          <Threads nodes={nodes} color={color} />
+          <Starburst rays={rays(quality)} fit={FRAME} color={color} spin={0.05 * intensity} />
+          <Starburst rays={rays(quality)} fit={OUTER} color={color} spin={0.03 * intensity} opacity={0.5} offset={0.11} />
+        </>
+      )
+    default: // Connection — the star finds the ring around it.
+      return (
+        <>
+          <StarMark color={color} scale={0.7} spin={-0.05 * intensity} />
+          <Starburst rays={rays(quality)} fit={FRAME} color={color} spin={0.04 * intensity} />
         </>
       )
   }
 }
 
-/** Service constellation — six disciplines orbiting one senior team. */
-function ConstellationScene({ color, quality, intensity, focus, theme }: PresetProps) {
-  const nodes = useMemo(() => ring(6, 2.6), [])
+/**
+ * Service constellation — six disciplines around one centre.
+ *
+ * The focused discipline advances the ring by its own share of a full turn, so
+ * selecting a service visibly moves the mark rather than only recolouring it.
+ */
+function ConstellationScene({ color, quality, intensity, focus }: PresetProps) {
+  const step = focus >= 0 ? (focus / 6) * Math.PI * 2 : 0
   return (
     <>
-      <ParticleField
-        variant="flow"
-        color={color}
-        theme={theme}
-        count={Math.round(quality.particles * 0.7)}
-        intensity={intensity * 0.8}
-        size={2.1}
-      />
-      <Core color={color} quality={quality} scale={0.62} intensity={intensity} />
-      <NodeCluster nodes={nodes} color={color} focus={focus} intensity={intensity} />
-      <Threads nodes={nodes} color={color} />
-    </>
-  )
-}
-
-/** Automotive — light trails and precise contours. */
-function AutomotiveScene({ color, intensity }: PresetProps) {
-  return (
-    <>
-      <Streams color={color} count={20} intensity={intensity} converge={0.55} seed={3} />
-      <FrameStack count={5} color={color} spacing={0.75} intensity={intensity} tilt={0.5} />
-    </>
-  )
-}
-
-/** Camera technology — optical stack, refraction, spatial frames. */
-function OpticsScene({ color, quality, intensity }: PresetProps) {
-  return (
-    <>
-      <Core color={color} quality={quality} scale={0.8} intensity={intensity} />
-      <FrameStack count={9} color={color} spacing={0.38} intensity={intensity} />
-      <ShardField count={120} convergence={1} color={color} form="ring" radius={2.9} size={0.04} seed={21} opacity={0.75} />
-    </>
-  )
-}
-
-/** Education — pathways, portals and decision points. */
-function EducationScene({ color, quality, intensity }: PresetProps) {
-  const nodes = useMemo(() => ring(9, 2.5, -0.4), [])
-  return (
-    <>
-      <NodeCluster nodes={nodes} color={color} intensity={intensity} />
-      <Threads nodes={nodes} color={color} hub={false} />
-      <Core color={color} quality={quality} scale={0.45} intensity={intensity} />
-    </>
-  )
-}
-
-/** Cybersecurity — an adaptive protected grid with signals crossing it. */
-function SecurityScene({ color, intensity }: PresetProps) {
-  const nodes = useMemo(() => ring(8, 1.9), [])
-  return (
-    <>
-      <Lattice color={color} intensity={intensity} divisions={12} size={4.4} opacity={0.22} />
-      <NodeCluster nodes={nodes} color={color} intensity={intensity} />
-      <Threads nodes={nodes} color={color} hub={false} opacity={0.35} />
-    </>
-  )
-}
-
-/** Business platform — connected data layers over operational nodes. */
-function PlatformScene({ color, intensity }: PresetProps) {
-  const nodes = useMemo(() => ring(5, 1.5, -0.9), [])
-  return (
-    <>
-      <FrameStack count={4} color={color} spacing={0.9} intensity={intensity} tilt={-0.35} />
-      <NodeCluster nodes={nodes} color={color} intensity={intensity} />
-      <Threads nodes={nodes} color={color} opacity={0.4} />
-    </>
-  )
-}
-
-/** EV — stored energy releasing outward. */
-function EvScene({ color, quality, intensity }: PresetProps) {
-  return (
-    <>
-      <Ripple color={color} rings={5} intensity={intensity} />
-      <Core color={color} quality={quality} scale={0.7} intensity={intensity} />
-      <Streams color={color} count={12} intensity={intensity} converge={1} seed={9} />
-    </>
-  )
-}
-
-/** Metric environment — an ordered field where the numbers are read. */
-function MetricsScene({ color, quality, intensity }: PresetProps) {
-  return (
-    <>
-      <Lattice color={color} intensity={intensity} divisions={10} size={5} opacity={0.16} />
-      <ShardField
-        count={Math.round(quality.shards * 0.35)}
-        convergence={1}
-        color={color}
-        form="lattice"
-        radius={2}
-        seed={31}
-        opacity={0.6}
-      />
-    </>
-  )
-}
-
-/** Film gallery — a volumetric timeline of frames. */
-function FilmScene({ color, intensity, quality, theme }: PresetProps) {
-  return (
-    <>
-      <ParticleField
-        variant="flow"
-        color={color}
-        theme={theme}
-        count={Math.round(quality.particles * 0.6)}
-        intensity={intensity * 0.7}
-        size={1.9}
-      />
-      <FrameStack count={12} color={color} spacing={0.42} intensity={intensity} progress={scrolled()} />
-      <Streams color={color} count={8} intensity={intensity} converge={0} seed={17} />
+      <Starburst rays={12} fit={FRAME} color={color} spin={0.02 * intensity} offset={step} />
+      <Starburst rays={rays(quality, 1.3)} fit={OUTER} color={color} spin={-0.015 * intensity} opacity={0.4} />
+      <Halo fit={FRAME} color={color} opacity={0.5} />
+      {/*
+        No star. This is the one layout whose gutter is too narrow for it: the
+        discipline list carries its 01–06 numerals hard against the right edge of the
+        left column, which is where the centre of the frame falls. Two rings and a halo
+        already carry the mark here.
+      */}
     </>
   )
 }
 
 /**
- * Process — scattered data, condensed insight, assembled system, distributed toolkit.
- * The field changes shape per stage; `key` forces the geometry to rebuild when the
- * target form changes, which is the one case where a remount is the cheap option.
+ * Case studies.
+ *
+ * Six presets, one composition, differing only in ring count and speed. They used to
+ * be six unrelated scenes (light trails, an optical stack, a protected grid…), which
+ * meant a visitor moving between two case studies saw two different websites.
  */
-function ProcessScene({ color, quality, intensity, focus }: PresetProps) {
-  const nodes = useMemo(() => ring(6, 3), [])
-  const stage = THREE.MathUtils.clamp(focus, 0, 3)
+const caseScene =
+  (spin: number, second: boolean) =>
+  function CaseScene({ color, quality, intensity }: PresetProps) {
+    return (
+      <>
+        <Starburst rays={rays(quality)} fit={FRAME} color={color} spin={spin * intensity} />
+        {second && (
+          <Starburst
+            rays={rays(quality)}
+            fit={OUTER}
+            color={color}
+            spin={-spin * 0.6 * intensity}
+            opacity={0.45}
+            offset={0.13}
+          />
+        )}
+        <Halo fit={FRAME} color={color} opacity={0.45} />
+        <StarMark color={color} scale={0.5} spin={-0.03 * intensity} />
+      </>
+    )
+  }
 
-  const convergence = stage === 0 ? 0.12 : stage === 3 ? 0.55 : 1
-  const form = stage === 2 ? 'lattice' : stage === 3 ? 'ring' : 'sphere'
-  const radius = stage === 1 ? 0.9 : stage === 3 ? 3.2 : 2.1
-
+/** Metric environment — a still, wide ring. The numbers are the subject here. */
+function MetricsScene({ color, quality, intensity }: PresetProps) {
   return (
     <>
-      <ShardField
-        key={`${form}-${radius}`}
-        count={quality.shards}
-        convergence={convergence}
-        color={color}
-        form={form}
-        radius={radius}
-        spread={9}
-        seed={13}
-      />
-      {stage === 1 && <Core color={color} quality={quality} scale={0.55} intensity={intensity} />}
-      {stage === 3 && <Threads nodes={nodes} color={color} opacity={0.3} />}
+      <Starburst rays={rays(quality, 1.4)} fit={FRAME} color={color} spin={0.012 * intensity} opacity={0.5} />
+      <Halo fit={FRAME} color={color} opacity={0.35} />
     </>
   )
 }
 
-/** Contact convergence — everything the site separated aligns into one object. */
-function ContactScene({ color, quality, intensity, theme }: PresetProps) {
+/** Film — the ring opens outward as the rail travels sideways. */
+function FilmScene({ color, quality, intensity }: PresetProps) {
   return (
     <>
-      {/* Embers: the one place a rising column reads as intent rather than decoration. */}
-      <ParticleField
-        variant="embers"
-        color={color}
-        theme={theme}
-        count={Math.round(quality.particles * 0.55)}
-        intensity={intensity}
-        size={2.8}
-      />
-      <ShardField count={Math.round(quality.shards * 0.6)} convergence={scrolled(1.6)} color={color} radius={1.9} spread={13} seed={41} />
-      <Core color={color} quality={quality} scale={() => 0.2 + scrolled(1.6)() * 0.85} intensity={intensity} />
+      <Starburst rays={rays(quality)} fit={FRAME} color={color} spin={0.03 * intensity} />
+      <Halo fit={FRAME} color={color} opacity={0.4} />
+      <StarMark color={color} scale={() => 0.45 + scrolled()() * 0.35} spin={-0.04 * intensity} />
+    </>
+  )
+}
+
+/**
+ * Process — observe, distil, build, hand over.
+ *
+ * Loose, then drawn in tight, then ordered and doubled, then released outward as a set
+ * of reusable parts. The stage is read in the ring's density and speed rather than its
+ * radius, which has to stay outside the copy at every stage.
+ */
+function ProcessScene({ color, quality, intensity, focus }: PresetProps) {
+  const stage = THREE.MathUtils.clamp(focus, 0, 3)
+  const spin = [0.06, 0.018, 0.03, 0.05][stage]
+  const density = [0.7, 1.1, 1.6, 1][stage]
+
+  return (
+    <>
+      <Starburst rays={rays(quality, density)} fit={FRAME} color={color} spin={spin * intensity} />
+      {stage >= 2 && (
+        <Starburst
+          rays={rays(quality, density)}
+          fit={OUTER}
+          color={color}
+          spin={-spin * 0.5 * intensity}
+          opacity={0.45}
+          offset={0.13}
+        />
+      )}
+      <Halo fit={FRAME} color={color} opacity={0.45} />
+      <StarMark color={color} scale={stage === 1 ? 0.8 : 0.5} spin={-0.04 * intensity} nested={stage === 1} />
+    </>
+  )
+}
+
+/** Contact — everything the site separated aligns into one mark. */
+function ContactScene({ color, quality, intensity }: PresetProps) {
+  return (
+    <>
+      <Starburst rays={rays(quality)} fit={FRAME} color={color} spin={0.05 * intensity} />
+      <Halo fit={FRAME} color={color} opacity={0.5} />
+      {/* Capped low. The contact preset stays active through the FAQ accordion above
+          it, which spans the full shell — so the centre of the frame is a line of type
+          there, and a star that grew past ~0.65 crossed two rows of questions. */}
+      <StarMark color={color} scale={() => 0.4 + scrolled(1.6)() * 0.25} spin={-0.05 * intensity} nested />
     </>
   )
 }
@@ -284,12 +244,12 @@ const PRESETS: Record<ScenePreset, (p: PresetProps) => React.ReactElement> = {
   core: CoreScene,
   principle: PrincipleScene,
   constellation: ConstellationScene,
-  'case-automotive': AutomotiveScene,
-  'case-optics': OpticsScene,
-  'case-education': EducationScene,
-  'case-security': SecurityScene,
-  'case-platform': PlatformScene,
-  'case-ev': EvScene,
+  'case-automotive': caseScene(0.045, true),
+  'case-optics': caseScene(0.03, true),
+  'case-education': caseScene(0.025, false),
+  'case-security': caseScene(0.02, true),
+  'case-platform': caseScene(0.035, false),
+  'case-ev': caseScene(0.055, true),
   metrics: MetricsScene,
   film: FilmScene,
   process: ProcessScene,
@@ -304,40 +264,39 @@ export function Preset({ preset, ...props }: PresetProps & { preset: ScenePreset
 /**
  * Camera choreography.
  *
- * A genuine dolly — 9.6 units out to 5.8 across a section's scroll — plus a slow
- * roll and pointer lead. Shallow camera movement was the main reason the scene read
- * as wallpaper rather than as a space the page is inside.
+ * A short dolly plus a slow roll and pointer lead. The travel is deliberately small:
+ * at the old 3.8 units the mark visibly grew as a section was read and ended up
+ * filling the frame behind the copy. The roll is capped and the lerp damped so the
+ * horizon never swings fast enough to be a vestibular problem; reduced motion zeroes
+ * `intensity` and freezes all of it.
  *
- * The end distance is capped deliberately. Pushed closer the core becomes a
- * full-bleed field behind the body copy, and bone on the orange core measures
- * 2.95:1 — below AA for text and below even the 3:1 large-text bar.
- *
- * The roll is capped and the lerp is damped so the horizon never swings fast enough
- * to be a vestibular problem; reduced motion zeroes `intensity` and freezes all of it.
+ * The roll is now zero as well. The ring is sized to sit just outside the text, so a
+ * few degrees of rotation is enough to swing part of its arc back across a column —
+ * the one motion that would undo the framing.
  */
 export function Camera({ intensity }: { intensity: number }) {
   const { camera } = useThree()
   const target = useRef(new THREE.Vector3())
   const look = useRef(new THREE.Vector3())
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     const p = sceneMotion.progress
     // Ease the dolly so the approach decelerates into the section rather than
     // arriving at constant speed.
     const eased = 1 - Math.pow(1 - p, 2.2)
 
     target.current.set(
-      sceneMotion.pointerX * 1.15 * intensity + Math.sin(p * Math.PI) * 0.5 * intensity,
-      sceneMotion.pointerY * -0.7 * intensity + Math.cos(p * Math.PI * 0.75) * 0.35 * intensity,
-      9.6 - eased * 3.8
+      sceneMotion.pointerX * 0.35 * intensity,
+      sceneMotion.pointerY * -0.2 * intensity,
+      9.6 - eased * 0.9
     )
     camera.position.lerp(target.current, Math.min(1, delta * 2.2))
 
-    // Look slightly ahead of centre so the object drifts across frame instead of
-    // sitting locked to the middle of the viewport.
-    look.current.set(sceneMotion.pointerX * 0.35 * intensity, -p * 0.45 * intensity, 0)
+    // On axis and level: looking off-centre or rolling pushes the ring's dense edge
+    // back under one of the two text columns.
+    look.current.set(0, 0, 0)
     camera.lookAt(look.current)
-    camera.rotation.z = Math.sin(state.clock.elapsedTime * 0.11) * 0.035 * intensity + p * 0.06 * intensity
+    camera.rotation.z = 0
   })
 
   return null

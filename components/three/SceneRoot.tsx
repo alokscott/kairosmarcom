@@ -168,17 +168,12 @@ export default function SceneRoot() {
               darkness for far shapes to recede into. */}
           <fog attach="fog" args={[fog, 10, 26]} />
           {/*
-            Light theme runs a dimmer ambient on purpose. Bright fill on a bright
-            background flattens every form to a single value; pulling ambient down is
-            what gives the shards a shaded side and keeps them legible against bone.
+            No lights. Every mark in the scene is `meshBasicMaterial` or
+            `lineBasicMaterial` — flat, unlit, exactly as the logo is printed — so an
+            ambient and two directionals were three uniforms updated per frame that
+            changed not one pixel. Shading is what made the previous geometry read as
+            objects sitting in front of the page; a brand mark should read as ink on it.
           */}
-          <ambientLight intensity={dark ? 0.45 : 0.28} />
-          <directionalLight
-            position={[4, 6, 5]}
-            intensity={quality.richLighting ? (dark ? 1.3 : 1.05) : dark ? 0.8 : 0.65}
-            color={dark ? '#ffffff' : '#fff6ec'}
-          />
-          {quality.richLighting && <directionalLight position={[-5, -2, -4]} intensity={0.6} color={color} />}
           <Preset preset={preset} color={color} quality={quality} intensity={effectiveIntensity} focus={focus} theme={theme} />
         </Canvas>
       </CanvasBoundary>

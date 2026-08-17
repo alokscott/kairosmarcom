@@ -6,15 +6,15 @@ import { useSceneStore } from '@/components/three/store'
 import { processIntro, processSteps } from '@/content/site'
 
 /**
- * Kairo5Think — eight weeks, four steps.
+ * The Kairos moment — four steps.
  *
  * Pinned, four stages. The shard field changes both how tightly it holds and what
  * shape it holds across Listen → Distil → Build → Hand over: scattered signal,
  * compressed into one object, assembled onto a lattice, then distributed outward
  * as a ring of reusable parts.
  *
- * The week numbers stay as literal text on the left rail, so the eight-week
- * structure is readable whether or not the scene ever runs.
+ * Each step's own stage name sits as literal text on the left rail, so the sequence
+ * is readable whether or not the scene ever runs.
  */
 export default function ProcessSection({ heading = true }: { heading?: boolean }) {
   const { focus } = useSceneStore()
@@ -30,12 +30,12 @@ export default function ProcessSection({ heading = true }: { heading?: boolean }
     >
       <div className="shell relative w-full">
         <div className="grid-editorial items-center">
-          <div className="scrim col-span-4 md:col-span-5">
+          <div className="col-span-4 md:col-span-5">
             {heading && (
               <>
-                <p className="eyebrow mb-4">Kairo5Think</p>
+                <p className="eyebrow mb-4">Kairos moment</p>
                 <h2 className="text-[length:var(--text-h2)]">
-                  <KineticHeadline lines={['Eight weeks.', 'Four steps.', 'No mystery.']} />
+                  <KineticHeadline lines={['Kairos.', 'The Supreme', 'Moment.']} />
                 </h2>
                 {/* Sized to fit the pin: the serif statement treatment runs at
                     display size and pushed the step rail out of the viewport. */}
@@ -63,7 +63,7 @@ export default function ProcessSection({ heading = true }: { heading?: boolean }
                   >
                     {step.title}
                   </span>
-                  <span className="faint ml-auto text-xs">{step.when}</span>
+                  <span className="faint ml-auto text-xs">{step.stage}</span>
                 </li>
               ))}
             </ol>
@@ -91,7 +91,7 @@ export default function ProcessSection({ heading = true }: { heading?: boolean }
                     }}
                   >
                     <p className="mono-num text-xs tracking-[0.18em] uppercase" style={{ color: 'var(--accent-text)' }}>
-                      {step.index} — {step.when}
+                      {step.index} — {step.stage}
                     </p>
                     <h3 className="mt-3 text-[clamp(2.5rem,6vw,4.5rem)]">{step.title}</h3>
                     <p className="mt-6 max-w-[52ch] text-[length:var(--text-lead)] leading-relaxed">{step.body}</p>

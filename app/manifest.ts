@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { nav, site } from '@/content/site'
+import { footerNav, site } from '@/content/site'
 
 /**
  * Web app manifest.
@@ -44,8 +44,9 @@ export default function manifest(): MetadataRoute.Manifest {
        */
       { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
-    /* Long-press the installed icon to jump straight into a section. */
-    shortcuts: nav
+    /* Long-press the installed icon to jump straight into a section. Sourced from the
+       footer list rather than the header bar, which no longer carries /contact. */
+    shortcuts: footerNav
       .filter((item) => item.href === '/work' || item.href === '/services' || item.href === '/contact')
       .map((item) => ({ name: item.label, url: item.href })),
   }

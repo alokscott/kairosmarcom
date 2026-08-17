@@ -10,30 +10,29 @@
 
 export type Tier = 'low' | 'medium' | 'high'
 
+/**
+ * Four settings became dead when the scene moved to the flat brand mark: a core
+ * detail level (there is no icosahedron), a transmission flag (nothing refracts), a
+ * rich-lighting flag (nothing is lit) and a particle count (the field is gone). They
+ * are removed rather than left at defaults, because a tier table that still lists
+ * them reads as though the renderer is making choices it no longer makes.
+ */
 export interface QualitySettings {
   tier: Tier
   /** Upper bound passed to <Canvas dpr={[1, maxDpr]}>. */
   maxDpr: number
-  /** Instance count for the shard field. */
-  shards: number
-  /** Segment count for the core icosahedron. */
-  coreDetail: number
-  /** Real refraction is expensive — high tier only. */
-  transmission: boolean
-  /** Soft shadows / extra lights. */
-  richLighting: boolean
   /**
-   * Particle count for the GPU field. All motion happens in the vertex shader, so
-   * this scales with fill rate rather than CPU — which is why it can be an order of
-   * magnitude above the instanced shard count on the same device.
+   * Budget for the ray ring. Presets scale this down to their own counts; the mark
+   * stays legible at every tier because it is a ring, not a crowd — the low tier
+   * simply draws a coarser one.
    */
-  particles: number
+  rays: number
 }
 
 const TIERS: Record<Tier, QualitySettings> = {
-  low: { tier: 'low', maxDpr: 1, shards: 90, coreDetail: 1, transmission: false, richLighting: false, particles: 3500 },
-  medium: { tier: 'medium', maxDpr: 1.5, shards: 220, coreDetail: 2, transmission: false, richLighting: true, particles: 11000 },
-  high: { tier: 'high', maxDpr: 2, shards: 420, coreDetail: 4, transmission: true, richLighting: true, particles: 24000 },
+  low: { tier: 'low', maxDpr: 1, rays: 90 },
+  medium: { tier: 'medium', maxDpr: 1.5, rays: 220 },
+  high: { tier: 'high', maxDpr: 2, rays: 420 },
 }
 
 export const settingsFor = (tier: Tier) => TIERS[tier]

@@ -2,22 +2,38 @@
 
 /* ============================================================================
    KAIROS DESIGN TOKENS
-   Palette is fixed by the brief. Everything else derives from it.
+
+   ONE colour, sampled from the logo: the Kairos mark is rgb(238,58,60) — #EE3A3C.
+   Everything else is ink, bone and warm grey.
+
+   This went through two earlier sets. The first carried a lime (#C8FF3D) and a violet
+   (#5C3BFF) alongside the orange; the second kept three reds — red, ember, crimson —
+   as a ramp. Both had the same flaw: they drive the full-viewport WebGL backdrop, so
+   the whole page changed hue section to section and the site read as several brands
+   rather than one. A single accent is what makes it read as Kairos.
+
+   The four slot NAMES survive (orange / lime / violet / silver) because `data-accent`
+   is written across every page, every case study and the CMS schema, and renaming the
+   contract to express a palette decision would be the tail wagging the dog. Three of
+   them are now the same red; `silver` stays the one neutral, for bands that recede.
 
    Two token families per accent:
-     --accent       graphic colour — shapes, rules, 3D lighting, display type ≥ 32px/700
+     --accent       graphic colour — shapes, rules, the 3D mark, display type ≥ 32px/700
      --accent-text  contrast-safe for body-size text in the CURRENT theme (WCAG 2.2 AA)
-   They differ because #C8FF3D on bone is 1.03:1 and #5C3BFF on near-black is 3.28:1.
-   Contrast ratios are asserted in test/contrast.test.mjs.
+   They stay separate because the brand red is 3.51:1 on bone — fine as a shape, not
+   as body copy. Contrast ratios are asserted in test/contrast.test.mjs.
    ========================================================================== */
 
 @theme {
-  /* Brand palette — exact values from the brief */
+  /* Brand palette — the red sampled from public/logo.png, plus ink, bone and grey */
   --color-ink: #080808;
   --color-bone: #f4f1e9;
-  --color-orange: #ff4b23;
-  --color-lime: #c8ff3d;
-  --color-violet: #5c3bff;
+  --color-red: #ee3a3c;
+  /* Legacy slot aliases. Same red, so a stray `text-lime` cannot reintroduce a
+     second hue; kept only so existing utility classes keep resolving. */
+  --color-orange: #ee3a3c;
+  --color-lime: #ee3a3c;
+  --color-violet: #ee3a3c;
   --color-silver: #b7b8b5;
 
   --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
@@ -92,9 +108,11 @@
   --rule: #d9d4c6;
   --rule-strong: #bfb9a8;
 
-  --orange-text: #c4340f;
-  --lime-text: #4a6300;
-  --violet-text: #5c3bff;
+  /* The brand red darkened until it clears 4.5:1 on bone (5.33:1). One value, three
+     aliases — a section cannot accidentally set its type in a different colour. */
+  --orange-text: #c02128;
+  --lime-text: #c02128;
+  --violet-text: #c02128;
   --silver-text: #5f615c;
 
   --grain-opacity: 0.035;
@@ -119,9 +137,12 @@
   --rule: #26251f;
   --rule-strong: #3d3b34;
 
-  --orange-text: #ff4b23;
-  --lime-text: #c8ff3d;
-  --violet-text: #a48cff;
+  /* The same red lifted instead of darkened — on ink the risk runs the other way.
+     #ee3a3c itself is 5.06:1 here, but only 4.81:1 on the lighter --bg-raised that
+     panels use, so it is lifted once more for margin. */
+  --orange-text: #ff5052;
+  --lime-text: #ff5052;
+  --violet-text: #ff5052;
   --silver-text: #b7b8b5;
 
   --grain-opacity: 0.055;
@@ -130,45 +151,29 @@
 
 /* ---------- One accent per section (brief §2) ---------- */
 
-/* --on-accent is the only legible foreground when --accent is used as a fill.
-   Violet is dark enough that ink fails AA on it (3.36:1); it takes bone instead. */
 /*
- * --accent-hover is the fill the primary button shifts to on hover.
+ * --on-accent is the only legible foreground when --accent is used as a fill. Ink,
+ * not bone: bone on the brand red is 3.51:1 and fails AA, so a red button carries
+ * black type. --accent-hover brightens, which keeps that ink label clearing AA on the
+ * hover fill too (asserted in test/contrast.test.mjs, both themes).
  *
- * It is a hand-picked value per accent, not a blanket filter, because the direction
- * has to change with the foreground: orange, lime and silver carry ink, so they
- * brighten; violet carries bone, so brightening it would collapse the text contrast
- * and it darkens instead. test/contrast.test.mjs asserts --on-accent stays above AA
- * on the hover fill as well as the resting one, in both themes.
+ * Three of the four slots are the same red on purpose — see the palette note at the
+ * top of this file. A section still declares an accent; it just cannot invent a hue.
  */
-[data-accent='orange'] {
-  --accent: #ff4b23;
-  --accent-hover: #ff6a45;
+[data-accent='orange'],
+[data-accent='lime'],
+[data-accent='violet'],
+:root {
+  --accent: #ee3a3c;
+  --accent-hover: #f45c5e;
   --accent-text: var(--orange-text);
   --on-accent: #080808;
 }
-[data-accent='lime'] {
-  --accent: #c8ff3d;
-  --accent-hover: #d8ff6e;
-  --accent-text: var(--lime-text);
-  --on-accent: #080808;
-}
-[data-accent='violet'] {
-  --accent: #5c3bff;
-  --accent-hover: #4a2ce0;
-  --accent-text: var(--violet-text);
-  --on-accent: #f4f1e9;
-}
+/* Graphite — the one neutral, for bands that should recede (client wall, DNA). */
 [data-accent='silver'] {
   --accent: #b7b8b5;
   --accent-hover: #c9cac7;
   --accent-text: var(--silver-text);
-  --on-accent: #080808;
-}
-:root {
-  --accent: #ff4b23;
-  --accent-hover: #ff6a45;
-  --accent-text: var(--orange-text);
   --on-accent: #080808;
 }
 
@@ -412,13 +417,16 @@ summary {
  *
  * A pinned stage is a 100svh box that centres its content and clips the overflow. That
  * is fine when the content fits. Below the `md` breakpoint the editorial grid collapses
- * to a single column and the hero becomes headline + panel + proof stats stacked — far
- * taller than one viewport — so centring pushed the overflow off BOTH ends and
- * `overflow: hidden` ate the top of the headline. "Welcome to the" was simply gone on
- * every phone.
+ * to a single column and a stage's two columns become one tall stack — far taller than
+ * one viewport — so centring pushes the overflow off BOTH ends and `overflow: hidden`
+ * eats the top of the heading.
  *
  * The width condition is therefore not cosmetic; it is the same class of guard as the
  * existing height one. Top padding clears the fixed header (90px) with margin to spare.
+ *
+ * The hero is no longer one of these — it is an ordinary one-viewport section (see
+ * Hero.tsx) — but Principles, Process and the film rail still pin, and all three stack
+ * the same way on a phone.
  */
 @media (prefers-reduced-motion: reduce), (max-height: 34rem), (max-width: 48rem) {
   .stage {
@@ -431,107 +439,101 @@ summary {
     overflow: visible;
     padding-block: calc(clamp(6rem, 13vh, 8rem) + var(--safe-t)) clamp(3rem, 8vh, 5rem);
   }
+}
 
-  /* The aperture is sized in vw/vh against a viewport-height panel; on a stacked,
-     auto-height section it just masks arbitrary parts of the page. */
-  .hero-aperture {
-    display: none;
+/* ---------- Hero porthole ---------- */
+
+/*
+ * The video, masked into the circle of the Kairos mark, with the ray ring turning
+ * around it.
+ *
+ * This replaces a full-bleed background video. Footage behind copy has to be washed
+ * most of the way to the page colour before a headline is legible on it, so you pay
+ * the whole download and show almost none of it, and the type's contrast ends up
+ * depending on whichever frame is on screen. Here the video is a subject rather than
+ * a backdrop: full contrast, nothing over it, and no text behind it to defend.
+ */
+/*
+ * Sized off the VIEWPORT HEIGHT, not the column width.
+ *
+ * The hero has to fit one screen — a visitor should never scroll to finish reading the
+ * first thing they see. A circle sized by its column grows with the window's width and
+ * is therefore the one element that can push the stat band off the bottom on a short,
+ * wide laptop screen. Taking the smaller of the column and 62svh makes the mark as
+ * large as the screen allows and no larger.
+ */
+.porthole {
+  position: relative;
+  aspect-ratio: 1;
+  width: min(100%, 62svh);
+  margin-inline: auto;
+}
+
+/* The ring is drawn OUTSIDE the window, so it is inset by nothing and the window is
+   inset instead — that keeps the rays from ever crossing the footage. */
+.porthole__ring,
+.porthole__halo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.porthole__ring > svg,
+.porthole__halo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Spinning the wrapper, not the SVG group — see the note in Hero.tsx. */
+.porthole__ring {
+  animation: porthole-spin 64s linear infinite;
+}
+
+@keyframes porthole-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-/* ---------- Hero video ---------- */
-
 /*
- * Full-bleed looping background, sitting behind the aperture bars so the footage is
- * revealed by the same widening window as the WebGL scene. Only rendered when
- * `heroVideo.src` is set (content/site.ts); otherwise the scene shows through.
+ * 4% inset puts the window edge at r=46 in the SVG's own coordinates, just inside the
+ * halo at 46.6 and the teeth that start at 47.2 — the mark is a serrated edge ON the
+ * circle, which is how it is drawn on the letterhead.
+ *
+ * Walked in from 12% (video at 76% of the box) through 7% (86%) to here (92%). Every
+ * unit the ring gives up goes to the footage, and none of it costs the hero any
+ * height — the element is the same size, the split inside it is not. Below about 3%
+ * the teeth have no room left to be teeth.
  */
-.hero-video {
+.porthole__window {
   position: absolute;
-  inset: 0;
-  z-index: 0;
+  inset: 4%;
+  display: grid;
+  place-items: center;
   overflow: hidden;
-  pointer-events: none;
+  border-radius: 50%;
+  background: var(--bg-sunken);
 }
 
-.hero-video__el {
+.porthole__video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/*
- * Painted in --bg, so it resolves to ink in dark mode and bone in light mode. That is
- * what makes one hero work in both themes: the scrim always pushes the footage toward
- * the current page colour, so --fg keeps winning over it and no second set of text
- * colours is needed. Graded, so the type side is guarded hardest and the far edge
- * stays close to the original footage.
- */
-.hero-video__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    color-mix(in srgb, var(--bg) 88%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 66%, transparent) 48%,
-    color-mix(in srgb, var(--bg) 38%, transparent) 100%
-  );
+.porthole__star {
+  width: 62%;
+  height: 62%;
 }
 
-/* Playback under reduced motion is stopped in Hero.tsx, not here — CSS cannot pause
-   a video, and hiding the element would take the poster frame with it. */
-
-/* ---------- Hero aperture ---------- */
-
-/*
- * The scene arrives framed and then opens to full bleed.
- *
- * This is four bars of page colour masking the edges of the fixed canvas, slid off
- * the viewport as the pin runs — not a window being resized. Resizing a box would
- * mean a layout pass and a full-viewport repaint on every frame; translating four
- * bars is compositor-only, which is the difference between this holding 60fps on a
- * throttled machine and not.
- *
- * At rest the bars leave a window of roughly 46vw × 44vh centred in the pin.
- */
-.hero-aperture {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.hero-aperture__bar {
-  position: absolute;
-  display: block;
-  background: var(--bg);
-  will-change: transform;
-}
-
-.hero-aperture__bar--t {
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 28vh;
-}
-.hero-aperture__bar--b {
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 28vh;
-}
-.hero-aperture__bar--l {
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 27vw;
-}
-.hero-aperture__bar--r {
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 27vw;
+/* Persistent rotation is exactly what this preference exists to remove. The mark
+   stays; it simply stops turning. */
+@media (prefers-reduced-motion: reduce) {
+  .porthole__ring {
+    animation: none;
+  }
 }
 
 /* ---------- Kinetic headlines ---------- */
@@ -587,67 +589,38 @@ summary {
 
 /*
  * Sections opt into transparency so the canvas behind them is genuinely visible
- * rather than a strip at the top of the page. The scrim keeps body copy above AA
- * without flattening the scene to a solid panel.
+ * rather than a strip at the top of the page.
  */
 .in-scene {
   background: transparent;
 }
 
-.scrim {
-  position: relative;
-}
-.scrim::before {
-  content: '';
-  position: absolute;
-  inset: -10% -14%;
-  z-index: -1;
-  pointer-events: none;
-  /*
-   * Body copy sits over a moving scene, so contrast has to be defended rather than
-   * assumed. This holds the measured ratio at the AA figures in the token tests even
-   * when a bright fragment passes directly behind a line of text.
-   */
-  background: radial-gradient(
-    68% 64% at 50% 50%,
-    color-mix(in srgb, var(--bg) 94%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 78%, transparent) 55%,
-    transparent 78%
-  );
-}
-
 /*
- * The horizontal bleed has to go wherever nothing is clipping it.
+ * There is no `.scrim` any more, and its absence is a decision.
  *
- * `-14%` lets the scrim fade out past the column edge rather than ending on a hard
- * line. On a phone the column is nearly the full viewport, so 14% of 350px put this
- * pseudo-element 49px past a right edge of 370 — a document 419px wide inside a 390px
- * viewport, not visible as content but reachable by rubber-banding on iOS.
+ * It was a near-opaque patch of page colour painted behind text that sits over the
+ * WebGL scene. As a radial gradient it read as an oval smudge with no edge related to
+ * anything else on the page; redrawn as a linear fade it traded that for a hard
+ * horizontal seam where the solid band started and stopped. Both are the same
+ * underlying problem — a patch of background floated over a background is visible as
+ * a patch, whichever shape it is given.
  *
- * The width test alone was not enough. What actually contains the bleed on a wide
- * layout is not the shell's gutter but `.stage__pin`'s `overflow: hidden`, so the
- * moment a stage un-pins the bleed escapes — and un-pinning happens on SHORT viewports
- * as well as narrow ones. A phone in landscape is 844px wide, sails past the 48rem
- * test, and pushed the document to 908px. Measured on the film rail's headline, whose
- * scrim spans the shell rather than one grid column.
+ * The fix was upstream instead. `GEOMETRY_ALPHA` in components/three/primitives.tsx is
+ * now set to the value at which the faintest text on the site clears WCAG AA with a
+ * ray directly behind it (5.00:1), so nothing has to be painted over the scene at all.
+ * The arithmetic is written out there.
  *
- * So this is the same three-part condition as the un-pin rule above, and has to stay
- * in step with it: wherever the pin stops clipping, the bleed has to stop bleeding.
- * The vertical bleed is kept throughout; it costs nothing.
+ * `.panel` below is NOT the same device and stays: a bordered card reads as a surface
+ * someone placed, not as a patch trying to be invisible and failing.
  */
-@media (prefers-reduced-motion: reduce), (max-height: 34rem), (max-width: 48rem) {
-  .scrim::before {
-    inset: -10% 0;
-  }
-}
 
 /*
- * Contrast guard for body copy over the scene.
+ * Contrast floor for the stage cards.
  *
- * The radial scrim above is enough behind oversized display type, but body copy
- * needs a floor: at 88% background the effective surface measures ~11:1 against
- * bone even when the fully lit core is directly behind it. Without this, a passage
- * over the core sits at 2.95:1 and fails AA outright.
+ * Display type can sit straight on the scene; a paragraph inside a cross-fading card
+ * cannot, because the card also has to read as a distinct object from the column of
+ * copy beside it. Near-opaque plus a blur is what gives it an edge without turning the
+ * section into a slab.
  */
 .panel {
   /*
@@ -656,8 +629,14 @@ summary {
    * and silently un-stacked every cross-fading stage card into a vertical column.
    */
   padding: clamp(1.25rem, 2vw, 1.75rem);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(7px);
+  /*
+   * 88% → 97%. At 88 the particle field read straight through the panel, so the hero
+   * body copy and the stat band sat on moving texture. The blur stays: it is what
+   * stops the remaining 3% from resolving into individual motes behind the type, and
+   * the panel still shows the backdrop's colour shifting under it.
+   */
+  background: color-mix(in srgb, var(--bg) 97%, transparent);
+  backdrop-filter: blur(10px);
   border: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
 }
 
@@ -1033,6 +1012,49 @@ summary {
   line-height: 1.25;
   letter-spacing: -0.01em;
   font-style: italic;
+}
+
+/*
+ * "Our DNA" — the one heading on the site set as a two-face lockup.
+ *
+ * `align-items: baseline` is doing the real work: a serif italic and a heavy grotesque
+ * at the same font-size have very different cap heights and optical centres, so
+ * centring them would leave the pair looking dropped relative to each other. Sitting
+ * both on one baseline is what makes two typefaces read as one word.
+ *
+ * The gap is in `em`, so the space between the words scales with the clamp rather than
+ * opening up at large sizes and closing at small ones.
+ */
+.dna-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.22em;
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  line-height: 1;
+  margin: 0;
+}
+
+.dna-heading__serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--fg-muted);
+}
+
+.dna-heading__display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  /* Tight, because three capitals at display weight otherwise read as an initialism
+     being spelled out rather than as a word. */
+  letter-spacing: -0.035em;
+  /*
+   * `--fg`, not `--accent-text`. This band carries `data-accent="silver"` so that it
+   * recedes, which resolves the accent to grey — and a grey heading came out weaker
+   * than the near-black statements underneath it, inverting the hierarchy. The
+   * creative move here is the pairing of two faces, not a third colour.
+   */
+  color: var(--fg);
 }
 
 .muted {
@@ -1704,18 +1726,58 @@ button:hover .arrow {
 
 /* ---------- Native accordion (details/summary) ---------- */
 
+/*
+ * Grid, not flex-with-space-between.
+ *
+ * The row has three parts — an optional index, the question, and the toggle — and the
+ * question is the only one that should absorb the leftover width. `space-between` gave
+ * that width to the GAPS instead, which is what left the plus sign stranded at the far
+ * right of a ten-column block with a short question marooned on the left. A grid with
+ * one `1fr` track puts the slack inside the question's own cell, so the toggle sits a
+ * fixed distance from the text it belongs to.
+ */
 .accordion summary {
   cursor: pointer;
   list-style: none;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: baseline;
-  justify-content: space-between;
   gap: 1.5rem;
-  padding-block: 1.35rem;
+  padding-block: 1.5rem;
+}
+.accordion--numbered summary {
+  grid-template-columns: auto 1fr auto;
+  gap: 1.25rem;
 }
 .accordion summary::-webkit-details-marker {
   display: none;
 }
+
+.accordion__index {
+  font-size: var(--text-micro);
+  color: var(--fg-faint);
+  transition: color var(--dur-hover) var(--ease-out-expo);
+}
+
+.accordion__q {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 1.9vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: color var(--dur-hover) var(--ease-out-expo);
+}
+
+/* The whole row is the control, so the whole row acknowledges the hover — not just
+   the glyph at the end of it. */
+.accordion summary:hover .accordion__q,
+.accordion details[open] .accordion__q {
+  color: var(--accent-text);
+}
+.accordion summary:hover .accordion__index,
+.accordion details[open] .accordion__index {
+  color: var(--accent-text);
+}
+
 .accordion summary::after {
   content: '+';
   font-family: var(--font-display);
@@ -1730,6 +1792,20 @@ button:hover .arrow {
 }
 .accordion details {
   border-bottom: 1px solid var(--rule);
+}
+.accordion details:first-of-type {
+  border-top: 1px solid var(--rule);
+}
+
+/* Hangs the answer off the question rather than the number, so the two align on one
+   edge and the index stays in a margin of its own. */
+.accordion--numbered .accordion__a {
+  padding-left: calc(2ch + 1.25rem);
+}
+@media (max-width: 30rem) {
+  .accordion--numbered .accordion__a {
+    padding-left: 0;
+  }
 }
 
 /* ---------- Native dialog (video / lightbox) ---------- */
@@ -1873,6 +1949,98 @@ dialog::backdrop {
   }
 }
 
+/* ---------- Hoverable tiles (craft rows, brand sectors) ---------- */
+
+/*
+ * One hover language, shared by the craft-proof rows and the brand-sector cards.
+ *
+ * The gesture is three parts — a rule drawn along the top edge, the icon answering,
+ * and the title warming to the accent — timed so they read as a single response
+ * rather than three effects firing at once. It matches the rule the case cards draw
+ * on hover, so the page has one idea of what "this is interactive" looks like.
+ *
+ * Everything animated is `transform` or `color`. Nothing alters a tile's box: these
+ * sit against each other on shared 1px rules, so a size change would nudge every
+ * neighbour.
+ */
+.tile {
+  position: relative;
+}
+
+.tile__rule {
+  position: absolute;
+  inset: -1px auto auto 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-draw) var(--ease-out-expo);
+}
+
+.tile__icon {
+  width: clamp(2.75rem, 4.4vw, 3.75rem);
+  height: auto;
+  flex: none;
+  color: var(--fg-faint);
+  /* Rotates and scales about its own centre. The default origin is the top-left,
+     which on a 60px glyph swings it sideways instead of turning it on the spot. */
+  transform-origin: 50% 50%;
+  transition:
+    color var(--dur-hover) var(--ease-out-expo),
+    transform var(--dur-component) var(--ease-out-expo);
+}
+
+.tile__title {
+  transition: color var(--dur-hover) var(--ease-out-expo);
+}
+
+/* `:focus-within` as well as `:hover`: these carry no link today, but the text is
+   selectable and the pattern has to survive one being added. */
+.tile:hover .tile__rule,
+.tile:focus-within .tile__rule {
+  transform: scaleX(1);
+}
+.tile:hover .tile__icon,
+.tile:focus-within .tile__icon {
+  color: var(--accent);
+}
+.tile:hover .tile__title,
+.tile:focus-within .tile__title {
+  color: var(--accent-text);
+}
+
+/*
+ * Two motions, because one does not suit both sets.
+ *
+ * The craft icons are tools and abstractions — a compass, a target, a broadcast — and
+ * a quarter turn reads as the thing working. The sector icons are objects with an up
+ * and a down: a house, a plane, a mortarboard. Turning those ninety degrees reads as
+ * a bug, so they rise and grow instead.
+ */
+.tile--turn:hover .tile__icon,
+.tile--turn:focus-within .tile__icon {
+  transform: rotate(90deg);
+}
+.tile--lift:hover .tile__icon,
+.tile--lift:focus-within .tile__icon {
+  transform: translateY(-4px) scale(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile__rule,
+  .tile__icon {
+    transition-duration: 1ms;
+  }
+  /* Colour still answers the hover; the movement is the part that is motion. */
+  .tile--turn:hover .tile__icon,
+  .tile--turn:focus-within .tile__icon,
+  .tile--lift:hover .tile__icon,
+  .tile--lift:focus-within .tile__icon {
+    transform: none;
+  }
+}
+
 /* ---------- Marquee ---------- */
 
 .marquee {
@@ -1890,6 +2058,26 @@ dialog::backdrop {
 }
 .marquee:hover {
   animation-play-state: paused;
+}
+
+/*
+ * Client marks on the trust strip.
+ *
+ * The files in public/logos are single-path SVGs with no fill declared, so they paint
+ * black — which is correct on bone and invisible on ink. Inverting in the dark theme
+ * is what keeps a black mark from vanishing into a black page; it is safe precisely
+ * because these are monochrome silhouettes with nothing to get the colour wrong.
+ *
+ * The opacity holds them at roughly the weight of --fg-faint, so a mark and a
+ * wordmark set in type read as the same tier rather than the logos shouting over the
+ * names that have no file yet.
+ */
+.client-mark {
+  opacity: 0.55;
+}
+[data-theme='dark'] .client-mark {
+  filter: invert(1);
+  opacity: 0.62;
 }
 
 /* ---------- Route transitions ---------- */

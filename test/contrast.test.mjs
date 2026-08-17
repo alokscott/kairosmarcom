@@ -5,10 +5,10 @@ import { readFileSync } from 'node:fs'
 /**
  * Guards the design tokens against a WCAG 2.2 AA regression.
  *
- * The brand palette contains two colours that are NOT safe as body text on one of
- * the two backgrounds (#C8FF3D on bone is 1.03:1, #5C3BFF on near-black is 3.28:1),
- * which is why `--accent` and `--accent-text` are separate tokens. If someone
- * "simplifies" them back into one, this fails.
+ * The palette is one red ramp, and no point on it is safe as body text on BOTH
+ * backgrounds — the brand red is 3.51:1 on bone, and the crimson is 2.47:1 on
+ * near-black. That is why `--accent` and `--accent-text` are separate tokens. If
+ * someone "simplifies" them back into one, this fails.
  */
 
 const css = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
@@ -92,7 +92,11 @@ for (const [name, { selector, accents }] of Object.entries(themes)) {
 
 test('graphic accents remain distinguishable against both backgrounds', () => {
   // Used for rules, shapes and large display type only — 3:1 is the bar (WCAG 1.4.11).
-  const graphic = { orange: '#ff4b23', lime: '#c8ff3d', violet: '#5c3bff', silver: '#b7b8b5' }
+  // Read from the [data-accent] blocks rather than restated here, so retuning the
+  // palette cannot leave this check asserting colours the site no longer ships.
+  const graphic = Object.fromEntries(
+    ['orange', 'lime', 'violet', 'silver'].map((a) => [a, token(`[data-accent='${a}']`, '--accent')])
+  )
   for (const [name, hex] of Object.entries(graphic)) {
     const onDark = contrast(hex, token("[data-theme='dark']", '--bg'))
     assert.ok(onDark >= AA_LARGE, `${name} on dark is ${onDark.toFixed(2)}:1`)

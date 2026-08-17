@@ -32,7 +32,7 @@ const SERVICE_IDS = [
   { title: 'Branding', value: 'branding' },
   { title: 'Digital', value: 'digital' },
   { title: 'Public Relations', value: 'public-relations' },
-  { title: 'Media', value: 'media' },
+  { title: 'Technology', value: 'technology' },
   { title: 'Video', value: 'video' },
 ]
 
