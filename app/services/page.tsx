@@ -114,15 +114,48 @@ export default function ServicesPage() {
 
       {services.map((service, i) => {
         const evidence = service.cases.map((slug) => cases.find((c) => c.slug === slug)).filter(Boolean)
+        /*
+         * Alternating bands.
+         *
+         * Six disciplines in six identical blocks read as one continuous wall — the
+         * page had no visible seam between "Branding" and "Digital", so scrolling it
+         * felt like scrolling one very long section. Every other one now paints a
+         * near-opaque surface, which gives the page an obvious rhythm and tells you
+         * where a section starts without adding a single rule or box.
+         *
+         * It also decides where the scene shows. The banded sections hold their copy on
+         * paper; the open ones let the mark through. That is a deliberate alternation
+         * rather than the animation sitting uniformly behind everything, which is what
+         * made it a problem in the first place.
+         */
+        const banded = i % 2 === 1
         return (
           <section
             key={service.id}
             id={service.id}
             data-accent={service.accent}
-            className="scroll-mt-24 border-t py-20"
-            style={{ borderColor: 'var(--rule)' }}
+            className="relative overflow-hidden scroll-mt-24 border-t py-20"
+            style={{
+              borderColor: 'var(--rule)',
+              ...(banded
+                ? { background: 'color-mix(in srgb, var(--bg) 94%, transparent)', backdropFilter: 'blur(12px)' }
+                : null),
+            }}
           >
-            <div className="shell">
+            {/*
+              The index as a watermark. It is the one element that differs between
+              these six blocks at a glance from across the page, and at this weight it
+              never competes with the copy set over it.
+            */}
+            <span
+              aria-hidden="true"
+              className="mono-num pointer-events-none absolute -top-6 right-4 font-[family-name:var(--font-display)] text-[clamp(8rem,18vw,16rem)] font-black leading-none tracking-tighter select-none"
+              style={{ color: 'var(--accent)', opacity: 0.07 }}
+            >
+              0{i + 1}
+            </span>
+
+            <div className="shell relative">
               <div className="grid-editorial items-start">
                 <div className="col-span-4 md:col-span-5">
                   <div className="mb-4 flex items-center gap-4">
