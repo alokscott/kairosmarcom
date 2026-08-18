@@ -2134,6 +2134,94 @@ dialog::backdrop {
   }
 }
 
+/* ---------- Footer brand band ---------- */
+
+/*
+ * The one place on the site where the brand colour is the GROUND rather than an accent
+ * on it, so the tokens are redefined for the span of the band rather than every child
+ * being given a colour of its own. `.statement` and `.tagline` are unchanged — they
+ * read `--fg`, `--fg-muted`, `--accent` and `--rule` exactly as they always did, and
+ * those now mean something different in here. It is the same mechanism `[data-accent]`
+ * uses on sections.
+ *
+ * `--accent-fill`, not `--accent`. That distinction exists for this case: a surface
+ * carrying text takes the 4.5:1 bar and white on the exact logo red measures 3.96:1.
+ * At #dd2a2d white clears it at 4.73:1, which the tagline's 14px beats need.
+ */
+.footer-brand {
+  position: relative;
+  overflow: hidden;
+  background: var(--accent-fill);
+
+  --fg: #ffffff;
+  --fg-muted: rgb(255 255 255 / 0.86);
+  --fg-faint: rgb(255 255 255 / 0.7);
+  --accent: #ffffff;
+  --accent-text: #ffffff;
+  --rule: rgb(255 255 255 / 0.28);
+  --rule-strong: rgb(255 255 255 / 0.45);
+
+  color: #ffffff;
+}
+
+/*
+ * The mark as a watermark, bled off the right edge.
+ *
+ * Anchored to the RIGHT rather than centred: the band's content is a statement on the
+ * left and the tagline in the middle, so the only clear space is the far edge — and a
+ * mark half off the page reads as a stamp rather than as a picture someone placed.
+ */
+.footer-brand__mark {
+  position: absolute;
+  top: 50%;
+  right: -6%;
+  width: min(30rem, 46vw);
+  height: auto;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #ffffff;
+  opacity: 0.13;
+}
+
+/*
+ * Forced to solid white, because no shipped logo file is.
+ *
+ * Every mark in public/ pairs a RED starburst with the wordmark — `logo-wr.png` and
+ * `logo-row-rev.png` are reversed for a dark ground, not for a coloured one — so on
+ * this band the star and "MARCOM" dropped straight out and only "KAIROS" survived.
+ * `brightness(0)` crushes the image to black and `invert(1)` lifts it to white, which
+ * is exactly a reversed logo: one silhouette, no colour of its own.
+ *
+ * Replace this with a genuinely white asset the moment one exists — the filter is
+ * doing an artwork's job.
+ */
+.footer-brand__logo {
+  filter: brightness(0) invert(1);
+}
+
+.brand-spin {
+  transform-origin: 50% 50%;
+  transform-box: view-box;
+  animation: brand-spin 90s linear infinite;
+}
+
+.brand-spin--reverse {
+  animation-direction: reverse;
+  animation-duration: 120s;
+}
+
+@keyframes brand-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-spin {
+    animation: none;
+  }
+}
+
 /* ---------- Tagline ---------- */
 
 .tagline {

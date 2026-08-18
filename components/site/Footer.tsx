@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { cases } from '@/content/cases'
 import { footerNav, site } from '@/content/site'
 import ContactLink from './ContactLink'
+import BrandMark from './BrandMark'
 import Tagline from './Tagline'
 
 /*
@@ -22,43 +23,44 @@ export default function Footer() {
       className="no-print relative border-t"
       style={{ borderColor: 'var(--rule)', background: 'var(--bg-raised)' }}
     >
-      {/* The bottom inset clears the iOS home indicator, which otherwise sits directly
-          over the copyright line once the page paints edge to edge. */}
-      <div className="shell pt-16" style={{ paddingBottom: 'calc(4rem + var(--safe-b))' }}>
-        {/*
-          Two parts, divided.
+      {/*
+        Two parts, and the first is a full-bleed band.
 
-          The brand — mark, positioning line, tagline — used to be a fourth column
-          beside the three lists, which made the agency's own statement compete for
-          width with a nav menu and left its longest line wrapping to seven. It gets the
-          full measure here, above a rule, and the lists sit under it as the utility
-          they are.
-        */}
-        <div className="grid-editorial items-end gap-y-8">
-          <div className="col-span-4 md:col-span-7">
-            {/* Both marks ship and CSS picks one, so the logo is correct before
-                hydration — the same pair the header uses. */}
-            <Link href="/" className="inline-block no-underline" aria-label={`${site.name} — home`}>
-              <Image src="/logo-wr.png" alt="" width={503} height={160} className="brand-mark brand-mark--dark h-9 w-auto" />
-              <Image
-                src="/logo.png"
-                alt={site.name}
-                width={503}
-                height={160}
-                className="brand-mark brand-mark--light h-9 w-auto"
-              />
-            </Link>
+        The brand — mark, positioning line, tagline — used to be a fourth column beside
+        the three lists, competing for width with a nav menu. It is now a red band the
+        width of the page, which is the one place on the site the brand colour is the
+        ground rather than an accent on it.
 
-            <p className="statement mt-7 max-w-[30ch]">{site.about}</p>
-          </div>
+        The band is `--accent-fill`, not `--accent`. That distinction exists precisely
+        for this: a surface carrying text takes the 4.5:1 bar, and white on the exact
+        logo red measures 3.96:1. The statement would have passed as large text; the
+        tagline's 14px beats would not.
+      */}
+      <div className="footer-brand">
+        <BrandMark className="footer-brand__mark" />
 
-          <div className="col-span-4 md:col-span-5">
-            <Tagline />
+        <div className="shell relative py-14">
+          <div className="grid-editorial items-end gap-y-8">
+            <div className="col-span-4 md:col-span-7">
+              {/* One mark, not the theme-swapped pair the header uses: the band is red
+                  in both themes, so the reversed mark is always the right one. */}
+              <Link href="/" className="inline-block no-underline" aria-label={`${site.name} — home`}>
+                <Image src="/logo-wr.png" alt={site.name} width={503} height={160} className="footer-brand__logo h-10 w-auto" />
+              </Link>
+
+              <p className="statement mt-7 max-w-[30ch]">{site.about}</p>
+            </div>
+
+            <div className="col-span-4 md:col-span-5">
+              <Tagline />
+            </div>
           </div>
         </div>
+      </div>
 
-        <hr className="rule my-12" />
-
+      {/* The bottom inset clears the iOS home indicator, which otherwise sits directly
+          over the copyright line once the page paints edge to edge. */}
+      <div className="shell pt-14" style={{ paddingBottom: 'calc(4rem + var(--safe-b))' }}>
         <div className="grid-editorial">
           {/* Half-width from 416px up. Below that the two lists sat in ~140px columns
               and every case-study client name wrapped to two or three lines. */}
