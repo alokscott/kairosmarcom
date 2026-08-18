@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import type { CaseStudy, Film } from '@/content/types'
-import { faqs, services, site } from '@/content/site'
+import { faqs, services, site, social } from '@/content/site'
 
 const abs = (path: string) => new URL(path, site.url).toString()
 
@@ -57,7 +57,7 @@ export const organizationLd = () => ({
     addressRegion: site.address.region,
     addressCountry: site.address.country,
   },
-  sameAs: Object.values(site.social),
+  sameAs: social.map((s) => s.href),
   areaServed: 'Worldwide',
   knowsAbout: services.map((s) => s.name),
   openingHoursSpecification: {

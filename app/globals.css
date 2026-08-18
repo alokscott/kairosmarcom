@@ -2222,6 +2222,162 @@ dialog::backdrop {
   }
 }
 
+/* ---------- Social row ---------- */
+
+/*
+ * Four platform marks in the contact column.
+ *
+ * They were four words — Instagram, Facebook, LinkedIn, YouTube — set at 13px in a
+ * 4-of-12 column, where they wrapped onto two lines and read as more footer nav. As
+ * marks they take a third of the width, they are recognised before they are read, and
+ * each one becomes a real target instead of a line of text you have to aim at.
+ */
+.social-row {
+  display: flex;
+  flex-wrap: wrap;
+  /* Wrapping is not decorative here: at 768px this column is ~200px wide and four
+     targets plus gaps do not fit. Without it the row pushed the viewport 18px wide
+     and put a horizontal scrollbar on every page — the same fault the text version
+     had. */
+  gap: 0.875rem;
+  margin: 0;
+}
+
+.social-link {
+  position: relative;
+  /* A stacking context of its own, so the fill disc below can sit under the glyph
+     without z-index reaching out into the rest of the footer. */
+  isolation: isolate;
+  /* Flex, not grid, deliberately. The WCAG 2.5.8 rule above sets `display: inline-flex`
+     on `li > a:only-child` at coarse pointers and outranks a single class, so a grid
+     here would silently become a flex row on every phone — and `place-items` does
+     nothing to a flex line, leaving the glyph shunted to the left of its circle.
+     Matching the shape that rule imposes means the two agree instead of fighting. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 48px, not the 44px minimum. 44 is the floor for a control you can hit, not a
+     size that makes a 20px glyph legible — at that ratio the mark sat in the middle
+     of its circle looking like a bullet point. Four more pixels of circle buys six
+     more of glyph. */
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  /* Full `--fg`, not `--fg-muted`. These are the only line drawings on the site with
+     no label beside them to carry the meaning, so the drawing has to be read rather
+     than glanced at — muted grey on cream left them registering as marks without
+     resolving into which mark. */
+  color: var(--fg);
+  text-decoration: none;
+  transition:
+    color var(--dur-hover) var(--ease-out-expo),
+    border-color var(--dur-hover) var(--ease-out-expo),
+    transform var(--dur-hover) var(--ease-out-back);
+}
+
+.social-link svg {
+  /* Above the fill disc. The disc is a pseudo-element on the same box, so without a
+     layer of its own the glyph would be painted under the red. */
+  position: relative;
+  z-index: 1;
+  width: 1.5rem;
+  height: 1.5rem;
+  /* Heavier than the house 1.4. Every other icon on the site is read at 28px or more
+     beside its own label; these are 24px and have to carry the identification alone,
+     and 1.4 at that size is a hairline that disappears into a cream ground. */
+  stroke-width: 1.6;
+}
+
+/*
+ * The fill, as a disc that grows — not a background colour that fades.
+ *
+ * A `background` transition changes the whole circle at once and reads as a state
+ * flipping. A disc scaling from the centre reads as the colour arriving, which is the
+ * difference between a hover that works and a hover you notice.
+ *
+ * `--accent-fill` rather than `--accent`: the white glyph is carried on this surface,
+ * and the exact logo red leaves it at 3.96:1.
+ */
+.social-link::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  border-radius: 50%;
+  background: var(--accent-fill);
+  transform: scale(0);
+  transition: transform var(--dur-hover) var(--ease-out-back);
+}
+
+/*
+ * The ring that leaves.
+ *
+ * One hairline circle expanding past the edge and fading — the ray ring of the Kairos
+ * mark, in the one gesture a 44px circle has room for. It is the brand's own shape
+ * doing the acknowledging, rather than a generic glow.
+ */
+.social-link::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.social-link:hover,
+.social-link:focus-visible {
+  color: var(--on-accent);
+  border-color: var(--accent-fill);
+  transform: translateY(-3px);
+}
+
+.social-link:hover::before,
+.social-link:focus-visible::before {
+  transform: scale(1);
+}
+
+.social-link:hover::after,
+.social-link:focus-visible::after {
+  animation: social-ping 640ms var(--ease-out-expo);
+}
+
+@keyframes social-ping {
+  from {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+/*
+ * Reduced motion keeps the whole state change — it just stops moving.
+ *
+ * The fill still happens, because losing it would leave the hover with nothing but a
+ * border tint; only the growing, the lift and the departing ring are dropped.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .social-link,
+  .social-link::before {
+    transition: none;
+  }
+
+  .social-link:hover,
+  .social-link:focus-visible {
+    transform: none;
+  }
+
+  .social-link:hover::after,
+  .social-link:focus-visible::after {
+    animation: none;
+  }
+}
+
 /* ---------- Tagline ---------- */
 
 .tagline {

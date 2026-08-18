@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { cases } from '@/content/cases'
-import { footerNav, site } from '@/content/site'
+import { footerNav, site, social } from '@/content/site'
 import ContactLink from './ContactLink'
 import BrandMark from './BrandMark'
+import LineIcon from './LineIcon'
 import Tagline from './Tagline'
+import { SOCIAL_ICONS } from './icons'
 
 /*
  * The footer paints its own opaque surface.
@@ -125,30 +127,27 @@ export default function Footer() {
               <li className="faint pt-2">{site.hours}</li>
             </ul>
 
-            {/* flex-wrap: three social links in a 4-of-12 column overflowed the
-                viewport by 18px at the 768px breakpoint, which put a horizontal
-                scrollbar on every page of the site. */}
-            <ul className="mt-6 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-sm">
-              <li>
-                <a href={site.social.instagram} className="link-underline muted" rel="me noopener">
-                  Instagram
-                </a>
-              </li>
-              <li>
-                <a href={site.social.linkedin} className="link-underline muted" rel="me noopener">
-                  LinkedIn
-                </a>
-              </li>
-              <li>
-                <a href={site.social.behance} className="link-underline muted" rel="me noopener">
-                  Behance
-                </a>
-              </li>
-              <li>
-                <a href={site.social.facebook} className="link-underline muted" rel="me noopener">
-                  Facebook
-                </a>
-              </li>
+            {/* Mapped over the one list in content, not written out link by link —
+                which is what let Behance sit here pointing at an account that never
+                existed. Add or remove a profile in `social` and this row follows.
+
+                Icons rather than the four words they replace. The names were set at
+                13px in a 4-of-12 column and wrapped to two lines; four marks everyone
+                already knows say the same thing in a third of the width, and each is a
+                44px target instead of a line of small text. The name stays as the
+                accessible label — this is a picture of a word, not a replacement for
+                one. */}
+            {/* mt-8, not mt-6. The circles read as one visual object rather than a run
+                of text lines, and at 1.5rem they sat close enough to the opening-hours
+                line to look attached to it. */}
+            <ul className="social-row mt-8 list-none p-0">
+              {social.map((profile) => (
+                <li key={profile.href}>
+                  <a href={profile.href} className="social-link" rel="me noopener" aria-label={profile.label}>
+                    <LineIcon>{SOCIAL_ICONS[profile.label]}</LineIcon>
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>

@@ -29,15 +29,32 @@ export const site = {
   hours: 'Mon–Fri, 10am–7pm IST',
   responseTime: 'We reply to every enquiry within one business day.',
   address: { locality: 'New Delhi', region: 'Delhi', country: 'IN' },
-  social: {
-    instagram: 'https://instagram.com/kairosmarcom',
-    linkedin: 'https://linkedin.com/company/kairosmarcom',
-    behance: 'https://behance.net/kairosmarcom',
-    /* The copy deck adds Facebook to the social row without supplying a URL. This
-       follows the handle every other channel uses and is flagged for confirmation. */
-    facebook: 'https://facebook.com/kairosmarcom',
-  },
 } as const
+
+/**
+ * The company's social profiles — confirmed by the client on 2026-08-18, and closed.
+ *
+ * These four are the complete set. There is no Behance: it was carried over from the
+ * old site's footer as a guessed `behance.net/kairosmarcom` handle, alongside guessed
+ * Instagram, LinkedIn and Facebook URLs that all pointed at accounts that do not exist.
+ * A dead link in a footer is worse than an absent one, so nothing gets added here again
+ * without a URL that has been opened and checked.
+ *
+ * Note the handles are `Kairo5` — the digit five, not an "s" — on Instagram and
+ * Facebook. It reads as a typo and is not one. Do not "correct" it.
+ *
+ * An ordered array rather than an object because the order is a design decision (the
+ * footer row reads by audience size) and object key order is not something to rely on
+ * for rendering. Both consumers — the footer row and the `sameAs` in structured data —
+ * map over this one list, so a profile can never appear in one and be missing from the
+ * other.
+ */
+export const social: { label: string; href: string }[] = [
+  { label: 'Instagram', href: 'https://www.instagram.com/Kairo5Marcom' },
+  { label: 'Facebook', href: 'https://www.facebook.com/Kairo5marcom' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/kairos-marcom/' },
+  { label: 'YouTube', href: 'https://www.youtube.com/@kairosmarcom8987' },
+]
 
 /**
  * The three offices.

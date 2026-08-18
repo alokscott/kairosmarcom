@@ -281,3 +281,54 @@ export const STAT_ICONS: React.ReactNode[] = [
     <circle cx="12" cy="10" r="2.6" />
   </>,
 ]
+
+/**
+ * The four social platforms, keyed by the label in `social`.
+ *
+ * The one place the house style bends. Every other icon here is geometry invented for
+ * this site, but these four are marks other companies own and a visitor recognises them
+ * by their exact shape — "creatively reinterpreting" Instagram's camera would make a
+ * glyph nobody can read, which is the only job this icon has.
+ *
+ * So the silhouettes are the real ones, redrawn to the LineIcon contract — 24-unit box,
+ * one 1.4 stroke, `currentColor` — instead of pasted in as the filled brand assets.
+ * That way they sit at the same weight as the rest of the site's icons and take the
+ * hover colour from CSS like everything else, rather than arriving as four fixed-colour
+ * logos in four different drawing styles.
+ *
+ * Keyed by label so a profile added to `social` without an icon fails visibly at the
+ * call site rather than rendering an empty circle.
+ */
+export const SOCIAL_ICONS: Record<string, React.ReactNode> = {
+  /* The camera: rounded square, lens, and the flash in its corner. */
+  Instagram: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4.1" />
+      <path d="M17.2 6.8h.01" strokeWidth="2.2" />
+    </>
+  ),
+  /* The "f", stroked rather than filled — stem, shoulder and crossbar. */
+  Facebook: (
+    <>
+      <path d="M15.6 3.8h-1.9a3.4 3.4 0 0 0-3.4 3.4v13" />
+      <path d="M7.6 11.2h6.7" />
+    </>
+  ),
+  /* "in": the dotted stem and the shoulder of the n. */
+  LinkedIn: (
+    <>
+      <path d="M6 10.2v9.4" />
+      <path d="M6 5.6h.01" strokeWidth="2.4" />
+      <path d="M11.4 19.6v-9.4" />
+      <path d="M11.4 14.6a3.5 3.5 0 0 1 7 0v5" />
+    </>
+  ),
+  /* The tube and its play triangle. */
+  YouTube: (
+    <>
+      <rect x="2.4" y="5.4" width="19.2" height="13.2" rx="4" />
+      <path d="M10.2 9.3l5.3 2.7-5.3 2.7Z" />
+    </>
+  ),
+}
