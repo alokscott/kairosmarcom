@@ -950,10 +950,22 @@ summary {
   padding-right: max(clamp(1.25rem, 5vw, 4rem), var(--safe-r));
 }
 
+/*
+ * `margin-block: 0` and nothing else, NOT the `margin: 0` shorthand.
+ *
+ * globals.css is unlayered and Tailwind's utilities are not, so an unlayered
+ * declaration wins over a layered one regardless of specificity — the same trap
+ * documented on `.panel`, `.lightbox` and `.grid-editorial`. The shorthand meant the
+ * footer's `my-10` was silently discarded and its divider sat hard against the
+ * copyright line with no space at all.
+ *
+ * Longhand for the inline axis only, so a caller's vertical margin utility is the one
+ * that applies and the horizontal default is still zeroed.
+ */
 .rule {
   border: 0;
   border-top: 1px solid var(--rule);
-  margin: 0;
+  margin-inline: 0;
 }
 
 /* Editorial 12-column grid, collapsing to 4 on small screens. */
@@ -1457,37 +1469,37 @@ nav a {
  * the bar reads as a lit surface instead of a box with a border. Replaces the plain
  * 1px border that used to sit here.
  */
+/*
+ * The bar carries its surface at every scroll position, on every page.
+ *
+ * It used to be transparent until the page scrolled, opaque only on phones. That was
+ * a desktop assumption from when the scene sat well below it — but the hero now runs a
+ * video behind the bar, and on the inner pages the mark's arc reaches the top of the
+ * frame. Both put the wordmark and the nav on top of something moving, at whatever
+ * contrast that frame happened to have. A navigation bar is not the place to find out
+ * whether a colour was going to work.
+ *
+ * `--bg-raised` rather than `--bg`: it is the whitest surface in the token set on the
+ * light theme (#fffdf7) and still resolves to a sensible raised dark on ink, so one
+ * value gives a white strip in light mode without a hard white in dark mode.
+ */
 .nav-sheen {
-  background: transparent;
-  transition: background var(--dur-component) var(--ease-out-expo);
+  background: var(--bg-raised);
+  transition:
+    background var(--dur-component) var(--ease-out-expo),
+    box-shadow var(--dur-component) var(--ease-out-expo);
   /*
    * The bar is fixed at top 0 and the page paints under the status bar once
    * `viewport-fit=cover` is on, so the inset is padding on the bar rather than an
-   * offset — the tinted surface still reaches the top of the screen, and only the
-   * logo and controls move down out from under the clock.
+   * offset — the surface still reaches the top of the screen, and only the logo and
+   * controls move down out from under the clock.
    */
   padding-top: var(--safe-t);
 }
 
+/* Scrolled still reads differently — the bar lifts off the page rather than appearing. */
 .nav-sheen[data-scrolled='true'] {
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
-  backdrop-filter: blur(14px);
-}
-
-/*
- * On a phone the bar stays opaque at every scroll position.
- *
- * The transparent-at-rest header is a desktop device: there, the scene sits well
- * below and behind the bar. On a narrow screen the hero starts immediately under it,
- * so shards and motes crossed straight through the logo and the Menu button and both
- * became hard to pick out against moving geometry.
- */
-@media (max-width: 48rem) {
-  .nav-sheen,
-  .nav-sheen[data-scrolled='false'] {
-    background: color-mix(in srgb, var(--bg) 93%, transparent);
-    backdrop-filter: blur(12px);
-  }
+  box-shadow: 0 1px 0 0 color-mix(in srgb, var(--rule) 80%, transparent);
 }
 
 .nav-sheen::after {
