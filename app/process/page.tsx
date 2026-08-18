@@ -98,20 +98,23 @@ export default function ProcessPage() {
             </div>
 
             <div className="col-span-4 md:col-span-6 md:col-start-7">
-              <ul className="m-0 list-none p-0">
-                {RESPONSIBILITIES.map((item) => (
+              {/* Numbered, not dashed. Five dashes read as an aside; a numbered list
+                  reads as the whole of what is being asked for, which is what the
+                  paragraph beside it promises. */}
+              <ol className="m-0 list-none p-0">
+                {RESPONSIBILITIES.map((item, i) => (
                   <li
                     key={item}
                     className="flex items-baseline gap-4 border-b py-4"
                     style={{ borderColor: 'var(--rule)' }}
                   >
-                    <span aria-hidden="true" className="shrink-0" style={{ color: 'var(--accent-text)' }}>
-                      —
+                    <span aria-hidden="true" className="mono-num shrink-0 text-xs" style={{ color: 'var(--accent-text)' }}>
+                      {String(i + 1).padStart(2, '0')}
                     </span>
                     <span className="max-w-[56ch] leading-relaxed">{item}</span>
                   </li>
                 ))}
-              </ul>
+              </ol>
 
               <h3 className="mt-12 text-[length:var(--text-h3)]">After handover</h3>
               <p className="muted mt-4 max-w-[56ch] leading-relaxed">
@@ -124,20 +127,51 @@ export default function ProcessPage() {
         </div>
       </section>
 
+      {/*
+        Two sections, each two columns and numbered — the treatment the homepage's
+        objections and FAQs already use.
+
+        They were one section holding two full-width accordions stacked on top of each
+        other: an unnumbered list of short questions running across ten columns with the
+        right half of the page empty, and a small h3 as the only thing separating the
+        two sets. Splitting them gives each its own heading beside its own list, and the
+        numbers give a closed accordion of one-line questions something to hold onto.
+      */}
       <section className="section pt-0" data-accent="orange">
         <div className="shell">
-          <h2 className="max-w-[20ch] text-[length:var(--text-h2)]">The things people say before they say yes</h2>
-          <div className="mt-10 grid-editorial">
-            <div className="col-span-4 md:col-span-10">
-              <Accordion items={objections} idPrefix="process-objection" />
-              <h3 className="mt-16 mb-2 text-[length:var(--text-h3)]">And the questions after that</h3>
-              <Accordion items={faqs} idPrefix="process-faq" />
+          <div className="grid-editorial items-start gap-y-10">
+            <div className="col-span-4 md:col-span-5">
+              <p className="eyebrow mb-4">Straight answers</p>
+              <h2 className="max-w-[16ch] text-[length:var(--text-h2)]">
+                The things people say before they say yes
+              </h2>
+            </div>
+            <div className="col-span-4 md:col-span-6 md:col-start-7">
+              <Accordion items={objections} idPrefix="process-objection" numbered />
             </div>
           </div>
+        </div>
+      </section>
 
-          <Link href="/contact" className="btn btn--primary mt-12">
-            Book your 30-minute call
-          </Link>
+      <section className="section pt-0" data-accent="lime">
+        <div className="shell">
+          <div className="grid-editorial items-start gap-y-10">
+            {/* Sticky for the same reason as the homepage FAQs: seven questions make
+                this column twice the height of its heading, and a heading that scrolls
+                away leaves the reader part-way down an unlabelled set of rows. */}
+            <div className="col-span-4 md:col-span-5 md:self-stretch">
+              <div className="md:sticky md:top-32">
+                <p className="eyebrow mb-4">FAQs</p>
+                <h2 className="max-w-[16ch] text-[length:var(--text-h2)]">And the questions after that</h2>
+                <Link href="/contact" className="btn btn--primary mt-8">
+                  Book your 30-minute call
+                </Link>
+              </div>
+            </div>
+            <div className="col-span-4 md:col-span-6 md:col-start-7">
+              <Accordion items={faqs} idPrefix="process-faq" numbered />
+            </div>
+          </div>
         </div>
       </section>
     </>
