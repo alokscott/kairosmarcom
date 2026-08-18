@@ -1,5 +1,6 @@
 import { Reveal } from '@/components/motion/Reveal'
 import LineIcon from '@/components/site/LineIcon'
+import { CRAFT_ICONS } from '@/components/site/icons'
 import { craftIntro, craftProof } from '@/content/site'
 
 /**
@@ -13,73 +14,6 @@ import { craftIntro, craftProof } from '@/content/site'
  * them would lose the distinction between new marks and rebuilds. The grid is two-up
  * and three-up rather than fixed at six, so an odd count sits correctly.
  */
-
-/**
- * One line icon per discipline, drawn rather than imported.
- *
- * No icon library: seven glyphs is not worth a dependency, and a general-purpose set
- * would arrive in someone else's drawing style. These are built from the same shapes
- * as the brand mark — circles, triangles, the six-point star, straight rules — at a
- * single stroke weight, so they read as a family with the logo rather than as stock
- * pictograms sitting next to it.
- *
- * `currentColor` throughout, which is what lets the hover state recolour them from CSS
- * without a second copy of each path.
- */
-const ICONS: Record<string, React.ReactNode> = {
-  /* A drafting compass over the arc it has struck — mark-making, rather than a
-     finished mark. The six-point star was here first and read as the Kairos logo
-     itself, which says "this is our brand", not "we draw yours". */
-  'Logo Creation': (
-    <>
-      <path d="M12 3.2v2.4" />
-      <circle cx="12" cy="4" r="1.4" />
-      <path d="M11 5.4 6.5 18.2M13 5.4l4.5 12.8" />
-      <path d="M5.2 20.4a11 11 0 0 1 13.6 0" />
-    </>
-  ),
-  'Logo Revamp': (
-    <>
-      <path d="M20 12a8 8 0 1 1-2.6-5.9" />
-      <path d="M20 4v4.2h-4.2" />
-      <circle cx="12" cy="12" r="2.4" />
-    </>
-  ),
-  'Brand Guidelines': (
-    <>
-      <rect x="4" y="3.5" width="16" height="17" rx="1" />
-      <path d="M8 8.5h8M8 12h8M8 15.5h5" />
-    </>
-  ),
-  'Social Media': (
-    <>
-      <circle cx="6" cy="17" r="2.4" />
-      <circle cx="18" cy="17" r="2.4" />
-      <circle cx="12" cy="6" r="2.4" />
-      <path d="M10.6 8.1 7.4 14.9M13.4 8.1l3.2 6.8M8.4 17h7.2" />
-    </>
-  ),
-  'Digital Marketing': (
-    <>
-      <circle cx="12" cy="12" r="8.5" />
-      <circle cx="12" cy="12" r="3.6" />
-      <path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3" />
-    </>
-  ),
-  'Public Relations': (
-    <>
-      <circle cx="12" cy="12" r="2" />
-      <path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4" />
-      <path d="M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8" />
-    </>
-  ),
-  Technology: (
-    <>
-      <path d="M8.5 8 4 12l4.5 4M15.5 8l4.5 4-4.5 4" />
-      <path d="M13.4 5.5 10.6 18.5" />
-    </>
-  ),
-}
 
 export default function CraftProof() {
   return (
@@ -129,7 +63,7 @@ export default function CraftProof() {
               <div className="grid grid-cols-4 items-start gap-x-[clamp(1rem,2.5vw,2rem)] gap-y-3 py-8 md:grid-cols-12">
                 <div className="col-span-4 flex items-center gap-5 md:col-span-2">
                   <LineIcon className="tile__icon">
-                    {ICONS[item.title]}
+                    {CRAFT_ICONS[item.title]}
                   </LineIcon>
                   <p className="mono-num text-xs" style={{ color: 'var(--accent-text)' }}>
                     {String(i + 1).padStart(2, '0')}

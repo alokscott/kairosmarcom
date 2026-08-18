@@ -3,8 +3,10 @@ import Link from 'next/link'
 import ProcessSection from '@/components/home/ProcessSection'
 import { Reveal } from '@/components/motion/Reveal'
 import Accordion from '@/components/site/Accordion'
+import LineIcon from '@/components/site/LineIcon'
+import { STEP_ICONS } from '@/components/site/icons'
 import { Scene } from '@/components/three/Scene'
-import { faqs, objections, processIntro } from '@/content/site'
+import { faqs, objections, processIntro, processSteps } from '@/content/site'
 import { breadcrumbLd, faqLd, graph, pageMeta } from '@/lib/seo'
 
 export const metadata: Metadata = pageMeta({
@@ -48,11 +50,37 @@ export default function ProcessPage() {
       <section className="relative overflow-hidden pt-40 pb-12" data-accent="lime">
         <Scene preset="process" accent="lime" intensity={0.8} />
         <div className="shell relative">
-          <Reveal>
-            <p className="eyebrow mb-4">Kairos moment</p>
-            <h1 className="max-w-[13ch] text-[length:var(--text-display)]">Kairos. The Supreme Moment.</h1>
-            <p className="statement mt-10 max-w-[42ch]">{processIntro}</p>
-          </Reveal>
+          {/*
+            Two columns. Capped at 13ch the heading broke to three lines and the right
+            half of the fold held nothing, on a page whose entire subject is a sequence
+            of four steps. Listing them here answers "what is the process" before a
+            word of the explanation is read, and each entry jumps to its own stage.
+          */}
+          <div className="grid-editorial items-start gap-y-10">
+            <div className="col-span-4 md:col-span-6">
+              <Reveal>
+                <p className="eyebrow mb-4">Kairos moment</p>
+                <h1 className="max-w-[13ch] text-[length:var(--text-display)]">Kairos. The Supreme Moment.</h1>
+                <p className="statement mt-10 max-w-[38ch]">{processIntro}</p>
+              </Reveal>
+            </div>
+
+            <ol className="col-span-4 m-0 list-none p-0 md:col-span-5 md:col-start-8">
+              {processSteps.map((step) => (
+                <Reveal key={step.title} as="li" delay={Number(step.index) * 70}>
+                  <div className="flex items-center gap-4 border-b py-4" style={{ borderColor: 'var(--rule)' }}>
+                    <LineIcon className="w-9 flex-none" style={{ color: 'var(--accent)' }}>
+                      {STEP_ICONS[step.title]}
+                    </LineIcon>
+                    <span className="font-[family-name:var(--font-display)] text-[length:var(--text-h3)] font-bold tracking-tight">
+                      {step.title}
+                    </span>
+                    <span className="faint ml-auto text-xs tracking-[0.14em] uppercase">{step.stage}</span>
+                  </div>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
         </div>
       </section>
 

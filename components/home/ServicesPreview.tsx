@@ -4,63 +4,11 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Reveal } from '@/components/motion/Reveal'
 import LineIcon from '@/components/site/LineIcon'
+import { SERVICE_ICONS } from '@/components/site/icons'
 import { Scene } from '@/components/three/Scene'
 import { setScene } from '@/components/three/store'
 import { services, servicesIntro } from '@/content/site'
 import { track } from '@/lib/analytics'
-import type { ServiceId } from '@/content/types'
-
-/** One icon per discipline, drawn to the rules in components/site/LineIcon.tsx. */
-const SERVICE_ICONS: Record<ServiceId, React.ReactNode> = {
-  /* A bezier with its two control handles — drawing, not a drawn thing. */
-  'creative-design': (
-    <>
-      <path d="M3.5 18.5c0-8 5-13 17-13" />
-      <circle cx="3.5" cy="18.5" r="1.8" />
-      <circle cx="20.5" cy="5.5" r="1.8" />
-      <path d="M3.5 12.5h5M15.5 18.5h5" />
-    </>
-  ),
-  /* A tag with its eyelet. */
-  branding: (
-    <>
-      <path d="M11.4 3.5H20a.5.5 0 0 1 .5.5v8.6a1 1 0 0 1-.3.7l-7.7 7.7a1 1 0 0 1-1.4 0l-8-8a1 1 0 0 1 0-1.4l7.7-7.7a1 1 0 0 1 .6-.4Z" />
-      <circle cx="16.4" cy="7.6" r="1.6" />
-    </>
-  ),
-  /* A window with a pointer in it. */
-  digital: (
-    <>
-      <rect x="2.5" y="4" width="19" height="15" rx="1.4" />
-      <path d="M2.5 8h19" />
-      <path d="M10 11.5l6 3-2.6 1-1 2.6-2.4-6.6Z" />
-    </>
-  ),
-  /* A megaphone. */
-  'public-relations': (
-    <>
-      <path d="M3.5 9.5v5a1 1 0 0 0 1 1h2.7l8.3 4.5V4L7.2 8.5H4.5a1 1 0 0 0-1 1Z" />
-      <path d="M19 9a4.2 4.2 0 0 1 0 6" />
-      <path d="M7.2 15.5v3.2a1 1 0 0 0 1 1h1.6" />
-    </>
-  ),
-  /* Angle brackets — the same glyph the craft row uses, because it means the same
-     thing there and a second invention would only make the two look unrelated. */
-  technology: (
-    <>
-      <path d="M8.5 8 4 12l4.5 4M15.5 8l4.5 4-4.5 4" />
-      <path d="M13.4 5.5 10.6 18.5" />
-    </>
-  ),
-  /* A clapperboard. */
-  video: (
-    <>
-      <rect x="2.5" y="8" width="19" height="12" rx="1.2" />
-      <path d="M2.9 8 6 3.9l3.6 3.6M9.3 8 12.4 3.9 16 7.5M15.7 8l3.1-4.1 2.4 2.4" />
-      <path d="M10.4 11.8v4.4l4-2.2-4-2.2Z" />
-    </>
-  ),
-}
 
 /**
  * Six disciplines as one interconnected system.

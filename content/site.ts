@@ -139,7 +139,15 @@ export const principles: {
     index: '02',
     title: 'Logic',
     body: 'The strategic use of logic, claims and evidence to spread the word about brands, making it strong, reasonable and clear. Evidence, not assertion.',
-    accent: 'silver',
+    /*
+     * Was 'silver'. That mattered when the palette had four hues and each principle
+     * carried its own; now `silver` is the one NEUTRAL, kept for bands that should
+     * recede, so declaring it here turned this principle's icon, numeral and progress
+     * bar grey while the other three were red — and on the homepage it drained the
+     * whole pinned stage as you scrolled through Logic. `silver` is a role now, not a
+     * colour choice, and nothing that wants emphasis should ask for it.
+     */
+    accent: 'orange',
     motif: 'The loose field snaps onto an ordered axis and holds its shape.',
   },
   {

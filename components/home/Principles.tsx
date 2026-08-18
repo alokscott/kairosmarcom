@@ -3,48 +3,10 @@
 import { Reveal } from '@/components/motion/Reveal'
 import { KineticHeadline, PinnedStage, Tilt } from '@/components/motion/Kinetic'
 import LineIcon from '@/components/site/LineIcon'
+import { PRINCIPLE_ICONS } from '@/components/site/icons'
 import { Scene } from '@/components/three/Scene'
 import { useSceneStore } from '@/components/three/store'
 import { dna, principles, principlesIntro } from '@/content/site'
-
-/**
- * One icon per principle, keyed by its id.
- *
- * Same reasoning as the process panel: four cards that differ only in their words
- * make the sequence read as text changing rather than as four distinct ideas. Each
- * draws the principle itself — two forms overlapping for the connection, a ruled grid
- * for the logic, a spark for the magic, rings spreading for the cause.
- *
- * The spark is a four-point star, not the six-point one from the mark. Six points
- * here would read as the Kairos logo turning up inside its own argument.
- */
-const PRINCIPLE_ICONS: Record<string, React.ReactNode> = {
-  connection: (
-    <>
-      <circle cx="8.5" cy="12" r="5.5" />
-      <circle cx="15.5" cy="12" r="5.5" />
-    </>
-  ),
-  logic: (
-    <>
-      <rect x="3.5" y="3.5" width="17" height="17" rx="1" />
-      <path d="M3.5 9.2h17M3.5 14.8h17M9.2 3.5v17M14.8 3.5v17" />
-    </>
-  ),
-  magic: (
-    <>
-      <path d="M12 3.2c0 4.4 1.4 5.8 5.8 5.8-4.4 0-5.8 1.4-5.8 5.8 0-4.4-1.4-5.8-5.8-5.8 4.4 0 5.8-1.4 5.8-5.8Z" />
-      <path d="M17.6 15.4c0 2.2.7 2.9 2.9 2.9-2.2 0-2.9.7-2.9 2.9 0-2.2-.7-2.9-2.9-2.9 2.2 0 2.9-.7 2.9-2.9Z" />
-    </>
-  ),
-  cause: (
-    <>
-      <circle cx="12" cy="12" r="1.8" />
-      <path d="M12 6.4a5.6 5.6 0 0 1 0 11.2 5.6 5.6 0 0 1 0-11.2Z" />
-      <path d="M12 2.5a9.5 9.5 0 0 1 0 19 9.5 9.5 0 0 1 0-19Z" />
-    </>
-  ),
-}
 
 /**
  * Four things every piece of work has to earn.

@@ -2,52 +2,10 @@
 
 import { KineticHeadline, PinnedStage } from '@/components/motion/Kinetic'
 import LineIcon from '@/components/site/LineIcon'
+import { STEP_ICONS } from '@/components/site/icons'
 import { Scene } from '@/components/three/Scene'
 import { useSceneStore } from '@/components/three/store'
 import { processIntro, processSteps } from '@/content/site'
-
-/**
- * One icon per step, keyed by the step's own name.
- *
- * The stage panel carried a number, a word and two paragraphs — four cards that
- * differed only in their text, so moving between them read as the copy changing
- * rather than as the process advancing. Each icon draws the verb: an eye for the
- * looking, a funnel for the narrowing, a stack for the assembly, a box leaving the
- * frame for the handover. Because the cards cross-fade on scroll, the icon changing
- * IS the animation — nothing extra had to be added to make it move.
- */
-const STEP_ICONS: Record<string, React.ReactNode> = {
-  /* An eye — the step is called Observe. */
-  Listen: (
-    <>
-      <path d="M2 12s3.8-6 10-6 10 6 10 6-3.8 6-10 6-10-6-10-6Z" />
-      <circle cx="12" cy="12" r="3" />
-    </>
-  ),
-  /* A funnel with a single drop under it. */
-  Distil: (
-    <>
-      <path d="M3.5 4.5h17l-6.4 7.6v6.1l-4.2 2.3v-8.4L3.5 4.5Z" />
-    </>
-  ),
-  /* Blocks assembling into one form. */
-  Build: (
-    <>
-      <rect x="3" y="13" width="8" height="8" rx="0.8" />
-      <rect x="13" y="13" width="8" height="8" rx="0.8" />
-      <rect x="8" y="3" width="8" height="8" rx="0.8" />
-      <path d="M12 11v2" />
-    </>
-  ),
-  /* A box with the work leaving it. */
-  'Hand over': (
-    <>
-      <path d="M20.5 13.5v6a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-6" />
-      <path d="M12 15V3.5" />
-      <path d="M8 7.2 12 3.2l4 4" />
-    </>
-  ),
-}
 
 /**
  * The Kairos moment — four steps.

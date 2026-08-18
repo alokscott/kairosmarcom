@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Reveal } from '@/components/motion/Reveal'
+import LineIcon from '@/components/site/LineIcon'
+import { SERVICE_ICONS } from '@/components/site/icons'
 import { Scene } from '@/components/three/Scene'
 import { cases } from '@/content/cases'
 import { processSteps, services, servicesIntro } from '@/content/site'
@@ -62,11 +64,51 @@ export default function ServicesPage() {
       <section className="relative overflow-hidden pt-40 pb-16" data-accent="violet">
         <Scene preset="constellation" accent="violet" />
         <div className="shell relative">
-          <Reveal>
-            <p className="eyebrow mb-4">What we do</p>
-            <h1 className="max-w-[13ch] text-[length:var(--text-display)]">Distinct disciplines. Integrated model.</h1>
-            <p className="muted mt-8 max-w-[58ch] text-[length:var(--text-lead)]">{servicesIntro}</p>
-          </Reveal>
+          {/*
+            Two columns, because one left the right half of the fold empty.
+
+            The heading was capped at 13ch so it broke to four lines, and nothing sat
+            beside it — a page about six disciplines opened on a wall of type with half
+            a screen of nothing next to it. The index fills that with the six, which is
+            the fastest possible answer to "what do you do", and each one jumps to its
+            own section further down.
+          */}
+          <div className="grid-editorial items-start gap-y-10">
+            <div className="col-span-4 md:col-span-6">
+              <Reveal>
+                <p className="eyebrow mb-4">What we do</p>
+                <h1 className="max-w-[15ch] text-[length:var(--text-display)]">
+                  Distinct disciplines. Integrated model.
+                </h1>
+                <p className="muted mt-8 max-w-[52ch] text-[length:var(--text-lead)]">{servicesIntro}</p>
+              </Reveal>
+            </div>
+
+            <nav className="col-span-4 md:col-span-5 md:col-start-8" aria-label="Jump to a discipline">
+              <Reveal delay={120}>
+                <ol className="m-0 list-none p-0">
+                  {services.map((service, i) => (
+                    <li key={service.id}>
+                      <a
+                        href={`#${service.id}`}
+                        className="tile tile--lift flex items-center gap-4 border-b py-4 no-underline"
+                        style={{ borderColor: 'var(--rule)' }}
+                      >
+                        <span aria-hidden="true" className="tile__rule" />
+                        <LineIcon className="tile__icon w-8 flex-none">{SERVICE_ICONS[service.id]}</LineIcon>
+                        <span className="tile__title font-[family-name:var(--font-display)] text-[length:var(--text-h3)] font-bold tracking-tight">
+                          {service.name}
+                        </span>
+                        <span aria-hidden="true" className="mono-num ml-auto text-xs" style={{ color: 'var(--fg-faint)' }}>
+                          0{i + 1}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </Reveal>
+            </nav>
+          </div>
         </div>
       </section>
 
@@ -83,7 +125,12 @@ export default function ServicesPage() {
             <div className="shell">
               <div className="grid-editorial items-start">
                 <div className="col-span-4 md:col-span-5">
-                  <p className="mono-num eyebrow mb-4">0{i + 1}</p>
+                  <div className="mb-4 flex items-center gap-4">
+                    <LineIcon className="w-10 flex-none" style={{ color: 'var(--accent)' }}>
+                      {SERVICE_ICONS[service.id]}
+                    </LineIcon>
+                    <p className="mono-num eyebrow">0{i + 1}</p>
+                  </div>
                   <h2 className="text-[length:var(--text-h1)]">{service.name}</h2>
                   <p className="mt-6 text-[length:var(--text-lead)] leading-relaxed">{service.blurb}</p>
                 </div>

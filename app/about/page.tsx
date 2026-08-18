@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { DnaHeading } from '@/components/home/Principles'
 import { Reveal } from '@/components/motion/Reveal'
+import LineIcon from '@/components/site/LineIcon'
 import Tagline from '@/components/site/Tagline'
+import { PRINCIPLE_ICONS } from '@/components/site/icons'
 import { Scene } from '@/components/three/Scene'
 import { clients, dna, principles, principlesIntro, site } from '@/content/site'
 import { breadcrumbLd, graph, organizationLd, pageMeta } from '@/lib/seo'
@@ -73,10 +75,17 @@ export default function AboutPage() {
           <ol className="mt-14 m-0 grid list-none gap-px p-0 sm:grid-cols-2" style={{ background: 'var(--rule)' }}>
             {principles.map((p) => (
               <li key={p.id} data-accent={p.accent} className="p-7" style={{ background: 'var(--bg)' }}>
-                <p className="mono-num text-xs" style={{ color: 'var(--accent-text)' }}>
-                  {p.index}
-                </p>
-                <h3 className="mt-2 text-[length:var(--text-h2)]">{p.title}</h3>
+                {/* The same icon the homepage stage panel uses for this principle,
+                    imported rather than redrawn — see components/site/icons.tsx. */}
+                <div className="flex items-start justify-between gap-4">
+                  <p className="mono-num text-xs" style={{ color: 'var(--accent-text)' }}>
+                    {p.index}
+                  </p>
+                  <LineIcon className="w-10 flex-none" style={{ color: 'var(--accent)' }}>
+                    {PRINCIPLE_ICONS[p.id]}
+                  </LineIcon>
+                </div>
+                <h3 className="mt-4 text-[length:var(--text-h2)]">{p.title}</h3>
                 <p className="muted mt-4 max-w-[46ch] leading-relaxed">{p.body}</p>
               </li>
             ))}
