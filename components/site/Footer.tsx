@@ -6,7 +6,7 @@ import ContactLink from './ContactLink'
 import BrandMark from './BrandMark'
 import LineIcon from './LineIcon'
 import Tagline from './Tagline'
-import { SOCIAL_ICONS } from './icons'
+import { CONTACT_ICONS, SOCIAL_ICONS } from './icons'
 
 /*
  * The footer paints its own opaque surface.
@@ -100,31 +100,46 @@ export default function Footer() {
             <h2 className="mb-4 text-xs font-medium tracking-[0.18em] uppercase" style={{ color: 'var(--fg-faint)' }}>
               Get in touch
             </h2>
+            {/* Each line leads with its channel's mark, and the mark lives INSIDE the
+                anchor. As a sibling it would have broken `a:only-child`, which is the
+                selector granting these links their 44px touch height on phones — the
+                icon would have cost the link its target size to sit next to it. */}
             <ul className="m-0 list-none space-y-2 p-0 text-sm">
               <li>
-                <ContactLink channel="email" className="link-underline">
-                  {site.email}
+                <ContactLink channel="email" className="contact-line">
+                  <LineIcon>{CONTACT_ICONS.email}</LineIcon>
+                  <span className="link-underline">{site.email}</span>
                 </ContactLink>
               </li>
               <li>
-                <ContactLink channel="phone" className="link-underline">
-                  {site.phone}
+                <ContactLink channel="phone" className="contact-line">
+                  <LineIcon>{CONTACT_ICONS.phone}</LineIcon>
+                  <span className="link-underline">{site.phone}</span>
                 </ContactLink>
               </li>
               {/* The Dubai line is a plain anchor: ContactLink only knows the three
                   primary channels, and adding a fourth to it for one number would put
                   a second "phone" into the analytics channel dimension. */}
               <li>
-                <a href={site.phoneDubaiHref} className="link-underline muted">
-                  {site.phoneDubai}
+                <a href={site.phoneDubaiHref} className="contact-line muted">
+                  <LineIcon>{CONTACT_ICONS.phone}</LineIcon>
+                  <span className="link-underline">{site.phoneDubai}</span>
                 </a>
               </li>
               <li>
-                <ContactLink channel="whatsapp" className="link-underline">
-                  WhatsApp
+                <ContactLink channel="whatsapp" className="contact-line">
+                  <LineIcon>{CONTACT_ICONS.whatsapp}</LineIcon>
+                  <span className="link-underline">WhatsApp</span>
                 </ContactLink>
               </li>
-              <li className="faint pt-2">{site.hours}</li>
+              {/* Not a link, but it takes the icon anyway. Without one it would be the
+                  only line in the column hanging off the left edge the other four
+                  establish, which reads as a mistake rather than as a different kind
+                  of line. */}
+              <li className="contact-line faint pt-2">
+                <LineIcon>{CONTACT_ICONS.hours}</LineIcon>
+                <span>{site.hours}</span>
+              </li>
             </ul>
 
             {/* Mapped over the one list in content, not written out link by link —
@@ -137,10 +152,11 @@ export default function Footer() {
                 44px target instead of a line of small text. The name stays as the
                 accessible label — this is a picture of a word, not a replacement for
                 one. */}
-            {/* mt-8, not mt-6. The circles read as one visual object rather than a run
-                of text lines, and at 1.5rem they sat close enough to the opening-hours
-                line to look attached to it. */}
-            <ul className="social-row mt-8 list-none p-0">
+            {/* mt-10. The circles read as one visual object rather than another run of
+                text lines, so they need the gap that separates two blocks, not the gap
+                that separates two lines — at 1.5rem and even at 2rem they looked
+                attached to the opening-hours line above them. */}
+            <ul className="social-row m-0 mt-10 list-none p-0">
               {social.map((profile) => (
                 <li key={profile.href}>
                   <a href={profile.href} className="social-link" rel="me noopener" aria-label={profile.label}>

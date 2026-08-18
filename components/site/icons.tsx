@@ -283,6 +283,43 @@ export const STAT_ICONS: React.ReactNode[] = [
 ]
 
 /**
+ * The contact channels, one per line of the footer's "Get in touch" column.
+ *
+ * Unlike the social marks below, these are ours to draw, so they follow the house rules
+ * exactly — an envelope, a handset, a bubble with a handset in it, a clock. The bubble
+ * is the only concession: a plain handset would have made WhatsApp and the phone line
+ * identical, and the two do different things.
+ *
+ * They sit INSIDE their anchors, which matters. Placed as a sibling the link would stop
+ * being `a:only-child` of its list item and would silently lose the 44px touch height
+ * that rule grants it on coarse pointers. Inside, the icon is part of the target rather
+ * than a decoration beside a target that just got smaller.
+ */
+export const CONTACT_ICONS: Record<'email' | 'phone' | 'whatsapp' | 'hours', React.ReactNode> = {
+  email: (
+    <>
+      <rect x="2.6" y="5" width="18.8" height="14" rx="1.6" />
+      <path d="M3.2 6.6 12 12.9l8.8-6.3" />
+    </>
+  ),
+  phone: (
+    <path d="M6.4 3.6h2.9l1.5 3.9-2 1.4a12.2 12.2 0 0 0 6.3 6.3l1.4-2 3.9 1.5v2.9a1.5 1.5 0 0 1-1.6 1.5A16.7 16.7 0 0 1 4.9 5.2a1.5 1.5 0 0 1 1.5-1.6Z" />
+  ),
+  whatsapp: (
+    <>
+      <path d="M3.4 20.6 4.7 16.7A8.3 8.3 0 1 1 7.3 19.3L3.4 20.6Z" />
+      <path d="M9.6 8.8h1.3l.7 1.8-.9.7a5.6 5.6 0 0 0 2.6 2.6l.7-.9 1.8.7v1.3a.9.9 0 0 1-1 .9 7.4 7.4 0 0 1-6.1-6.1.9.9 0 0 1 .9-1Z" />
+    </>
+  ),
+  hours: (
+    <>
+      <circle cx="12" cy="12" r="8.6" />
+      <path d="M12 7.1V12l3.2 2" />
+    </>
+  ),
+}
+
+/**
  * The four social platforms, keyed by the label in `social`.
  *
  * The one place the house style bends. Every other icon here is geometry invented for

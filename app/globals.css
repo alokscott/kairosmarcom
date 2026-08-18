@@ -2222,6 +2222,57 @@ dialog::backdrop {
   }
 }
 
+/* ---------- Contact lines ---------- */
+
+/*
+ * A channel mark, then the line it belongs to.
+ *
+ * The column was five bare strings — an address, two numbers, a word and a set of
+ * hours — that a reader had to parse to tell apart, and the two phone numbers in
+ * particular were distinguishable only by their country codes. The marks sort them at
+ * a glance.
+ *
+ * `inline-flex`, not `flex`: these are anchors, and a block-level link would stretch
+ * its hover and focus ring the full width of the column with most of it over nothing.
+ */
+.contact-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.contact-line svg {
+  /* 1rem — matched to the 14px text it leads, not to the 24px icons elsewhere on the
+     site. An icon in a line of copy is punctuation; sized like a feature icon it
+     becomes the loudest thing in a column of contact details. */
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  /* `--accent`, the graphic role at 3:1 — these are shapes to recognise, not text to
+     read, and the words beside them carry the meaning at full contrast. */
+  color: var(--accent);
+  transition: transform var(--dur-micro) var(--ease-out-back);
+}
+
+/* The mark leans toward the thing it opens. Small enough to register as liveliness
+   rather than as an animation, which is all a contact line wants. */
+.contact-line:hover svg,
+.contact-line:focus-visible svg {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-line svg {
+    transition: none;
+  }
+
+  .contact-line:hover svg,
+  .contact-line:focus-visible svg {
+    transform: none;
+  }
+}
+
 /* ---------- Social row ---------- */
 
 /*
@@ -2240,7 +2291,12 @@ dialog::backdrop {
      and put a horizontal scrollbar on every page — the same fault the text version
      had. */
   gap: 0.875rem;
-  margin: 0;
+  /* No `margin: 0`. Declared here, unlayered, it outranks every Tailwind margin
+     utility — which is why two rounds of raising `mt-*` on this element changed
+     nothing and the row stayed welded to the line above it, measuring a 3px gap
+     where 40px was written. The caller zeroes the list margin with `m-0`, in the
+     same layer as the `mt-10` that then has to beat it. Fourth time this exact
+     trap has bitten in this stylesheet — see `.rule`, `.tagline` and `.panel`. */
 }
 
 .social-link {
@@ -2256,12 +2312,12 @@ dialog::backdrop {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* 48px, not the 44px minimum. 44 is the floor for a control you can hit, not a
-     size that makes a 20px glyph legible — at that ratio the mark sat in the middle
-     of its circle looking like a bullet point. Four more pixels of circle buys six
-     more of glyph. */
-  width: 3rem;
-  height: 3rem;
+  /* 44px, and it does not go below that: the site's own WCAG 2.5.8 rule sets
+     `min-height: 44px` on standalone links at coarse pointers, so a smaller circle
+     would keep its width and gain that height — a squashed ellipse on every phone
+     and nowhere else. This is the floor, so the glyph is what gets tuned. */
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid var(--rule-strong);
   border-radius: 50%;
   /* Full `--fg`, not `--fg-muted`. These are the only line drawings on the site with
@@ -2281,12 +2337,13 @@ dialog::backdrop {
      layer of its own the glyph would be painted under the red. */
   position: relative;
   z-index: 1;
-  width: 1.5rem;
-  height: 1.5rem;
-  /* Heavier than the house 1.4. Every other icon on the site is read at 28px or more
-     beside its own label; these are 24px and have to carry the identification alone,
-     and 1.4 at that size is a hairline that disappears into a cream ground. */
-  stroke-width: 1.6;
+  width: 1.25rem;
+  height: 1.25rem;
+  /* Heavier than the house 1.4, and that is what carries the legibility rather than
+     size. At 24px the glyphs were readable but the circles had grown into buttons in
+     a column of 14px text; back at 20px with a heavier stroke and full `--fg` they
+     stay just as clear at the weight the footer actually wants. */
+  stroke-width: 1.7;
 }
 
 /*
