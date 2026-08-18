@@ -61,7 +61,12 @@ export default function ProcessPage() {
               <Reveal>
                 <p className="eyebrow mb-4">Kairos moment</p>
                 <h1 className="max-w-[13ch] text-[length:var(--text-display)]">Kairos. The Supreme Moment.</h1>
-                <p className="statement mt-10 max-w-[38ch]">{processIntro}</p>
+                {/* Lead copy, not `.statement`. Five lines at statement size sat directly under
+                    a display h1 and the two read as one block; the hero needs one voice at
+                    that scale, and it is the heading's. */}
+                <p className="muted mt-8 max-w-[46ch] text-[length:var(--text-lead)] leading-relaxed">
+                  {processIntro}
+                </p>
               </Reveal>
             </div>
 

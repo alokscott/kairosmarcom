@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Archivo, Instrument_Serif, Space_Grotesk } from 'next/font/google'
+import { Archivo, Space_Grotesk } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/site/Header'
 import Footer from '@/components/site/Footer'
@@ -23,14 +23,6 @@ const archivo = Archivo({
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   variable: '--font-space-grotesk',
-  display: 'swap',
-})
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-  variable: '--font-instrument-serif',
   display: 'swap',
 })
 
@@ -117,7 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en-IN"
-      className={`${archivo.variable} ${spaceGrotesk.variable} ${instrumentSerif.variable}`}
+      className={`${archivo.variable} ${spaceGrotesk.variable}`}
       suppressHydrationWarning
     >
       <head>

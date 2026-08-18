@@ -38,7 +38,6 @@
 
   --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
   --font-sans: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
-  --font-serif: var(--font-instrument-serif), 'Instrument Serif', Georgia, serif;
 
   /* Fluid editorial scale. Display sizes are intentionally oversized. */
   --text-mega: clamp(3.25rem, 11vw, 10rem);
@@ -1022,21 +1021,40 @@ summary {
   color: var(--accent-text);
 }
 
+/*
+ * The pull-quote treatment: the site's second-largest voice, for a line that carries
+ * more weight than body copy but is not a heading.
+ *
+ * It was set in Instrument Serif italic. That was the only serif on the site and the
+ * only italic — one face doing one job in seven places, against a page otherwise built
+ * from two grotesques — so every statement read as a quotation lifted from somewhere
+ * else rather than as the site speaking. Dropping it also drops a whole font download.
+ *
+ * The weight comes from size and tracking now, in the display face the headings
+ * already use.
+ */
 .statement {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-size: clamp(1.375rem, 2.8vw, 2.25rem);
+  /*
+   * 400, not 700. Archivo is a variable font so the light end costs nothing extra,
+   * and the weight is doing the separating now that the italic is not: at 700 in the
+   * same face as the headings, a statement sitting under an h1 read as a second
+   * headline and the block became one undifferentiated slab of bold. Large and light
+   * against large and black is the contrast.
+   */
+  font-weight: 400;
   line-height: 1.25;
-  letter-spacing: -0.01em;
-  font-style: italic;
+  letter-spacing: -0.02em;
 }
 
 /*
  * "Our DNA" — the one heading on the site set as a two-face lockup.
  *
- * `align-items: baseline` is doing the real work: a serif italic and a heavy grotesque
- * at the same font-size have very different cap heights and optical centres, so
- * centring them would leave the pair looking dropped relative to each other. Sitting
- * both on one baseline is what makes two typefaces read as one word.
+ * `align-items: baseline` is doing the real work: a 400 and a 900 of the same face at
+ * the same size still have different optical centres, so centring them would leave the
+ * pair looking dropped relative to each other. One baseline is what makes two weights
+ * read as one word.
  *
  * The gap is in `em`, so the space between the words scales with the clamp rather than
  * opening up at large sizes and closing at small ones.
@@ -1051,10 +1069,15 @@ summary {
   margin: 0;
 }
 
-.dna-heading__serif {
-  font-family: var(--font-serif);
-  font-style: italic;
+/*
+ * Was the serif italic half of a two-face lockup. With the serif gone the contrast has
+ * to come from within one family — weight and colour rather than a second typeface,
+ * which is the more disciplined version of the same idea anyway.
+ */
+.dna-heading__soft {
+  font-family: var(--font-display);
   font-weight: 400;
+  letter-spacing: -0.02em;
   color: var(--fg-muted);
 }
 

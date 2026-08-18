@@ -177,13 +177,12 @@ export default function Principles() {
  * It was an `.eyebrow` — 12px, letterspaced, uppercase — which is the site's smallest
  * type, used for section tags like "HOW WE THINK". That is the right size for a tag
  * above a headline and the wrong size when it IS the headline: the section had no
- * heading at display scale at all, so four serif statements sat under a caption.
+ * heading at display scale at all, so four statements sat under a caption.
  *
- * The lockup pairs the two faces the site already runs against each other — the serif
- * italic that sets the four statements below, and the display black that sets every
- * other H2 — so the heading reads as a deliberate piece of typography rather than a
- * bigger version of the label it replaced. Exported so the About page can use the same
- * one instead of drifting into its own treatment.
+ * The lockup sets one word light and muted against one set black, so the heading reads
+ * as a deliberate piece of typography rather than a bigger version of the label it
+ * replaced. Exported so the About page uses the same one rather than drifting into its
+ * own treatment.
  */
 export function DnaHeading() {
   return (
@@ -195,7 +194,7 @@ export function DnaHeading() {
         only text node between flex items generates no anonymous flex item, so it
         changes the accessible name and nothing about the layout.
       */}
-      <span className="dna-heading__serif">Our</span>{' '}
+      <span className="dna-heading__soft">Our</span>{' '}
       <span className="dna-heading__display">DNA</span>
     </h2>
   )

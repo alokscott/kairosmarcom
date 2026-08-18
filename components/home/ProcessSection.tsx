@@ -39,8 +39,8 @@ export default function ProcessSection({ heading = true }: { heading?: boolean }
                 <h2 className="text-[length:var(--text-h2)]">
                   <KineticHeadline lines={['Kairos.', 'The Supreme', 'Moment.']} />
                 </h2>
-                {/* Sized to fit the pin: the serif statement treatment runs at
-                    display size and pushed the step rail out of the viewport. */}
+                {/* Sized to fit the pin: the statement treatment runs at display
+                    size and pushed the step rail out of the viewport. */}
                 <p className="muted mt-6 max-w-[42ch] leading-relaxed">{processIntro}</p>
               </>
             )}
