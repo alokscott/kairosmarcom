@@ -2036,6 +2036,68 @@ dialog::backdrop {
   }
 }
 
+/* ---------- Case cards ---------- */
+
+/*
+ * The plate is the card's picture, and it is made of type because there is no
+ * photography in the content (see components/work/CaseCard.tsx). A tinted ground is
+ * what stops a bare number from reading as a stray heading.
+ */
+.case-card {
+  position: relative;
+  transition: border-color var(--dur-hover) var(--ease-out-expo);
+}
+
+.case-card__plate {
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg-sunken));
+  border-bottom: 1px solid var(--rule);
+  transition: background var(--dur-component) var(--ease-out-expo);
+}
+
+/* In the list view the plate sits beside the copy, so its seam is vertical. */
+@media (min-width: 40rem) {
+  .case-card__plate.sm\:w-\[18rem\] {
+    border-bottom: 0;
+    border-right: 1px solid var(--rule);
+  }
+}
+
+.case-card__rule {
+  position: absolute;
+  inset: -1px auto auto -1px;
+  z-index: 1;
+  width: calc(100% + 2px);
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-draw) var(--ease-out-expo);
+}
+
+.case-card__title {
+  transition: color var(--dur-hover) var(--ease-out-expo);
+}
+
+.case-card:hover .case-card__rule,
+.case-card:focus-within .case-card__rule {
+  transform: scaleX(1);
+}
+.case-card:hover .case-card__plate,
+.case-card:focus-within .case-card__plate {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-sunken));
+}
+.case-card:hover .case-card__title,
+.case-card:focus-within .case-card__title {
+  color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-card__rule,
+  .case-card__plate {
+    transition-duration: 1ms;
+  }
+}
+
 /* ---------- Tagline ---------- */
 
 /*

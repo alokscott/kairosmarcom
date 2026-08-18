@@ -219,15 +219,22 @@ export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
       </div>
 
       {/*
-        A GRID, not a flex row with the label as its first item.
+        One row of filters, and the rest folded away.
 
-        As flex, a group whose chips overflowed wrapped its second line back to the
-        container's left edge — underneath the label — so eleven "Type" chips broke into
-        two rows and the lower one appeared to belong to nothing. A fixed label column
-        and a chip column means a wrap stays inside the chips, where it belongs.
+        Nine case studies were being filtered by four facets and thirty-odd chips —
+        more filtering apparatus than there are things to filter, and the first thing a
+        visitor met after the search field. Discipline is the one axis anybody actually
+        arrives thinking in ("who does video?"), so it stays out; industry, type and
+        platform are real but secondary and now sit behind a disclosure that says how
+        many there are.
+
+        Each group is a GRID, not a flex row with the label as its first item. As flex,
+        a group whose chips overflowed wrapped its second line back to the container's
+        left edge — underneath the label — so eleven "Type" chips broke into two rows
+        and the lower one appeared to belong to nothing.
       */}
-      <div className="mt-6 divide-y" style={{ borderColor: 'var(--rule)' }}>
-        {(Object.keys(facets) as Facet[]).map((facet) => (
+      <div className="mt-6">
+        {(['service'] as Facet[]).map((facet) => (
           <fieldset
             key={facet}
             className="m-0 grid grid-cols-1 gap-x-6 gap-y-3 border-0 border-t p-0 py-4 sm:grid-cols-[6rem_1fr]"
@@ -272,6 +279,58 @@ export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
             </div>
           </fieldset>
         ))}
+
+        <details className="mt-2 border-t pt-4" style={{ borderColor: 'var(--rule)' }}>
+          <summary className="cursor-pointer text-sm font-medium">
+            More filters{' '}
+            <span className="faint font-normal">
+              — industry, type and platform ({facets.industry.length + facets.tag.length + facets.platform.length})
+            </span>
+          </summary>
+
+          <div className="mt-2">
+            {(['industry', 'tag', 'platform'] as Facet[]).map((facet) => (
+              <fieldset
+                key={facet}
+                className="m-0 grid grid-cols-1 gap-x-6 gap-y-3 border-0 border-t p-0 py-4 sm:grid-cols-[6rem_1fr]"
+                style={{ borderColor: 'var(--rule)' }}
+              >
+                <legend className="sr-only">Filter by {facet}</legend>
+                <span aria-hidden="true" className="eyebrow pt-3">
+                  {facet === 'tag' ? 'Type' : facet}
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {facets[facet].map((value) => {
+                    const on = active[facet] === value
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => toggle(facet, value)}
+                        aria-pressed={on}
+                        className="chip inline-flex min-h-11 items-center gap-2 px-3 py-1.5 text-xs"
+                        style={{
+                          border: `1px solid ${on ? 'var(--accent-fill)' : 'var(--rule)'}`,
+                          background: on ? 'var(--accent-fill)' : 'var(--bg-raised)',
+                          color: on ? 'var(--on-accent)' : 'var(--fg)',
+                        }}
+                      >
+                        {value}
+                        <span
+                          aria-hidden="true"
+                          className="mono-num text-[0.65rem]"
+                          style={{ color: on ? 'var(--on-accent)' : 'var(--fg-faint)', opacity: on ? 0.75 : 1 }}
+                        >
+                          {counts[facet][value]}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </fieldset>
+            ))}
+          </div>
+        </details>
       </div>
 
       <div className="mt-8 flex items-center justify-between gap-4">
@@ -295,14 +354,15 @@ export default function WorkFilters({ studies }: { studies: CaseStudy[] }) {
           listed, none have been removed.
         </p>
       ) : (
-        <div className="grid-editorial mt-10">
+        /*
+         * A uniform grid. The cards used to alternate between 7 and 5 columns on an
+         * `i % 3` rotation, which produced a ragged two-per-row layout of mismatched
+         * boxes — nothing about a given study justified its box being the odd size, so
+         * it read as a bug rather than as rhythm.
+         */
+        <div className={`mt-10 grid gap-6 ${view === 'list' ? '' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
           {results.map((study, i) => (
-            <CaseCard
-              key={study.slug}
-              study={study}
-              index={i}
-              layout={view === 'list' ? 'wide' : i % 3 === 0 ? 'split' : 'tall'}
-            />
+            <CaseCard key={study.slug} study={study} index={i} layout={view === 'list' ? 'row' : 'card'} />
           ))}
         </div>
       )}
