@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { Counter, Magnetic, Reveal } from '@/components/motion/Reveal'
 import { KineticHeadline } from '@/components/motion/Kinetic'
 import { useStill } from '@/components/motion/scroll'
+import LineIcon from '@/components/site/LineIcon'
 import Tagline from '@/components/site/Tagline'
+import { STAT_ICONS } from '@/components/site/icons'
 import { hero, heroVideo } from '@/content/site'
 import { track } from '@/lib/analytics'
 
@@ -146,7 +148,7 @@ export default function Hero() {
                 left it reading as a caption hanging off the buttons; the rule makes it
                 a line of its own, which is what a tagline is.
               */}
-              <Tagline className="mt-[clamp(1.25rem,3svh,1.75rem)] border-t pt-[clamp(0.75rem,2svh,1.125rem)]" />
+              <Tagline className="mt-[clamp(0.875rem,2.4svh,1.5rem)] border-t pt-[clamp(0.625rem,1.7svh,1rem)]" />
             </Reveal>
           </div>
 
@@ -160,15 +162,24 @@ export default function Hero() {
         {/* Sized down from the display scale for the same reason as the headline: this
             band is the last thing that has to fit above the fold. */}
         <Reveal delay={480}>
-          <dl className="mt-[clamp(1.5rem,4svh,2.5rem)] grid grid-cols-1 gap-5 border-t pt-[clamp(1rem,2.6svh,1.5rem)] sm:grid-cols-3" style={{ borderColor: 'var(--rule)' }}>
-            {hero.proof.map((stat) => (
-              <div key={stat.label} className="flex items-baseline gap-3">
+          <dl className="mt-[clamp(1.5rem,4svh,2.5rem)] grid grid-cols-1 gap-5 border-t pt-[clamp(0.75rem,2svh,1.5rem)] sm:grid-cols-3" style={{ borderColor: 'var(--rule)' }}>
+            {hero.proof.map((stat, i) => (
+              <div key={stat.label} className="flex items-center gap-3">
                 <dt className="sr-only">{stat.label}</dt>
-                <dd className="m-0 flex items-baseline gap-3">
+                <dd className="m-0 flex items-center gap-3">
+                  <LineIcon className="w-7 flex-none" style={{ color: 'var(--accent)' }}>
+                    {STAT_ICONS[i]}
+                  </LineIcon>
                   <span className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,2.8vw,2.5rem)] font-black leading-none tracking-tight">
                     <Counter value={stat.value} suffix={stat.suffix} />
                   </span>
-                  <span className="muted max-w-[16ch] text-sm leading-snug">{stat.label}</span>
+                  {/*
+                    No `max-w`. It was capped at 16ch, which broke "disciplines under one
+                    roof" and "offices — Delhi, Dubai, Mumbai" onto a second line and left
+                    the three stats sitting at different heights. The column is wide
+                    enough for either at this size; the cap was doing nothing but wrapping.
+                  */}
+                  <span className="muted text-sm leading-snug text-balance">{stat.label}</span>
                 </dd>
               </div>
             ))}

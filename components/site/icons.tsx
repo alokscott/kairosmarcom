@@ -252,3 +252,32 @@ export const CRAFT_ICONS: Record<string, React.ReactNode> = {
     </>
   ),
 }
+
+/**
+ * The three hero statistics, in order.
+ *
+ * An array rather than a keyed map: these are positional by nature — `hero.proof` is a
+ * fixed three in content/site.ts — and keying them by their label would make a copy
+ * edit silently drop an icon.
+ */
+export const STAT_ICONS: React.ReactNode[] = [
+  /* Two figures — clients, not users. */
+  <>
+    <circle cx="9" cy="8" r="3.2" />
+    <path d="M3 20.5a6 6 0 0 1 12 0" />
+    <path d="M16 5.4a3.2 3.2 0 0 1 0 6.2" />
+    <path d="M17.5 14.4a6 6 0 0 1 3.5 5.4" />
+  </>,
+  /* Six cells — one per discipline. */
+  <>
+    <rect x="3" y="4.5" width="8" height="5.5" rx="0.8" />
+    <rect x="13" y="4.5" width="8" height="5.5" rx="0.8" />
+    <rect x="3" y="14" width="8" height="5.5" rx="0.8" />
+    <rect x="13" y="14" width="8" height="5.5" rx="0.8" />
+  </>,
+  /* A pin. */
+  <>
+    <path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z" />
+    <circle cx="12" cy="10" r="2.6" />
+  </>,
+]

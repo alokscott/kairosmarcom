@@ -1,25 +1,28 @@
 import { site } from '@/content/site'
 
 /**
- * The company tagline, set as four beats rather than one sentence.
+ * The company tagline, set as a lockup rather than a sentence.
  *
- * "Truthful. Mindful. Thoughtful. Ideas plentiful." is written as four stopped
- * phrases, and that punctuation is the whole idea — it is a rhythm, not a clause. Run
- * as plain text it reads as a caption; the site had it three times, twice at 12px in
- * an `.eyebrow` and once as small print under the hero CTAs.
+ * "Truthful. Mindful. Thoughtful. Ideas plentiful." is four stopped phrases, and the
+ * punctuation is the whole idea — it is a rhythm, not a clause. It ran three times on
+ * the site as plain small caps, which read as a caption.
  *
- * Two things carry the rhythm here. The full stops take the brand red permanently, so
- * the four beats are visible before a word is read. And each phrase takes the accent
- * in turn on a slow loop, which is the line saying itself.
+ * The lockup gives the four beats a shape: a short accent rule opens the line, the
+ * first three sit light with hairline dividers between them, and the last is set large
+ * and heavy so the line lands on the phrase that matters. One typeface, three weights,
+ * no second colour beyond the rule and the stops.
  *
- * The animation is COLOUR ONLY. Nothing moves, nothing resizes, so there is no reflow
- * and no layout cost — and a line of type that jumped or slid would be a distraction
- * sitting directly under the hero's call to action rather than a signature under it.
+ * ─── The typewriter ───
  *
- * Split from `site.tagline` rather than stored pre-split, so the string stays one
- * source of truth in content/site.ts. The rendered text content is identical to the
- * original — stops and spaces included — so a screen reader and a page search still
- * see the sentence exactly as written.
+ * It is a CSS width animation on a wrapper with `overflow: hidden`, NOT characters
+ * appended by script. The complete text is in the DOM from the first paint, so a
+ * screen reader announces the whole tagline at once, a page search matches it, and it
+ * is fully present with JavaScript off — the animation only decides how much of it is
+ * painted. Typing it character by character would trade all of that for the same
+ * picture.
+ *
+ * It runs once, on load, and stops. A looping typewriter in a footer is a thing that
+ * moves forever in the corner of the eye.
  */
 export default function Tagline({ className = '' }: { className?: string }) {
   const beats = site.tagline
@@ -27,30 +30,29 @@ export default function Tagline({ className = '' }: { className?: string }) {
     .map((beat) => beat.trim())
     .filter(Boolean)
 
+  const lead = beats.slice(0, -1)
+  const last = beats[beats.length - 1]
+
   return (
-    /* `borderColor` here rather than at every call site: the hero asks for a rule above
-       the line, and a caller passing `border-t` should not also have to remember which
-       token draws it. */
     <p className={`tagline ${className}`} style={{ borderColor: 'var(--rule)' }}>
-      {beats.map((beat, i) => (
-        /*
-         * The delay goes through a custom property, not `animation-delay` directly.
-         * Each beat runs TWO animations in step — the colour on the span and the rule
-         * on its `::after` — and a pseudo-element cannot read an inline style. One
-         * variable set here is what keeps the two from drifting apart.
-         */
-        <span
-          key={beat}
-          className="tagline__beat"
-          style={{ ['--beat-delay' as string]: `${i * 1.4}s` }}
-        >
-          {beat}
+      <span className="tagline__type">
+        <span aria-hidden="true" className="tagline__rule" />
+
+        {lead.map((beat) => (
+          <span key={beat} className="tagline__beat">
+            {beat}
+            {/* The stop stays in the text so the sentence is intact when read or
+                copied; the divider beside it is the drawn version of the same pause. */}
+            <span className="tagline__stop">.</span>
+            <span aria-hidden="true" className="tagline__divider" />
+          </span>
+        ))}
+
+        <span className="tagline__last">
+          {last}
           <span className="tagline__stop">.</span>
-          {/* A real space, so the text content matches the source string. `gap` on a
-              flex container would look the same and would not survive being copied. */}
-          {i < beats.length - 1 ? ' ' : ''}
         </span>
-      ))}
+      </span>
     </p>
   )
 }

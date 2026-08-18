@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { cases } from '@/content/cases'
 import { footerNav, site } from '@/content/site'
 import ContactLink from './ContactLink'
@@ -24,15 +25,44 @@ export default function Footer() {
       {/* The bottom inset clears the iOS home indicator, which otherwise sits directly
           over the copyright line once the page paints edge to edge. */}
       <div className="shell pt-16" style={{ paddingBottom: 'calc(4rem + var(--safe-b))' }}>
-        <div className="grid-editorial">
-          <div className="col-span-4 md:col-span-4">
-            <p className="statement max-w-[24ch]">{site.about}</p>
-            <Tagline className="mt-6" />
+        {/*
+          Two parts, divided.
+
+          The brand — mark, positioning line, tagline — used to be a fourth column
+          beside the three lists, which made the agency's own statement compete for
+          width with a nav menu and left its longest line wrapping to seven. It gets the
+          full measure here, above a rule, and the lists sit under it as the utility
+          they are.
+        */}
+        <div className="grid-editorial items-end gap-y-8">
+          <div className="col-span-4 md:col-span-7">
+            {/* Both marks ship and CSS picks one, so the logo is correct before
+                hydration — the same pair the header uses. */}
+            <Link href="/" className="inline-block no-underline" aria-label={`${site.name} — home`}>
+              <Image src="/logo-wr.png" alt="" width={503} height={160} className="brand-mark brand-mark--dark h-9 w-auto" />
+              <Image
+                src="/logo.png"
+                alt={site.name}
+                width={503}
+                height={160}
+                className="brand-mark brand-mark--light h-9 w-auto"
+              />
+            </Link>
+
+            <p className="statement mt-7 max-w-[30ch]">{site.about}</p>
           </div>
 
+          <div className="col-span-4 md:col-span-5">
+            <Tagline />
+          </div>
+        </div>
+
+        <hr className="rule my-12" />
+
+        <div className="grid-editorial">
           {/* Half-width from 416px up. Below that the two lists sat in ~140px columns
               and every case-study client name wrapped to two or three lines. */}
-          <nav className="col-span-4 min-[26rem]:col-span-2 md:col-span-2 md:col-start-6" aria-label="Explore">
+          <nav className="col-span-4 min-[26rem]:col-span-2 md:col-span-3" aria-label="Explore">
             <h2 className="mb-4 text-xs font-medium tracking-[0.18em] uppercase" style={{ color: 'var(--fg-faint)' }}>
               Explore
             </h2>
@@ -47,7 +77,7 @@ export default function Footer() {
             </ul>
           </nav>
 
-          <nav className="col-span-4 min-[26rem]:col-span-2 md:col-span-2" aria-label="Case studies">
+          <nav className="col-span-4 min-[26rem]:col-span-2 md:col-span-4" aria-label="Case studies">
             <h2 className="mb-4 text-xs font-medium tracking-[0.18em] uppercase" style={{ color: 'var(--fg-faint)' }}>
               Case studies
             </h2>
@@ -62,7 +92,7 @@ export default function Footer() {
             </ul>
           </nav>
 
-          <div className="col-span-4 md:col-span-3">
+          <div className="col-span-4 md:col-span-5">
             <h2 className="mb-4 text-xs font-medium tracking-[0.18em] uppercase" style={{ color: 'var(--fg-faint)' }}>
               Get in touch
             </h2>

@@ -1078,7 +1078,8 @@ summary {
   gap: 0.22em;
   font-size: clamp(2.5rem, 6vw, 4.75rem);
   line-height: 1;
-  margin: 0;
+  /* No `margin: 0` — this is an h2 and `@layer base` has already zeroed it. Declaring
+     it again here would put a caller's `mt-*` out of reach, as it did on `.tagline`. */
 }
 
 /*
@@ -2135,118 +2136,102 @@ dialog::backdrop {
 
 /* ---------- Tagline ---------- */
 
-/*
- * Four beats, and the emphasis walks through them.
- *
- * The arithmetic is the point, so it is written down: four phrases x a 1.4s stagger =
- * a 5.6s cycle, and one stagger step is 25% of it. The lit window below runs 4%->22%,
- * which is 18% — inside one step — so a phrase has released before the next one lights
- * and no two are ever lit together.
- *
- * 0% and 100% are both the RESTING state, not the lit one. That is what makes the loop
- * seamless: a lit endpoint ramps back up over the last few percent of the cycle and
- * collides with the following phrase, which is exactly what it did at first — measured,
- * two beats lit at once.
- *
- * Change the stagger in Tagline.tsx and these numbers have to move with it.
- */
 .tagline {
   font-family: var(--font-sans);
-  /* --text-small, not --text-micro. At 12px the colour change was there and easy to
-     miss; this line is the company's tagline, not a caption. */
-  font-size: var(--text-small);
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
   color: var(--fg-muted);
-  margin: 0;
-  /* The rule under each beat needs somewhere to sit without changing the line box. */
-  line-height: 2;
+  /* No `margin: 0` — `p` is already zeroed in `@layer base`, and re-declaring it
+     unlayered puts a caller's `mt-*` out of reach. That is what left the hero's rule
+     sitting hard against the buttons. Same trap as `.rule` and `.panel`. */
 }
 
-/* Always accent. The stops are what make four phrases read as four beats before a
-   single word has been read. */
+/*
+ * The typewriter.
+ *
+ * A width animation on a wrapper that clips, so the text underneath is complete from
+ * the first paint and only its painted extent changes. `max-width` rather than
+ * `width`, so the line still takes its natural size and nothing has to be measured.
+ */
+.tagline__type {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 0.5rem;
+  max-width: 100%;
+  overflow: hidden;
+  animation: tagline-type 2.2s var(--ease-in-out-quart) both;
+}
+
+@keyframes tagline-type {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 100%;
+  }
+}
+
+/* The short accent rule that opens the line. */
+.tagline__rule {
+  display: inline-block;
+  width: 2.25rem;
+  height: 2px;
+  flex: none;
+  background: var(--accent);
+  /* Sits on the lowercase midline rather than the baseline, so it reads as a lead-in
+     rule and not as an underscore. */
+  transform: translateY(-0.35em);
+}
+
+.tagline__beat {
+  display: inline-flex;
+  align-items: baseline;
+  /* No gap. The stop belongs to the word — a gap here set it a half-em adrift and the
+     line read "Truthful ." The space before the divider is the divider's own margin. */
+  gap: 0;
+  font-size: var(--text-small);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* Hairline between beats — the drawn version of the full stop beside it. */
+.tagline__divider {
+  display: inline-block;
+  width: 1px;
+  height: 0.9em;
+  margin-left: 0.6rem;
+  background: var(--rule-strong);
+  transform: translateY(0.05em);
+}
+
+/*
+ * The last beat carries the line. Display face, black, uppercase and tight — the
+ * three light phrases before it are the run-up.
+ */
+.tagline__last {
+  font-family: var(--font-display);
+  /* Sized so the whole lockup holds ONE line inside the hero's six-column
+     measure at 1280px. At 2vw it wrapped, and the extra line put the hero 37px past
+     the viewport on a 1280x720 laptop. */
+  font-size: clamp(1rem, 1.7vw, 1.5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--fg);
+  white-space: nowrap;
+}
+
 .tagline__stop {
   color: var(--accent-text);
 }
 
-.tagline__beat {
-  position: relative;
-  animation: tagline-beat 5.6s var(--ease-in-out-quart) infinite;
-  animation-delay: var(--beat-delay, 0s);
-}
-
 /*
- * The visible half of the effect.
- *
- * Colour alone was not enough to read as an animation — the whole point is that the
- * line says itself, and a grey-to-red shift at small size is a thing you notice only
- * if you are already looking. A rule that draws in under the phrase and retracts is
- * unmistakable, and because it is a `transform` on a pseudo-element it costs no layout.
- *
- * `right: 0.35em` stops short of the space after the stop, so the rule underlines the
- * phrase rather than the gap to the next one.
- */
-.tagline__beat::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0.35em;
-  bottom: -0.15em;
-  height: 2px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: left;
-  animation: tagline-rule 5.6s var(--ease-in-out-quart) infinite;
-  animation-delay: var(--beat-delay, 0s);
-}
-
-@keyframes tagline-beat {
-  0%,
-  100% {
-    color: inherit;
-  }
-  /* Held between 4% and 14% rather than eased straight back out, so a phrase reads as
-     lit and then released instead of pulsing. */
-  4%,
-  14% {
-    color: var(--accent-text);
-  }
-  22% {
-    color: inherit;
-  }
-}
-
-@keyframes tagline-rule {
-  0% {
-    transform: scaleX(0);
-    transform-origin: left;
-  }
-  4%,
-  14% {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
-  /* Retracts to the RIGHT. Drawing in from the left and leaving from the left would
-     read as a bounce; releasing the way the reading goes reads as the beat passing on. */
-  22%,
-  100% {
-    transform: scaleX(0);
-    transform-origin: right;
-  }
-}
-
-/*
- * Reduced motion keeps the shape and drops the movement: red stops, no walking
- * emphasis, no drawing rule.
+ * Reduced motion keeps the lockup and drops the reveal — the line is simply there.
  */
 @media (prefers-reduced-motion: reduce) {
-  .tagline__beat,
-  .tagline__beat::after {
+  .tagline__type {
     animation: none;
-  }
-  .tagline__beat::after {
-    display: none;
+    max-width: 100%;
   }
 }
 
