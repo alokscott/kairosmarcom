@@ -4,9 +4,18 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { nav, site } from '@/content/site'
+import { footerNav, nav, site } from '@/content/site'
+
+/**
+ * The mobile sheet carries the fuller list. The bar is capped at five items so it
+ * fits the viewport at 1024px, which leaves Film & motion and Brands reachable only
+ * from the footer otherwise. Contact is dropped from the sheet because the CTA
+ * directly below it goes to the same place.
+ */
+const sheetNav = footerNav.filter((item) => item.href !== '/contact')
 import { track } from '@/lib/analytics'
 import { Magnetic } from '@/components/motion/Reveal'
+import { setScrollLocked } from '@/components/motion/SmoothScroll'
 import ThemeToggle from './ThemeToggle'
 
 /**
@@ -31,15 +40,23 @@ export default function Header() {
 
   // Close the menu when the route changes, so back/forward never leaves it open.
   useEffect(() => {
-    dialogRef.current?.close()
+    if (dialogRef.current?.open) closeMenu()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname])
+
+  // Unmount with the sheet still open would otherwise leave the page frozen, and the
+  // visitor's only remaining move is a reload.
+  useEffect(() => () => setScrollLocked(false), [])
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
 
   const openMenu = () => {
     dialogRef.current?.showModal()
+    setScrollLocked(true)
     track('nav_menu_open')
   }
+
+  const closeMenu = () => dialogRef.current?.close()
 
   return (
     <header
@@ -89,7 +106,7 @@ export default function Header() {
               href={item.href}
               aria-current={isActive(item.href) ? 'page' : undefined}
               onClick={() => track('nav_route_select', { to: item.href })}
-              className="relative px-3 py-2 text-sm no-underline"
+              className="tap-44 relative px-3 py-2 text-sm no-underline"
               style={{ color: isActive(item.href) ? 'var(--fg)' : 'var(--fg-muted)' }}
             >
               {item.label}
@@ -121,7 +138,7 @@ export default function Header() {
                 className="btn btn--primary whitespace-nowrap"
                 onClick={() => track('nav_route_select', { to: '/contact', source: 'header-cta' })}
               >
-                Book a clarity call
+                Let’s Work
               </Link>
             </Magnetic>
           </span>
@@ -136,25 +153,41 @@ export default function Header() {
         </div>
       </div>
 
-      <dialog ref={dialogRef} aria-label="Site menu" className="m-0 h-dvh max-h-none w-screen max-w-none">
-        <div className="flex h-dvh flex-col justify-between p-6" style={{ background: 'var(--bg)' }}>
+      <dialog
+        ref={dialogRef}
+        aria-label="Site menu"
+        className="sheet"
+        // Esc and a form-method=dialog submit both close without passing through any
+        // handler here, so the unlock hangs off the event the browser always fires.
+        onClose={() => setScrollLocked(false)}
+      >
+        <div className="sheet__inner">
           <div className="flex items-center justify-between">
             <Image src="/logo-wr.png" alt="" width={503} height={160} className="brand-mark brand-mark--dark h-6 w-auto" />
             <Image src="/logo.png" alt="" width={503} height={160} className="brand-mark brand-mark--light h-6 w-auto" />
-            <button type="button" className="btn btn--ghost" onClick={() => dialogRef.current?.close()} autoFocus>
+            <button type="button" className="btn btn--ghost" onClick={closeMenu} autoFocus>
               Close
             </button>
           </div>
 
-          <nav aria-label="Site" className="py-8">
+          {/* `min-h-0` lets this column shrink inside the flex parent instead of
+              forcing the CTA below the fold on a phone held in landscape. */}
+          <nav aria-label="Site" className="min-h-0 py-6">
             <ul className="m-0 list-none space-y-1 p-0">
-              {nav.map((item, i) => (
-                <li key={item.href}>
+              {sheetNav.map((item, i) => (
+                // --i drives the staggered entrance; the delay maths is in globals.css.
+                <li key={item.href} className="sheet__item" style={{ ['--i' as string]: i }}>
                   <Link
                     href={item.href}
-                    onClick={() => track('nav_route_select', { to: item.href, source: 'mobile-menu' })}
+                    onClick={() => {
+                      track('nav_route_select', { to: item.href, source: 'mobile-menu' })
+                      // Tapping the route you are already on does not change `pathname`,
+                      // so the effect above never fires and the sheet stayed open over
+                      // the page it had just been asked to show.
+                      closeMenu()
+                    }}
                     aria-current={isActive(item.href) ? 'page' : undefined}
-                    className="block py-2 font-[family-name:var(--font-display)] text-[clamp(2.25rem,11vw,3.5rem)] font-extrabold leading-[0.95] tracking-tight no-underline"
+                    className="press block py-2 font-[family-name:var(--font-display)] text-[clamp(2rem,10vw,3.5rem)] font-extrabold leading-[0.95] tracking-tight no-underline"
                     style={{ color: isActive(item.href) ? 'var(--accent-text)' : 'var(--fg)' }}
                   >
                     <span className="mr-3 align-super text-xs font-medium" style={{ color: 'var(--fg-faint)' }}>
@@ -168,8 +201,8 @@ export default function Header() {
           </nav>
 
           <div className="space-y-3 text-sm">
-            <Link href="/contact" className="btn btn--primary w-full justify-center">
-              Book a clarity call
+            <Link href="/contact" className="btn btn--primary w-full justify-center" onClick={closeMenu}>
+              Let’s Work
             </Link>
             <p className="muted">
               <a href={`mailto:${site.email}`} className="link-underline">

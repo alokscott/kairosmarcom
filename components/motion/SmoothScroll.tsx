@@ -39,6 +39,29 @@ export function smoothScrollTo(top: number) {
   else window.scrollTo({ top, behavior: 'smooth' })
 }
 
+/**
+ * Freeze the page behind a full-screen overlay.
+ *
+ * A modal `<dialog>` makes the background inert to clicks and to the tab order, but it
+ * does NOT stop it scrolling — open the mobile menu, drag anywhere, and the page slid
+ * underneath it. That is the single clearest "this is a web page" tell an overlay can
+ * have, so both scroll paths are stopped: Lenis, which owns the wheel and would keep
+ * easing a scroll it had already accepted, and the document itself for the reduced-
+ * motion case where Lenis is not running at all.
+ *
+ * `overflow` goes on the root rather than on `body` because `body` already carries
+ * `overflow-x: hidden`, and setting the shorthand there would clobber it on unlock.
+ * The paired `scrollbar-gutter: stable` in globals.css is what stops the page jumping
+ * sideways by the scrollbar width as the overlay opens.
+ */
+export function setScrollLocked(locked: boolean) {
+  if (instance) {
+    if (locked) instance.stop()
+    else instance.start()
+  }
+  document.documentElement.style.overflow = locked ? 'hidden' : ''
+}
+
 export default function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return

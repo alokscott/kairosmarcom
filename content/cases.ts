@@ -90,7 +90,8 @@ export const cases: CaseStudy[] = [
     location: 'Pune, Goa & Aurangabad',
     year: null,
     duration: null,
-    summary: 'Instagram reach to 1.3M and a lead pipeline built from zero to 45–50 a month.',
+    summary:
+      'Instagram reach of 1.3M with 8,83,626 engagements, and a lead pipeline built from zero to 45–50 a month.',
     clientDescription:
       'BMW Bavaria is the authorised dealer of BMW cars in Pune, Goa and Aurangabad. BMW is one of the world’s most premium car marques.',
     tags: ['Digital', 'Social', 'Video', 'Lead gen'],
@@ -193,7 +194,7 @@ export const cases: CaseStudy[] = [
     location: 'India, Bangladesh & Sri Lanka',
     year: null,
     duration: 'First six months of the engagement',
-    summary: '15k followers inside six months and a 285% lift in conversions across three countries.',
+    summary: '15,000 followers in under six months and a 285% lift in conversions across three countries.',
     clientDescription:
       'DJI India is the authorised importer and distributor of DJI in India. DJI is an international brand known for its gimbal and camera technology.',
     tags: ['Digital', 'Social', 'Influencer'],
@@ -278,7 +279,7 @@ export const cases: CaseStudy[] = [
     location: 'India',
     year: null,
     duration: null,
-    summary: '20M+ impressions and triple the engagement of previous campaigns.',
+    summary: '20M+ impressions and 3× the social media engagement of previous campaigns.',
     clientDescription:
       'Insta360 India is the authorised importer and distributor of Insta360 in India. Insta360 is an international brand known for its 360 camera technology, across a wide range of products including action cameras.',
     tags: ['Digital', 'Social', 'Influencer'],
@@ -363,11 +364,11 @@ export const cases: CaseStudy[] = [
     location: 'India & Nepal',
     year: null,
     duration: null,
-    summary: 'Cost per lead cut from ₹2,000 to ₹650 while reach grew to 3M.',
+    summary: 'Cost per lead cut from ₹2,000 to ₹650, with 3M profile impressions on Instagram.',
     clientDescription:
       'Global Opportunities is India’s pioneer education consulting group, handling student recruitment from India and Nepal for 700+ institutions and university partners across the globe.',
     tags: ['Performance', 'Social', 'Landing pages'],
-    services: ['branding', 'digital', 'creative-design', 'video', 'public-relations', 'media'],
+    services: ['branding', 'digital', 'creative-design', 'video', 'public-relations', 'technology'],
     channels: [
       { platform: 'Instagram', handle: '@global.opportunities' },
       { platform: 'Facebook', handle: '@GlobalOpportunitie' },
@@ -472,7 +473,7 @@ export const cases: CaseStudy[] = [
     location: 'Delhi-NCR',
     year: null,
     duration: null,
-    summary: 'Instagram reach to 2.1M and a lead pipeline built from zero to 45–50 a month.',
+    summary: 'Instagram reach of 2.1M, with 2M accounts reached in a single thirty-day window.',
     clientDescription:
       'Audi Gurugram is the authorised dealer of Audi cars in Gurugram. The Audi Group is among the world’s leading producers of premium cars.',
     tags: ['Digital', 'Social', 'Lead gen', 'Events'],
@@ -558,7 +559,7 @@ export const cases: CaseStudy[] = [
     location: 'Gurugram',
     year: null,
     duration: 'First two months from launch',
-    summary: '238K Instagram reach in two months, from no digital presence at all.',
+    summary: '238,913 accounts reached on Instagram in two months, from no digital presence at all.',
     clientDescription:
       'BYD Kristan Auto is the authorised dealer of BYD electric cars in Gurugram. BYD is the fourth largest plug-in electric vehicle company and the fourth largest BEV company in the world.',
     tags: ['Launch', 'Digital', 'Social'],
@@ -638,7 +639,7 @@ export const cases: CaseStudy[] = [
     location: 'India',
     year: null,
     duration: 'First four months (1 May – 31 Aug)',
-    summary: 'A cold-start market entry that filled a webinar in 48 hours.',
+    summary: 'A cold-start market entry with 154 registered users inside two days.',
     clientDescription:
       'ThinkCyber India is the Indian arm of Tel Aviv-based ThinkCyber, delivering cybersecurity education and product solutions.',
     tags: ['Market entry', 'Digital', 'Webinar'],
@@ -712,11 +713,11 @@ export const cases: CaseStudy[] = [
     location: 'India',
     year: null,
     duration: null,
-    summary: '1,000+ leads at ₹45 each, and a webinar that filled in three days.',
+    summary: '1,000+ leads at an average CPL of ₹45, and 365 webinar registrations in three days.',
     clientDescription:
       'ThriveDx partners with top-tier educational institutions, global enterprises and government agencies to run professional development programmes, equipping the workforce with the digital skills that carry a career.',
     tags: ['Market entry', 'Performance', 'Webinar'],
-    services: ['branding', 'digital', 'creative-design', 'video', 'public-relations', 'media'],
+    services: ['branding', 'digital', 'creative-design', 'video', 'public-relations', 'technology'],
     channels: [
       { platform: 'Instagram', handle: '@thrivedx' },
       { platform: 'LinkedIn', handle: '@ThriveDx' },

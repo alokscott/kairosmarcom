@@ -16,7 +16,7 @@ export type ContentState =
   | 'archived'
 
 /** The six disciplines. Used for service tags and filtering. */
-export type ServiceId = 'creative-design' | 'branding' | 'digital' | 'public-relations' | 'media' | 'video'
+export type ServiceId = 'creative-design' | 'branding' | 'digital' | 'public-relations' | 'technology' | 'video'
 
 /** 3D scene presets. One shared scene manager renders these (spec §17). */
 export type ScenePreset =

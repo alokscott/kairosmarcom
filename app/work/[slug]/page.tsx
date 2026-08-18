@@ -291,7 +291,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
                   const service = serviceById(id)
                   return (
                     <li key={id} className="p-5" style={{ border: '1px solid var(--rule)' }}>
-                      <Link href={`/services#${service.id}`} className="link-underline font-semibold">
+                      <Link href={`/services#${service.id}`} className="tap-44 link-underline font-semibold">
                         {service.name}
                       </Link>
                       <p className="muted mt-2 text-sm leading-relaxed">{service.blurb}</p>
@@ -334,9 +334,12 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         <section className="section pt-0">
           <div className="shell">
             <h2 className="mb-10 text-[length:var(--text-h2)]">Related work</h2>
-            <div className="grid-editorial">
+            {/* Three equal cards, matching the index. `grid-editorial` sets its own
+                row-gap and this file is unlayered CSS's problem, not Tailwind's — a
+                plain grid keeps the gap the one written here. */}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((item, i) => (
-                <CaseCard key={item.slug} study={item} index={i} layout="tall" />
+                <CaseCard key={item.slug} study={item} index={i} />
               ))}
             </div>
           </div>

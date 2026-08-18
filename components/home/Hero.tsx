@@ -2,34 +2,54 @@
 
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { motion, useTransform, type MotionValue } from 'motion/react'
 import { Counter, Magnetic, Reveal } from '@/components/motion/Reveal'
-import { KineticHeadline, PinnedStage } from '@/components/motion/Kinetic'
-import { useScrollProgress, useStill } from '@/components/motion/scroll'
-import { Scene } from '@/components/three/Scene'
+import { KineticHeadline } from '@/components/motion/Kinetic'
+import { useStill } from '@/components/motion/scroll'
+import LineIcon from '@/components/site/LineIcon'
+import Tagline from '@/components/site/Tagline'
+import { STAT_ICONS } from '@/components/site/icons'
 import { hero, heroVideo } from '@/content/site'
 import { track } from '@/lib/analytics'
 
 /**
  * Hero.
  *
- * A pinned stage: the panel holds while roughly two extra viewports of scroll drive
- * the camera in and the fragments converge into the core. The headline, both CTAs
- * and the response assurance are server-rendered text that never moves out of
- * reading position while that happens.
+ * One viewport, static, split in two: type on the left, the studio on the right,
+ * seen through the Kairos mark.
  *
- * Over that, the scene opens. An aperture starts as a contained window onto the
- * canvas and expands to full bleed as the pin runs — so the 3D layer arrives as a
- * framed object and then becomes the room the page is standing in. The two text
- * columns drift apart by a few viewport-width percent as it opens, which is what
- * makes the expansion read as depth rather than as a rectangle being resized.
+ * ─── Why the video is not a background ───
  *
- * Pinning is `position: sticky`, so the wheel and scrollbar still move the page at
- * their normal rate. Under reduced motion the stage stops pinning, the aperture is
- * not rendered at all, and this becomes a plain static hero.
+ * It was, briefly, and that was wrong twice over. A full-bleed video behind copy has
+ * to be pushed most of the way to the page colour before the headline is legible on
+ * it, so the footage arrives washed out and half-hidden — you pay the whole 2.4MB and
+ * the bandwidth to show almost none of it. And it makes the text's contrast depend on
+ * whatever frame happens to be on screen, which is a problem you can only ever manage,
+ * never solve.
+ *
+ * So the footage gets its own place in the composition instead. It is masked into the
+ * circle of the logo, with the mark's ray ring turning around it: the brand's own
+ * shape becomes a porthole onto the room the work is made in, which is what "the hub
+ * of creativity" is supposed to mean. The video plays at full contrast because
+ * nothing is set on top of it, and the type sits on plain paper because nothing is set
+ * behind it.
+ *
+ * ─── Why the pin is gone ───
+ *
+ * This used to be a 280vh pinned stage whose visual GREW as you scrolled — a camera
+ * dolly plus four bars of page colour sliding off the edges to open a framed window
+ * onto the WebGL canvas. A visitor scrolls to reach what is below; handing them a
+ * bigger picture instead reads as the page fighting them, and the half-open state left
+ * a hard-edged rectangle behind the headline that looked like a rendering fault.
+ *
+ * The section also paints its own background, so the site-wide canvas does not show
+ * through it. The hero has a mark of its own now, in the DOM, where it is crisp at any
+ * DPR and always aligned to the video it frames.
  */
+
+/** Teeth in the DOM ring. Matches the density of the printed mark. */
+const RAYS = 44
+
 export default function Hero() {
-  const stage = useRef<HTMLElement>(null)
   const video = useRef<HTMLVideoElement>(null)
   const still = useStill()
 
@@ -41,96 +61,64 @@ export default function Hero() {
     video.current.pause()
     video.current.currentTime = 0
   }, [still])
-  // 'start start' → 'end end' is exactly the window in which the panel is pinned.
-  const p = useScrollProgress(stage, ['start start', 'end end'])
-
-  /*
-   * The aperture is four bars of page colour that slide off the edges, not a box
-   * being resized. Same picture, but every frame is a transform on four elements
-   * instead of a layout pass plus a viewport-sized repaint. It finishes opening at
-   * 55%, leaving the rest of the pin for reading.
-   */
-  const barY = useTransform(p, [0, 0.55], ['0vh', '-28vh'])
-  const barYneg = useTransform(p, [0, 0.55], ['0vh', '28vh'])
-  const barX = useTransform(p, [0, 0.55], ['0vw', '-27vw'])
-  const barXneg = useTransform(p, [0, 0.55], ['0vw', '27vw'])
-
-  const leftX = useTransform(p, [0, 0.55], ['0vw', '-3vw'])
-  const rightX = useTransform(p, [0, 0.55], ['0vw', '3vw'])
-  const cue = useTransform(p, [0, 0.18], [1, 0])
 
   return (
-    <PinnedStage
-      ref={stage}
-      vh={280}
-      accent="orange"
-      className="in-scene"
-      scene={<Scene preset="core" accent="orange" />}
+    <section
+      id="hero"
+      data-accent="orange"
+      /*
+       * One screen, always — and every vertical gap in here is clamped against `svh`
+       * to keep that promise.
+       *
+       * `svh` rather than `vh` because on mobile Safari `vh` is the tallest the
+       * viewport ever gets, so a full-height hero spends its last 60–80px underneath
+       * the browser chrome until the user scrolls.
+       *
+       * Clamped rather than fixed because a hero built from fixed rem gaps only fits
+       * at the height it was designed on: the same layout that landed exactly on 900px
+       * overflowed a 1280×720 laptop by 65px, since the type column narrows as the
+       * window does and the body copy gains lines precisely when there is least room
+       * for them. Tying the rhythm to viewport height lets the section compress.
+       * Verified at 1280×720, 1536×800, 1440×900 and 1920×1080 — hero height equals
+       * viewport height at all four.
+       */
+      className="relative flex min-h-[100svh] items-center overflow-hidden pb-[clamp(1.5rem,4svh,2.5rem)]"
+      style={{
+        background: 'var(--bg)',
+        /*
+         * Top padding is driven off `--header-h` rather than a viewport-height clamp.
+         * The header is fixed and about 5.5rem tall plus the status-bar inset, and the
+         * clamp bottomed out at 5rem on a 390x844 phone — so the eyebrow rendered
+         * underneath the bar with its top half cut off. A reservation for a fixed
+         * element has to be measured against that element, not against the viewport.
+         */
+        paddingTop: 'calc(var(--header-h) + clamp(0.5rem, 2svh, 2rem))',
+      }}
     >
-      {heroVideo.src && (
-        <div aria-hidden="true" className="hero-video">
-          <video
-            ref={video}
-            className="hero-video__el"
-            src={heroVideo.src}
-            poster={heroVideo.poster ?? undefined}
-            // Silent, decorative and looping. `muted` + `playsInline` are what let it
-            // autoplay at all on mobile Safari; without both it stays on the poster.
-            // Reduced motion is handled by the effect above, which rewinds and pauses:
-            // toggling this attribute after mount would not stop a video already playing.
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            tabIndex={-1}
-          />
-          {/*
-            Legibility guard. The scrim is painted in --bg itself, so it darkens the
-            footage in dark mode and lightens it in light mode — which means --fg is
-            the winning colour over the video in BOTH themes without a second set of
-            text colours. Video frames are unpredictable; this is what stops a bright
-            frame from dropping the headline below AA.
-          */}
-          <span className="hero-video__scrim" />
-        </div>
-      )}
-
-      {!still && (
-        <div aria-hidden="true" className="hero-aperture">
-          <motion.span className="hero-aperture__bar hero-aperture__bar--t" style={{ y: barY }} />
-          <motion.span className="hero-aperture__bar hero-aperture__bar--b" style={{ y: barYneg }} />
-          <motion.span className="hero-aperture__bar hero-aperture__bar--l" style={{ x: barX }} />
-          <motion.span className="hero-aperture__bar hero-aperture__bar--r" style={{ x: barXneg }} />
-        </div>
-      )}
-
       <div className="shell relative z-10 w-full">
-        <div className="grid-editorial items-start">
-          <motion.div className="scrim col-span-4 md:col-span-7" style={still ? undefined : { x: leftX }}>
+        <div className="grid-editorial items-center gap-y-[clamp(1.5rem,4svh,2.5rem)]">
+          <div className="col-span-4 md:col-span-6">
             <Reveal>
-              <p className="eyebrow mb-5">{hero.eyebrow}</p>
+              <p className="eyebrow mb-[clamp(0.75rem,1.6svh,1.25rem)]">{hero.eyebrow}</p>
             </Reveal>
 
-            {/* The width axis is scroll-driven: the headline compresses on entry and
-                opens out as the core assembles behind it. */}
-            {/* Above the fold, so it runs on load rather than waiting for a scroll
-                that has already happened. Descends into place. */}
-            <h1 className="text-[length:var(--text-display)]">
+            {/*
+              A hero-specific size, one step below `--text-display`. The whole section
+              has to land inside one viewport including the stat band, and the display
+              scale tops out at 88px — three lines of which is 250px of a 900px screen
+              before a word of body copy. Above the fold, so the entrance runs on load
+              rather than waiting for a scroll that has already happened.
+            */}
+            <h1 className="text-[clamp(2.25rem,4.6vw,4rem)]">
               <KineticHeadline lines={hero.headline} kinetic enter="down" trigger="load" />
             </h1>
-          </motion.div>
 
-          <motion.div
-            className="panel col-span-4 md:col-span-5 md:col-start-8"
-            style={still ? undefined : { x: rightX }}
-          >
             <Reveal delay={220}>
-              <p className="muted max-w-[46ch] text-[length:var(--text-lead)] leading-relaxed">{hero.body}</p>
+              <p className="muted mt-[clamp(1rem,2.6svh,1.5rem)] max-w-[52ch] leading-relaxed">{hero.body}</p>
             </Reveal>
 
             <Reveal delay={320}>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              <div className="mt-[clamp(1.25rem,3svh,1.75rem)] flex flex-wrap items-center gap-3">
                 <Magnetic>
                   <Link
                     href={hero.primaryCta.href}
@@ -151,48 +139,136 @@ export default function Hero() {
             </Reveal>
 
             <Reveal delay={400}>
-              <p className="faint mt-5 text-sm">{hero.assurance}</p>
+              {/*
+                The tagline, not a line of small print. It was `hero.assurance` — the
+                same string as `site.tagline`, duplicated in content and set at 13px
+                under the buttons. One source, one treatment, in all three places.
+
+                Separated from the CTA row by a rule as well as a margin. Margin alone
+                left it reading as a caption hanging off the buttons; the rule makes it
+                a line of its own, which is what a tagline is.
+              */}
+              <Tagline className="mt-[clamp(0.875rem,2.4svh,1.5rem)] border-t pt-[clamp(0.625rem,1.7svh,1rem)]" />
             </Reveal>
-          </motion.div>
+          </div>
+
+          <div className="col-span-4 md:col-span-6 md:col-start-7">
+            <Reveal delay={180}>
+              <Porthole videoRef={video} />
+            </Reveal>
+          </div>
         </div>
 
+        {/* Sized down from the display scale for the same reason as the headline: this
+            band is the last thing that has to fit above the fold. */}
         <Reveal delay={480}>
-          <dl
-            className="panel mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3"
-            style={{ borderColor: 'var(--rule)' }}
-          >
-            {hero.proof.map((stat) => (
-              <div key={stat.label} className="flex items-baseline gap-3">
+          <dl className="mt-[clamp(1.5rem,4svh,2.5rem)] grid grid-cols-1 gap-5 border-t pt-[clamp(0.75rem,2svh,1.5rem)] sm:grid-cols-3" style={{ borderColor: 'var(--rule)' }}>
+            {hero.proof.map((stat, i) => (
+              <div key={stat.label} className="flex items-center gap-3">
                 <dt className="sr-only">{stat.label}</dt>
-                <dd className="m-0 flex items-baseline gap-3">
-                  <span className="font-[family-name:var(--font-display)] text-[clamp(2.25rem,4vw,3.25rem)] font-black leading-none tracking-tight">
+                <dd className="m-0 flex items-center gap-3">
+                  <LineIcon className="w-7 flex-none" style={{ color: 'var(--accent)' }}>
+                    {STAT_ICONS[i]}
+                  </LineIcon>
+                  <span className="font-[family-name:var(--font-display)] text-[clamp(1.75rem,2.8vw,2.5rem)] font-black leading-none tracking-tight">
                     <Counter value={stat.value} suffix={stat.suffix} />
                   </span>
-                  <span className="muted max-w-[16ch] text-sm leading-snug">{stat.label}</span>
+                  {/*
+                    No `max-w`. It was capped at 16ch, which broke "disciplines under one
+                    roof" and "offices — Delhi, Dubai, Mumbai" onto a second line and left
+                    the three stats sitting at different heights. The column is wide
+                    enough for either at this size; the cap was doing nothing but wrapping.
+                  */}
+                  <span className="muted text-sm leading-snug text-balance">{stat.label}</span>
                 </dd>
               </div>
             ))}
           </dl>
         </Reveal>
-
-        <ScrollHint opacity={still ? undefined : cue} />
       </div>
-    </PinnedStage>
+    </section>
   )
 }
 
-/** Signals that the pin is intentional and there is more below. */
-function ScrollHint({ opacity }: { opacity?: MotionValue<number> }) {
+/**
+ * The mark as a window.
+ *
+ * An SVG ray ring and thin halo turning slowly around a circular video. Both are DOM,
+ * not WebGL: they have to stay locked to the video's edge at every viewport width, and
+ * a shared full-viewport canvas cannot promise that — it does not know where this
+ * element is. It is also sharp at any device pixel ratio and costs no GL context.
+ *
+ * With no video the circle holds the mark alone, so the composition is complete either
+ * way and nothing here has to branch beyond the one element.
+ */
+function Porthole({ videoRef }: { videoRef: React.RefObject<HTMLVideoElement | null> }) {
   return (
-    <motion.p
-      aria-hidden="true"
-      style={{ opacity }}
-      className="faint mt-10 hidden items-center gap-3 text-[0.7rem] tracking-[0.18em] uppercase lg:flex"
-    >
-      <span className="relative block h-8 w-px overflow-hidden" style={{ background: 'var(--rule-strong)' }}>
-        <span className="scroll-hint absolute inset-x-0 top-0 h-3" style={{ background: 'var(--accent)' }} />
-      </span>
-      Scroll to assemble
-    </motion.p>
+    <div className="porthole" aria-hidden={heroVideo.src ? undefined : 'true'}>
+      {/*
+        The spin lives on a DIV wrapping the SVG, not on a <g> inside it.
+        `transform-origin: 50% 50%` on an SVG group resolves against `transform-box`,
+        whose value differs by browser and by whether the element has a bounding box
+        yet — get it wrong and the rays orbit a point off to one side instead of
+        turning on the spot, which is exactly what happened. A block element rotates
+        about its own centre under every engine, with nothing to resolve.
+
+        `viewBox` is -50..50 so every ray is authored around the origin and the whole
+        mark scales with its container rather than needing pixel sizes per breakpoint.
+      */}
+      <div className="porthole__ring">
+        <svg viewBox="-50 -50 100 100" role="presentation" focusable="false">
+          {/*
+            Short and narrow on purpose. At 41→47.5 the ray band was 13% of the mark's
+            radius and read as a thick decorative frame competing with the footage it
+            was supposed to be presenting; the printed mark's teeth are a fine edge on
+            the circle, not a border around it. 47.2→49.6 is that edge — 2.4 units, so
+            the ring costs 5% of the radius and the other 95% is picture.
+
+            The count went up as the teeth got shorter. Density is what makes a serrated
+            edge read as one continuous edge; 36 short teeth around a 302-unit
+            circumference are dots, 44 are a rim.
+          */}
+          {Array.from({ length: RAYS }, (_, i) => (
+            <polygon
+              key={i}
+              points="47.2,0 49.6,1.15 49.6,-1.15"
+              fill="var(--accent)"
+              transform={`rotate(${(i / RAYS) * 360})`}
+            />
+          ))}
+        </svg>
+      </div>
+
+      <svg className="porthole__halo" viewBox="-50 -50 100 100" role="presentation" focusable="false">
+        <circle r="46.6" fill="none" stroke="var(--accent)" strokeWidth="0.35" opacity="0.55" />
+      </svg>
+
+      <div className="porthole__window">
+        {heroVideo.src ? (
+          <video
+            ref={videoRef}
+            className="porthole__video"
+            src={heroVideo.src}
+            poster={heroVideo.poster ?? undefined}
+            // Silent, decorative and looping. `muted` + `playsInline` are what let it
+            // autoplay at all on mobile Safari; without both it stays on the poster.
+            // Reduced motion is handled in the parent, which rewinds and pauses:
+            // toggling this attribute after mount would not stop a video already playing.
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            tabIndex={-1}
+          />
+        ) : (
+          /* No footage: the star alone, so the mark still reads as a mark. */
+          <svg className="porthole__star" viewBox="-50 -50 100 100" role="presentation" focusable="false">
+            <polygon points="0,-34 29.4,17 -29.4,17" fill="none" stroke="var(--accent)" strokeWidth="0.6" />
+            <polygon points="0,34 29.4,-17 -29.4,-17" fill="none" stroke="var(--accent)" strokeWidth="0.6" />
+          </svg>
+        )}
+      </div>
+    </div>
   )
 }

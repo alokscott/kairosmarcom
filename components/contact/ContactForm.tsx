@@ -124,14 +124,23 @@ export default function ContactForm() {
       <h3 className="text-[length:var(--text-h3)]">{contact.formTitle}</h3>
       <p className="faint mt-2 text-sm">{contact.formNote}</p>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2">
+      {/*
+        Six tracks, not two.
+
+        With a two-column grid the five short fields took three rows and pushed the
+        message box and the submit button a long way down a section that has to stay
+        inside about one screen. Six tracks let name and email take half each and the
+        three optional fields share the row below, which removes a row without
+        shrinking a single control.
+      */}
+      <div className="mt-8 grid items-end gap-5 sm:grid-cols-6">
         <Field
           name="name"
           label="Your name"
           required
           autoComplete="name"
           error={errors.name}
-          className="sm:col-span-1"
+          className="sm:col-span-3"
         />
         <Field
           name="email"
@@ -141,11 +150,19 @@ export default function ContactForm() {
           autoComplete="email"
           inputMode="email"
           error={errors.email}
-          className="sm:col-span-1"
+          className="sm:col-span-3"
         />
-        <Field name="company" label="Company" autoComplete="organization" hint="Optional" className="sm:col-span-1" />
+        <Field name="company" label="Company" autoComplete="organization" className="sm:col-span-2" />
+        <Field
+          name="phone"
+          label="Phone number"
+          type="tel"
+          autoComplete="tel"
+          inputMode="tel"
+          className="sm:col-span-2"
+        />
 
-        <div className="sm:col-span-1">
+        <div className="sm:col-span-2">
           <label htmlFor="budget" className="mb-2 block text-sm font-medium">
             Rough budget <span className="faint font-normal">Optional</span>
           </label>
@@ -180,7 +197,7 @@ export default function ContactForm() {
           multiline
           hint="A couple of sentences is plenty."
           error={errors.message}
-          className="sm:col-span-2"
+          className="sm:col-span-6"
         />
       </div>
 

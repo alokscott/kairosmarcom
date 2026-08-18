@@ -1,6 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { DnaHeading } from '@/components/home/Principles'
 import { Reveal } from '@/components/motion/Reveal'
+import LineIcon from '@/components/site/LineIcon'
+import Tagline from '@/components/site/Tagline'
+import { PRINCIPLE_ICONS } from '@/components/site/icons'
 import { Scene } from '@/components/three/Scene'
 import { clients, dna, principles, principlesIntro, site } from '@/content/site'
 import { breadcrumbLd, graph, organizationLd, pageMeta } from '@/lib/seo'
@@ -53,11 +57,11 @@ export default function AboutPage() {
             <div className="col-span-4 md:col-span-6 md:col-start-7">
               <p className="text-[length:var(--text-lead)] leading-relaxed">{site.about}</p>
               <p className="muted mt-6 leading-relaxed">
-                Most growing brands are not short on ideas — they are short on a story people repeat. We are the
-                branding partner for founders and marketing leads whose product is genuinely good but whose message
-                keeps getting lost.
+                A place where expressions are strategized, thoughts are innovative and stories are delivered. Whether it
+                is strategy, naming, design, digital experience, activation or brand governance, we know what it takes
+                to build brands for success.
               </p>
-              <p className="eyebrow mt-8">{site.tagline}</p>
+              <Tagline className="mt-8" />
             </div>
           </div>
         </div>
@@ -65,16 +69,23 @@ export default function AboutPage() {
 
       <section className="section pt-0" data-accent="violet">
         <div className="shell">
-          <h2 className="max-w-[16ch] text-[length:var(--text-h1)]">Four things every piece of work must earn</h2>
+          <h2 className="max-w-[16ch] text-[length:var(--text-h1)]">How we get things flowing, in four steps</h2>
           <p className="muted mt-6 max-w-[58ch] text-[length:var(--text-lead)]">{principlesIntro}</p>
 
           <ol className="mt-14 m-0 grid list-none gap-px p-0 sm:grid-cols-2" style={{ background: 'var(--rule)' }}>
             {principles.map((p) => (
               <li key={p.id} data-accent={p.accent} className="p-7" style={{ background: 'var(--bg)' }}>
-                <p className="mono-num text-xs" style={{ color: 'var(--accent-text)' }}>
-                  {p.index}
-                </p>
-                <h3 className="mt-2 text-[length:var(--text-h2)]">{p.title}</h3>
+                {/* The same icon the homepage stage panel uses for this principle,
+                    imported rather than redrawn — see components/site/icons.tsx. */}
+                <div className="flex items-start justify-between gap-4">
+                  <p className="mono-num text-xs" style={{ color: 'var(--accent-text)' }}>
+                    {p.index}
+                  </p>
+                  <LineIcon className="w-10 flex-none" style={{ color: 'var(--accent)' }}>
+                    {PRINCIPLE_ICONS[p.id]}
+                  </LineIcon>
+                </div>
+                <h3 className="mt-4 text-[length:var(--text-h2)]">{p.title}</h3>
                 <p className="muted mt-4 max-w-[46ch] leading-relaxed">{p.body}</p>
               </li>
             ))}
@@ -84,7 +95,9 @@ export default function AboutPage() {
 
       <section className="section pt-0" data-accent="lime">
         <div className="shell">
-          <h2 className="text-[length:var(--text-h2)]">Our DNA</h2>
+          {/* The same lockup as the homepage band, imported rather than restated so
+              the two cannot drift apart. */}
+          <DnaHeading />
           <dl className="mt-10 grid-editorial m-0">
             {dna.map((item) => (
               <div key={item.title} className="col-span-4 md:col-span-6 border-t pt-6" style={{ borderColor: 'var(--rule)' }}>
@@ -104,14 +117,14 @@ export default function AboutPage() {
             </div>
             <div className="col-span-4 md:col-span-6 md:col-start-7">
               <p className="text-[length:var(--text-lead)] leading-relaxed">
-                The senior people you meet on the call are the ones who do the work. We are a small team of marketers,
-                project managers, creatives and designers — there is no junior handoff after the pitch, because there is
-                no pitch team.
+                The senior people you meet on the call are the ones who do the work. We are a pack of creativity-driven
+                and execution-strong professionals — passionate marketers, project managers, creatives and designers.
+                There is no junior handoff after the pitch, because there is no pitch team.
               </p>
               <p className="muted mt-6 leading-relaxed">
-                Founded in {site.foundingDate} and based in {site.address.locality}. We run remote engagements across
-                timezones and keep a standing overlap window for calls; roughly a third of current work is
-                international.
+                Founded in {site.foundingDate}, with offices in Delhi, Dubai and Mumbai. We have worked across India,
+                Bangladesh, Sri Lanka and the UAE, and we run remote engagements with a standing overlap window for
+                calls.
               </p>
               <p className="muted mt-6 leading-relaxed">
                 We take on work that spreads something positive. Brands that make a real change get our best thinking,
@@ -135,17 +148,22 @@ export default function AboutPage() {
           <ul className="mt-8 m-0 flex list-none flex-wrap gap-x-8 gap-y-3 p-0">
             {clients.map((client) => (
               <li
-                key={client}
+                key={client.name}
                 className="font-[family-name:var(--font-display)] text-[clamp(1.25rem,3vw,2rem)] font-bold tracking-tight"
                 style={{ color: 'var(--fg-muted)' }}
               >
-                {client}
+                {client.name}
               </li>
             ))}
           </ul>
           <p className="faint mt-6 max-w-[62ch] text-sm">
-            Names are listed as published on the previous site. Client marks are not reproduced here until written
-            permission for each is on file.
+            Names are listed as supplied. Client marks are not reproduced here until written permission for each is on
+            file. The full roster — hospitality, fintech, automotive, airlines, consumer, education, real estate and
+            industry bodies — is on the{' '}
+            <Link href="/#brands" className="link-underline">
+              home page
+            </Link>
+            .
           </p>
 
           <Link href="/work" className="btn btn--ghost mt-8">

@@ -44,9 +44,9 @@ export default function WorkIndexPage() {
           <div className="mt-10 grid-editorial items-end">
             <Reveal delay={120} className="col-span-4 md:col-span-6">
               <p className="muted text-[length:var(--text-lead)] leading-relaxed">
-                Nine engagements across automotive, consumer technology, education, cybersecurity and EV. Each one is
-                written up the same way — objective, challenge, what we did, and what the numbers did afterwards, with
-                the source of every figure stated beside it.
+                Automotive, consumer technology, education, EV and cybersecurity. Every engagement is written up in
+                full and the same way — the objective, the challenge, what we did and what happened, with the source of
+                every figure stated beside it.
               </p>
             </Reveal>
 

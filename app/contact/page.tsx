@@ -6,9 +6,9 @@ import { contact, faqs, site } from '@/content/site'
 import { breadcrumbLd, faqLd, graph, organizationLd, pageMeta } from '@/lib/seo'
 
 export const metadata: Metadata = pageMeta({
-  title: 'Contact — book a free 30-minute clarity call',
+  title: 'Contact — book your 30-minute call',
   description:
-    'Thirty minutes, no pitch deck, no obligation. A senior lead on the call, a fixed scope and fee before you commit, and an honest no if we are not the right fit. hello@kairosmarcom.com.',
+    'Thirty minutes, no pitch deck, no obligation. A senior lead on the call, scope and fee agreed in writing before you commit, and an honest no if we are not the right fit. hello@kairosmarcom.com.',
   path: '/contact',
 })
 
@@ -27,7 +27,7 @@ const NEXT_STEPS = [
   {
     step: '03',
     title: 'A number in writing',
-    body: 'If it is a fit, you get a fixed scope and fixed fee before you commit to anything. If it is not, we will say so and point you somewhere better.',
+    body: 'If it is a fit, scope and fee are agreed in writing before you commit to anything. If it is not, we will say so and point you somewhere better.',
   },
 ]
 

@@ -101,9 +101,17 @@ const getServerSnapshot = (): StoreState => SERVER_SNAPSHOT
 
 export const useSceneStore = () => useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
+/**
+ * Must stay in step with the `[data-accent]` blocks in globals.css — this is what the
+ * WebGL layer paints, and the DOM and the canvas disagreeing is visible as a section
+ * whose backdrop is a different colour from its own type.
+ *
+ * One colour, sampled from the logo, plus one neutral for the bands that recede.
+ * Three slots share the red deliberately; see the palette note in globals.css.
+ */
 export const ACCENT_HEX: Record<Accent, string> = {
-  orange: '#FF4B23',
-  lime: '#C8FF3D',
-  violet: '#5C3BFF',
+  orange: '#EE3A3C',
+  lime: '#EE3A3C',
+  violet: '#EE3A3C',
   silver: '#B7B8B5',
 }

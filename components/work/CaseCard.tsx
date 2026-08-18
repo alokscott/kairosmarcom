@@ -5,26 +5,44 @@ import { useEffect, useRef, ViewTransition } from 'react'
 import type { CaseStudy } from '@/content/types'
 import { track, trackOnce } from '@/lib/analytics'
 import { motion } from 'motion/react'
-import { Tilt } from '@/components/motion/Kinetic'
 import { EASE_OUT_EXPO, useStill } from '@/components/motion/scroll'
+import LineIcon from '@/components/site/LineIcon'
+import { SERVICE_ICONS } from '@/components/site/icons'
 
 /**
- * Editorial case panel.
+ * Case card.
  *
- * There is no project photography anywhere in the migrated content, so the visual
- * weight is carried by type, the accent rule and the client's headline number.
- * `heroImage` is honoured the moment a CMS supplies one — the layout has the slot,
- * it just refuses to fake the asset.
+ * ─── There is no photography, and that is the design problem ───
+ *
+ * Not one of the nine case studies carries an image or a video: every `heroImage` is
+ * null, every `gallery` and `videos` array is empty. A work index with no pictures is
+ * the hardest brief on the site, and pretending otherwise — stock, gradients standing
+ * in for screenshots — would be worse than the honest version.
+ *
+ * So the RESULT is the picture. Each card leads with a plate carrying the study's
+ * headline figure at display size, which is the one genuinely striking asset the
+ * content does have, and it is real. Ageless Digital has no measured figure, so its
+ * plate carries the discipline's icon instead: the same shape, never an invented
+ * number. The plate slot is a fixed aspect either way, which is what keeps nine cards
+ * the same height.
+ *
+ * ─── Uniform, not alternating ───
+ *
+ * The cards used to take a `layout` of wide, split or tall, spanning 12, 7 or 5
+ * columns on a rotation. The intent was an editorial rhythm; the effect was a ragged
+ * grid of mismatched boxes that read as a layout bug, because nothing about a
+ * particular study justified its box being the odd size. Every card is now identical
+ * and the grid does the composing.
  */
 export default function CaseCard({
   study,
   index,
-  layout = 'wide',
+  /** `row` is the list view: one full-width card per line, plate beside the text. */
+  layout = 'card',
 }: {
   study: CaseStudy
   index: number
-  /** Panels alternate so the index never reads as a uniform card grid. */
-  layout?: 'wide' | 'tall' | 'split'
+  layout?: 'card' | 'row'
 }) {
   const ref = useRef<HTMLElement>(null)
   const still = useStill()
@@ -46,8 +64,7 @@ export default function CaseCard({
   }, [study.slug])
 
   const headline = study.headline[0]
-  const span =
-    layout === 'wide' ? 'md:col-span-12' : layout === 'split' ? 'md:col-span-7' : 'md:col-span-5'
+  const row = layout === 'row'
 
   /*
    * Sequential entrance.
@@ -55,98 +72,91 @@ export default function CaseCard({
    * Purpose: give the grid a reading order instead of nine cards appearing at once.
    * Trigger: the card scrolling into view, once — re-animating on every pass turns a
    *   flourish into a distraction on the way back up the page.
-   * Properties: fade 0→1 and rise 32px, 600ms ease-out-expo, 300ms between cards.
    *
    * The step is capped at four cards (1.2s). Uncapped, card nine would sit blank for
    * 2.4s after it was already on screen, which reads as a page that failed to load
    * rather than as a considered sequence.
    */
-  const step = Math.min(index, 4) * 0.3
+  const step = Math.min(index, 4) * 0.12
 
   return (
     <motion.article
       ref={ref}
-      data-accent={study.accent}
-      className={`group relative col-span-4 ${span}`}
-      style={{ ['--panel-index' as string]: index }}
-      initial={{ opacity: 0, y: 32 }}
+      className="case-card group"
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2, margin: '0px 0px -6% 0px' }}
-      transition={still ? { duration: 0 } : { duration: 0.6, delay: step, ease: EASE_OUT_EXPO }}
+      transition={still ? { duration: 0 } : { duration: 0.55, delay: step, ease: EASE_OUT_EXPO }}
     >
-      <Tilt max={6} lift={14} className="h-full">
       <Link
         href={`/work/${study.slug}`}
         onClick={() => track('case_open', { slug: study.slug, source: 'card' })}
-        className="block h-full cursor-pointer no-underline"
+        className={`flex h-full cursor-pointer no-underline ${row ? 'flex-col sm:flex-row' : 'flex-col'}`}
+        style={{ background: 'var(--bg-raised)', border: '1px solid var(--rule)' }}
       >
+        {/* Drawn from the left on hover — the site's one hover gesture. */}
+        <span aria-hidden="true" className="case-card__rule" />
+
         <div
-          className="relative flex h-full flex-col justify-between overflow-hidden p-6 md:p-8"
-          style={{
-            background: 'color-mix(in srgb, var(--bg-raised) 86%, transparent)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid var(--rule)',
-            transition: 'border-color 380ms var(--ease-out-expo)',
-          }}
+          className={`case-card__plate relative grid place-items-center overflow-hidden p-6 ${
+            row ? 'sm:w-[18rem] sm:flex-none' : 'aspect-[16/10]'
+          }`}
         >
-          {/* Accent rule that draws across on hover — the only decorative motion here. */}
-          <span
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-[2px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100 group-focus-within:scale-x-100"
-            style={{ background: 'var(--accent)', transitionTimingFunction: 'var(--ease-out-expo)' }}
-          />
-
-          <div>
-            <p className="eyebrow mb-4">
-              {study.industry ?? study.projectTitle}
-              {study.location ? ` · ${study.location}` : ''}
+          {headline ? (
+            <p className="m-0 text-center">
+              <span
+                className="mono-num block font-[family-name:var(--font-display)] text-[clamp(2.25rem,5vw,3.5rem)] font-black leading-none tracking-tight"
+                style={{ color: 'var(--accent-text)' }}
+              >
+                {headline.value}
+              </span>
+              <span className="faint mt-2 block text-xs">{headline.label}</span>
             </p>
+          ) : (
+            /* No measured figure on this study. The discipline's own mark stands in —
+               the plate keeps its shape and nothing is invented to fill it. */
+            <LineIcon className="w-16" style={{ color: 'var(--accent)', opacity: 0.5 }}>
+              {SERVICE_ICONS[study.services[0]]}
+            </LineIcon>
+          )}
+        </div>
 
-            <h3
-              className={`font-[family-name:var(--font-display)] font-extrabold tracking-tight ${
-                layout === 'wide' ? 'text-[clamp(2rem,5vw,4rem)]' : 'text-[clamp(1.75rem,3vw,2.5rem)]'
-              }`}
-            >
-              <ViewTransition name={`case-${study.slug}`}>
-                <span>{study.client}</span>
-              </ViewTransition>
-            </h3>
+        <div className="flex flex-1 flex-col p-6">
+          <p className="eyebrow mb-3">
+            {study.industry ?? study.projectTitle}
+            {study.location ? ` · ${study.location}` : ''}
+          </p>
 
-            <p className="muted mt-4 max-w-[46ch] text-[0.95rem] leading-relaxed">{study.summary}</p>
-          </div>
+          <h3 className="case-card__title font-[family-name:var(--font-display)] text-[length:var(--text-h3)] font-extrabold tracking-tight">
+            <ViewTransition name={`case-${study.slug}`}>
+              <span>{study.client}</span>
+            </ViewTransition>
+          </h3>
 
-          <div className="mt-8">
-            {headline && (
-              <p className="mb-5 flex items-baseline gap-3">
-                <span
-                  className="mono-num font-[family-name:var(--font-display)] text-[clamp(1.75rem,4vw,3rem)] font-black leading-none tracking-tight"
-                  style={{ color: 'var(--accent-text)' }}
-                >
-                  {headline.value}
-                </span>
-                <span className="faint text-xs">{headline.label}</span>
-              </p>
-            )}
+          <p className="muted mt-3 max-w-[46ch] text-sm leading-relaxed">{study.summary}</p>
 
-            <ul className="m-0 mb-5 flex list-none flex-wrap gap-2 p-0">
-              {study.tags.map((tag) => (
-                <li
-                  key={tag}
-                  className="px-2.5 py-1 text-[0.7rem] tracking-wide"
-                  style={{ border: '1px solid var(--rule)', color: 'var(--fg-muted)' }}
-                >
-                  {tag}
-                </li>
-              ))}
-            </ul>
+          {/* `mt-auto` pins everything below to the bottom of the card, so the tags and
+              the link line up across a row whatever length the summary runs to. */}
+          <ul className="m-0 mt-auto flex list-none flex-wrap gap-2 p-0 pt-5">
+            {study.tags.map((tag) => (
+              <li
+                key={tag}
+                className="px-2.5 py-1 text-[0.7rem] tracking-wide"
+                style={{ border: '1px solid var(--rule)', color: 'var(--fg-muted)' }}
+              >
+                {tag}
+              </li>
+            ))}
+          </ul>
 
-            <span className="inline-flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--accent-text)' }}>
-              View case study <span aria-hidden="true" className="arrow">→</span>
-            </span>
-          </div>
+          <span
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold"
+            style={{ color: 'var(--accent-text)' }}
+          >
+            View case study <span aria-hidden="true" className="arrow">→</span>
+          </span>
         </div>
       </Link>
-      </Tilt>
     </motion.article>
   )
 }

@@ -102,40 +102,58 @@ float fbm(vec2 p) {
 float lum(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 
 void main() {
-  // Scroll shifts the field, so the backdrop is tied to page position rather than
-  // looping independently of it — the same idea as the yOffset hook, done in-shader.
+  /* ---- Radial, not turbulent ----
+   *
+   * This used to be two rounds of domain-warped fbm with ridged filaments arcing
+   * through it — a liquid, weather-map flow. It looked like a lava lamp and it agreed
+   * with nothing else on the page: the mark in front of it is a centred ring of rays
+   * and a six-point star, and the backdrop was a blob drifting sideways behind it.
+   *
+   * The field is now concentric and centred on the same origin as the mark, so the
+   * page has ONE geometry. Slow rings breathe outward from the middle, a faint
+   * angular ripple echoes the ray count, and noise survives only as a low-amplitude
+   * warp so the rings are never mechanically perfect.
+   */
   float t = uTime * 0.05 + uProgress * 0.6;
-  vec2 p = vUv * 2.6;
 
-  // Two rounds of domain warping. One round reads as plain noise; two is what gives
-  // the folded, liquid structure that makes a gradient look like it has depth.
-  vec2 q = vec2(fbm(p + vec2(0.0, t)), fbm(p + vec2(5.2, 1.3 - t)));
-  vec2 r = vec2(
-    fbm(p + 3.4 * q + vec2(1.7, 9.2) + t * 0.42),
-    fbm(p + 3.4 * q + vec2(8.3, 2.8) - t * 0.35)
-  );
-  float f = fbm(p + 3.4 * r);
+  // Aspect-corrected so the rings are circles rather than ellipses on a wide viewport.
+  vec2 c = (vUv - 0.5) * vec2(1.7, 1.0);
+  float d = length(c);
+  float ang = atan(c.y, c.x);
 
-  vec3 col = mix(uA, uB, clamp(f * 1.6 + 0.5, 0.0, 1.0));
-  col = mix(col, uC, clamp(length(q) * 0.85, 0.0, 1.0));
+  // One octave of noise, used only to bend the rings. Two rounds of warping bought
+  // structure the rings now provide for free.
+  float warp = fbm(c * 2.2 + vec2(0.0, t)) * 0.16;
+
+  // Rings breathing outward. 6.0 is roughly one ring per 8% of the frame — wide
+  // enough to read as atmosphere, never as a target.
+  float rings = sin((d + warp) * 6.0 - t * 1.4) * 0.5 + 0.5;
+
+  // Six lobes, echoing the six points of the star. Very low weight: this is the
+  // difference between "a gradient" and "the brand's gradient".
+  float lobes = sin(ang * 6.0 + t * 0.6) * 0.5 + 0.5;
+
+  float f = mix(rings, lobes, 0.22);
+
+  // Centre reads as the accent and the edges fall to the neutral, so the frame is
+  // brightest where the mark sits and quietest where the text columns are.
+  vec3 col = mix(uA, uB, clamp(f, 0.0, 1.0));
+  col = mix(col, uC, clamp(d * 1.15, 0.0, 1.0));
 
   vec3 base = mix(uBg, col, uStrength);
 
-  /* ---- Filaments ----
-     Ridged noise: |fbm| inverted gives sharp valleys at the zero crossings, and a
-     high power turns those into thin veins rather than broad bands. */
-  float ridge = 1.0 - abs(fbm(p * 1.7 + r * 1.8 + vec2(t * 1.1, -t * 0.8)));
-  float vein = pow(clamp(ridge, 0.0, 1.0), 13.0);
-
-  // Intermittent, not strobing: two slow out-of-phase sines multiplied, so arcs
-  // surface and fade rather than flickering. Nothing here crosses 3Hz.
+  /* ---- Sweep ----
+     One soft band travelling out from the centre, replacing the old filaments. Two
+     slow out-of-phase sines multiplied, so it surfaces and fades rather than
+     flickering; nothing here crosses 3Hz. */
+  float band = pow(clamp(1.0 - abs(fract(d * 1.6 - t * 0.5) - 0.5) * 2.0, 0.0, 1.0), 6.0);
   float pulse = smoothstep(0.55, 1.0, sin(uTime * 0.31) * 0.5 + 0.5)
               * smoothstep(0.35, 1.0, sin(uTime * 0.17 + 2.1) * 0.5 + 0.5);
 
-  // Dark: veins add light. Light: they deposit ink, because adding light to bone
-  // does nothing — the same reason the particle field inverts its blending.
+  // Dark: the sweep adds light. Light: it deposits ink, because adding light to bone
+  // does nothing.
   vec3 veinCol = mix(vec3(0.03), uA, uDark);
-  base = mix(base, veinCol, vein * pulse * uVeins);
+  base = mix(base, veinCol, band * pulse * uVeins);
 
   /*
    * Luminance clamp. Everything above is free to move in hue; this is what stops it
@@ -160,6 +178,20 @@ void main() {
 
 /** Matches --bg in each theme block of globals.css. */
 const BG: Record<Theme, string> = { light: '#f4f1e9', dark: '#080808' }
+
+/**
+ * The field's second pole, opposite whatever the section accent is.
+ *
+ * This was hard-coded to #5c3bff. The backdrop is full-bleed and sits under every
+ * page, so that one literal put a violet cast on the entire site regardless of the
+ * section's own colour — a hue the brand does not contain. Then it was a second red,
+ * which was on-brand but gave the two poles nothing to be different about.
+ *
+ * It is now the palette's one neutral. With a single accent the field's job is a
+ * red-to-grey fall from the centre outward, not a two-colour blend: the mark sits in
+ * warmth and the text columns at the edges sit on near-paper.
+ */
+const POLE = '#8c8880'
 
 /**
  * How far the backdrop's luminance may stray from --bg, per theme and per direction.
@@ -224,10 +256,10 @@ export function LightningField({
     u.uDark.value = dark ? 1 : 0
 
     if (dark) {
-      // Deep, saturated tints over ink. Violet and the section accent read as the
-      // two poles, with a near-black trough between them.
+      // Deep, saturated tints over ink. The crimson pole and the section accent read
+      // as the two ends, with a near-black trough between them.
       u.uA.value.copy(bg).lerp(accent, 0.55)
-      u.uB.value.copy(bg).lerp(new THREE.Color('#5c3bff'), 0.5)
+      u.uB.value.copy(bg).lerp(new THREE.Color(POLE), 0.5)
       u.uC.value.copy(bg).lerp(accent, 0.18)
       u.uStrength.value = 0.9
       /*
@@ -246,7 +278,7 @@ export function LightningField({
       // rather than atmosphere. On an editorial brand the backdrop should register
       // as a tint you notice only when it moves.
       u.uA.value.copy(bg).lerp(accent, 0.10)
-      u.uB.value.copy(bg).lerp(new THREE.Color('#5c3bff'), 0.09)
+      u.uB.value.copy(bg).lerp(new THREE.Color(POLE), 0.08)
       u.uC.value.copy(bg).lerp(new THREE.Color('#b7b8b5'), 0.26)
       u.uStrength.value = 0.9
       /*

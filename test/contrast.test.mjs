@@ -5,10 +5,10 @@ import { readFileSync } from 'node:fs'
 /**
  * Guards the design tokens against a WCAG 2.2 AA regression.
  *
- * The brand palette contains two colours that are NOT safe as body text on one of
- * the two backgrounds (#C8FF3D on bone is 1.03:1, #5C3BFF on near-black is 3.28:1),
- * which is why `--accent` and `--accent-text` are separate tokens. If someone
- * "simplifies" them back into one, this fails.
+ * The palette is one red ramp, and no point on it is safe as body text on BOTH
+ * backgrounds — the brand red is 3.51:1 on bone, and the crimson is 2.47:1 on
+ * near-black. That is why `--accent` and `--accent-text` are separate tokens. If
+ * someone "simplifies" them back into one, this fails.
  */
 
 const css = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8')
@@ -92,7 +92,11 @@ for (const [name, { selector, accents }] of Object.entries(themes)) {
 
 test('graphic accents remain distinguishable against both backgrounds', () => {
   // Used for rules, shapes and large display type only — 3:1 is the bar (WCAG 1.4.11).
-  const graphic = { orange: '#ff4b23', lime: '#c8ff3d', violet: '#5c3bff', silver: '#b7b8b5' }
+  // Read from the [data-accent] blocks rather than restated here, so retuning the
+  // palette cannot leave this check asserting colours the site no longer ships.
+  const graphic = Object.fromEntries(
+    ['orange', 'lime', 'violet', 'silver'].map((a) => [a, token(`[data-accent='${a}']`, '--accent')])
+  )
   for (const [name, hex] of Object.entries(graphic)) {
     const onDark = contrast(hex, token("[data-theme='dark']", '--bg'))
     assert.ok(onDark >= AA_LARGE, `${name} on dark is ${onDark.toFixed(2)}:1`)
@@ -143,21 +147,26 @@ for (const [name, { selector }] of Object.entries(themes)) {
 }
 
 test('--on-accent is legible on every accent fill', () => {
-  // .btn--primary, .skip-link and ::selection all paint --on-accent on --accent.
+  /*
+   * `--accent-fill`, NOT `--accent`. They are different tokens because they have
+   * different jobs: --accent is the mark and the rules, which are graphics at a 3:1
+   * bar, while --accent-fill is what a button paints behind a 14px label — normal
+   * text, 4.5:1. Asserting against --accent here would have passed a button whose
+   * label measured 3.96:1, which is exactly the case this test exists to catch.
+   */
   for (const accent of ['orange', 'lime', 'violet', 'silver']) {
     const selector = `[data-accent='${accent}']`
-    const c = contrast(token(selector, '--on-accent'), token(selector, '--accent'))
-    assert.ok(c >= AA_TEXT, `--on-accent on ${accent} is ${c.toFixed(2)}:1, need ${AA_TEXT}`)
+    const c = contrast(token(selector, '--on-accent'), token(selector, '--accent-fill'))
+    assert.ok(c >= AA_TEXT, `--on-accent on ${accent} fill is ${c.toFixed(2)}:1, need ${AA_TEXT}`)
   }
 })
 
 test('--on-accent survives the button hover colour shift', () => {
-  // .btn--primary swaps its fill to --accent-hover on hover while the label colour
-  // stays put. A shift that reads well on orange can bury the label on violet, so
-  // every accent is checked at its hover value too.
+  // .btn--primary swaps its fill to --accent-fill-hover on hover while the label
+  // colour stays put, so the hover value is checked as well as the resting one.
   for (const accent of ['orange', 'lime', 'violet', 'silver']) {
     const selector = `[data-accent='${accent}']`
-    const c = contrast(token(selector, '--on-accent'), token(selector, '--accent-hover'))
+    const c = contrast(token(selector, '--on-accent'), token(selector, '--accent-fill-hover'))
     assert.ok(c >= AA_TEXT, `--on-accent on ${accent} hover is ${c.toFixed(2)}:1, need ${AA_TEXT}`)
   }
 })

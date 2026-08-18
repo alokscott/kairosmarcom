@@ -2,6 +2,8 @@
 
 import { Reveal } from '@/components/motion/Reveal'
 import { KineticHeadline, PinnedStage, Tilt } from '@/components/motion/Kinetic'
+import LineIcon from '@/components/site/LineIcon'
+import { PRINCIPLE_ICONS } from '@/components/site/icons'
 import { Scene } from '@/components/three/Scene'
 import { useSceneStore } from '@/components/three/store'
 import { dna, principles, principlesIntro } from '@/content/site'
@@ -34,10 +36,12 @@ export default function Principles() {
       >
         <div className="shell relative w-full">
           <div className="grid-editorial items-center">
-            <div className="scrim col-span-4 md:col-span-5">
+            <div className="col-span-4 md:col-span-5">
               <p className="eyebrow mb-4">How we think</p>
               <h2 className="text-[length:var(--text-h1)]">
-                <KineticHeadline lines={['Four things', 'every piece of', 'work must earn']} />
+                {/* Three lines, each at most fourteen characters. The pinned panel
+                    sizes to three, and a fourth line clipped against the mask. */}
+                <KineticHeadline lines={['How we get', 'things flowing', 'in four steps']} />
               </h2>
               <p className="muted mt-6 max-w-[46ch]">{principlesIntro}</p>
 
@@ -87,12 +91,23 @@ export default function Principles() {
                         pointerEvents: on ? 'auto' : 'none',
                       }}
                     >
-                      <p
-                        className="mono-num font-[family-name:var(--font-display)] text-[clamp(4rem,10vw,9rem)] font-black leading-[0.8] tracking-tighter"
-                        style={{ color: 'var(--accent-text)' }}
-                      >
-                        {p.index}
-                      </p>
+                      {/* The oversized numeral is the card's anchor; the icon sits
+                          opposite it on the same optical line, so the pair reads as one
+                          masthead rather than as a glyph added above the text. */}
+                      <div className="flex items-start justify-between gap-6">
+                        <p
+                          className="mono-num font-[family-name:var(--font-display)] text-[clamp(4rem,10vw,9rem)] font-black leading-[0.8] tracking-tighter"
+                          style={{ color: 'var(--accent-text)' }}
+                        >
+                          {p.index}
+                        </p>
+                        <LineIcon
+                          className="mt-2 w-[clamp(2.5rem,4.4vw,3.75rem)] flex-none"
+                          style={{ color: 'var(--accent)' }}
+                        >
+                          {PRINCIPLE_ICONS[p.id]}
+                        </LineIcon>
+                      </div>
                       <h3 className="mt-2 text-[length:var(--text-h1)]">{p.title}</h3>
                       <p className="muted mt-6 max-w-[46ch] text-[length:var(--text-lead)] leading-relaxed">{p.body}</p>
                       <p className="faint mt-6 max-w-[40ch] text-sm">
@@ -108,18 +123,39 @@ export default function Principles() {
         </div>
       </PinnedStage>
 
-      {/* DNA sits outside the pin: it is a manifesto to read, not a sequence to scrub. */}
-      <section className="section" data-accent="silver">
+      {/*
+        DNA sits outside the pin: it is a manifesto to read, not a sequence to scrub.
+
+        It also paints its own near-opaque surface, like the client wall. Four
+        paragraphs is the densest block of running text on the homepage, and the ray
+        ring passing behind it made it work to read even though the contrast maths
+        clears AA. The 6% left over plus the blur keeps the backdrop's colour shifting
+        underneath, so the band still belongs to the page rather than sitting on it.
+      */}
+      <section
+        className="section"
+        data-accent="silver"
+        style={{
+          background: 'color-mix(in srgb, var(--bg) 94%, transparent)',
+          backdropFilter: 'blur(12px)',
+        }}
+      >
         <div className="shell">
           <Reveal>
-            <p className="eyebrow mb-8">Our DNA</p>
+            <DnaHeading />
           </Reveal>
-          <dl className="grid-editorial m-0">
+          <dl className="mt-12 grid-editorial m-0">
             {dna.map((item, i) => (
               <Reveal key={item.title} delay={i * 70} className="col-span-4 md:col-span-6">
                 <Tilt max={4} lift={6}>
+                  {/*
+                    No left padding. `md:pl-6` indented every card 24px past the shell,
+                    so the heading above started at the column edge and the copy under
+                    it did not — the whole block read as nudged out of the grid. Padding
+                    stays on the right, where it is what holds the two columns apart.
+                  */}
                   <div
-                    className="h-full border-t p-6 pl-0 md:pl-6"
+                    className="h-full border-t py-6 pr-6"
                     style={{ borderColor: 'var(--rule)' }}
                   >
                     <dt className="statement mb-3">{item.title}</dt>
@@ -132,5 +168,34 @@ export default function Principles() {
         </div>
       </section>
     </>
+  )
+}
+
+/**
+ * "Our DNA", set as a lockup rather than a label.
+ *
+ * It was an `.eyebrow` — 12px, letterspaced, uppercase — which is the site's smallest
+ * type, used for section tags like "HOW WE THINK". That is the right size for a tag
+ * above a headline and the wrong size when it IS the headline: the section had no
+ * heading at display scale at all, so four statements sat under a caption.
+ *
+ * The lockup sets one word light and muted against one set black, so the heading reads
+ * as a deliberate piece of typography rather than a bigger version of the label it
+ * replaced. Exported so the About page uses the same one rather than drifting into its
+ * own treatment.
+ */
+export function DnaHeading() {
+  return (
+    <h2 className="dna-heading">
+      {/*
+        The explicit space is not cosmetic — the gap between the words is drawn by
+        `gap`, and without this the heading's text content is "OurDNA", which is what a
+        screen reader announces and what a page search matches against. A whitespace-
+        only text node between flex items generates no anonymous flex item, so it
+        changes the accessible name and nothing about the layout.
+      */}
+      <span className="dna-heading__soft">Our</span>{' '}
+      <span className="dna-heading__display">DNA</span>
+    </h2>
   )
 }

@@ -58,6 +58,7 @@ export async function POST(request: Request) {
     name: form.get('name'),
     email: form.get('email'),
     company: form.get('company'),
+    phone: form.get('phone'),
     message: form.get('message'),
     budget: form.get('budget'),
     website: form.get('website'),
@@ -93,6 +94,7 @@ type Enquiry = {
   name: string
   email: string
   company: string | null
+  phone: string | null
   budget: string
   message: string
   receivedAt: string
@@ -112,6 +114,7 @@ async function deliver(enquiry: Enquiry): Promise<boolean> {
     `Name: ${enquiry.name}`,
     `Email: ${enquiry.email}`,
     `Company: ${enquiry.company ?? '—'}`,
+    `Phone: ${enquiry.phone ?? '—'}`,
     `Budget: ${enquiry.budget}`,
     '',
     'What is stuck:',
@@ -149,11 +152,40 @@ async function deliver(enquiry: Enquiry): Promise<boolean> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subject, ...enquiry }),
       })
-      if (res.ok) return true
+      if (res.ok && (await webhookAccepted(res))) return true
     } catch {
       /* fall through */
     }
   }
 
   return false
+}
+
+/**
+ * A 2xx is not always a yes.
+ *
+ * The status code alone was the whole test here, on the reasonable assumption that an
+ * endpoint reports failure with a failure status. Some form relays do not: FormSubmit,
+ * tried while wiring this site up, answers a rejected server-side submission with
+ * HTTP 200 and `{"success":"false","message":"..."}` in the body. Against the old check
+ * that counted as delivered, so the visitor would have seen the success screen while
+ * the enquiry went nowhere — precisely the outcome the 503 path exists to prevent.
+ *
+ * So a JSON body that explicitly says it failed is believed over the status line.
+ * Anything else — no body, a non-JSON body, JSON without a verdict — stays a success,
+ * because an ordinary CRM or Zapier hook says nothing and means yes, and this must not
+ * start rejecting the endpoints it was built for.
+ */
+async function webhookAccepted(res: Response): Promise<boolean> {
+  if (!res.headers.get('content-type')?.includes('json')) return true
+  try {
+    const body = (await res.json()) as { success?: unknown; ok?: unknown }
+    for (const verdict of [body.success, body.ok]) {
+      if (verdict === false || verdict === 'false') return false
+    }
+    return true
+  } catch {
+    // Unreadable or malformed body on an otherwise-2xx response: nothing to disprove.
+    return true
+  }
 }
